@@ -795,10 +795,15 @@ const GDRIVE={
     const saved=await STORAGE._idbGet('sync','gdrive').catch(()=>null);
     if(saved?.email){this._email=saved.email;this._fileId=saved.fileId||null;}
     this._updStatus();
-    window.addEventListener('load',()=>{
-      if(!window.google?.accounts?.oauth2)return;
-      this._initTC();
-      if(this._email)try{this._tc.requestAccessToken({prompt:''});}catch{}
+    const waitGIS=()=>{
+      if(window.google?.accounts?.oauth2){
+        this._initTC();
+        if(this._email)try{this._tc.requestAccessToken({prompt:''});}catch{}
+      }else{setTimeout(waitGIS,300);}
+    };
+    waitGIS();
+    document.addEventListener('visibilitychange',()=>{
+      if(!document.hidden&&this._ok())this._doLoad();
     });
   },
 
