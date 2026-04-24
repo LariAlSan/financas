@@ -910,17 +910,26 @@ const GDRIVE={
   async init(){
     if(!GDRIVE_CLIENT_ID||GDRIVE_CLIENT_ID==='SEU_CLIENT_ID_AQUI')return;
     const saved=await STORAGE._idbGet('sync','gdrive').catch(()=>null);
-    if(saved?.email){this._email=saved.email;this._fileId=saved.fileId||null;}
+    if(saved?.email){
+      this._email=saved.email;this._fileId=saved.fileId||null;
+      if(saved.token&&saved.tokenExp&&Date.now()<saved.tokenExp){
+        this._tok=saved.token;this._tokExp=saved.tokenExp;
+      }
+    }
     this._updStatus();
     const waitGIS=()=>{
       if(window.google?.accounts?.oauth2){
         this._initTC();
-        if(this._email)try{this._tc.requestAccessToken({prompt:''});}catch(e){console.error('GDRIVE silent auth:',e);}
+        if(this._ok()){this._doLoad();}
+        else if(this._email)try{this._tc.requestAccessToken({prompt:''});}catch(e){console.error('GDRIVE silent auth:',e);}
       }else{setTimeout(waitGIS,300);}
     };
     waitGIS();
     document.addEventListener('visibilitychange',()=>{
-      if(!document.hidden&&this._ok())this._doLoad();
+      if(!document.hidden){
+        if(this._ok()){this._doLoad();}
+        else if(this._email&&this._tc)try{this._tc.requestAccessToken({prompt:''});}catch{}
+      }
     });
   },
 
@@ -937,7 +946,7 @@ const GDRIVE={
           try{const u=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:`Bearer ${this._tok}`}}).then(r=>r.json());this._email=u.email;}
           catch(e){console.error('GDRIVE userinfo:',e);}
         }
-        await STORAGE._idbSet('sync','gdrive',{email:this._email,fileId:this._fileId}).catch(()=>{});
+        await STORAGE._idbSet('sync','gdrive',{email:this._email,fileId:this._fileId,token:this._tok,tokenExp:this._tokExp}).catch(()=>{});
         this._updStatus();
         await this._doLoad();
       }
