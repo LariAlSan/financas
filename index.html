@@ -812,7 +812,7 @@ const GDRIVE={
     if(this._tc||!window.google?.accounts?.oauth2)return;
     this._tc=google.accounts.oauth2.initTokenClient({
       client_id:GDRIVE_CLIENT_ID,
-      scope:'https://www.googleapis.com/auth/drive.file',
+      scope:'https://www.googleapis.com/auth/drive.file email profile',
       callback:async resp=>{
         if(resp.error){console.error('GDRIVE token error:',resp.error);this._updStatus();return;}
         this._tok=resp.access_token;this._tokExp=Date.now()+(resp.expires_in-60)*1000;
