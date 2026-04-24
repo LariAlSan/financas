@@ -391,9 +391,10 @@
     [data-theme="dark"] .imp-tbl th{background:var(--bg-surface)}
     [data-theme="dark"] .cart-card,[data-theme="dark"] .orc-card{background:var(--bg-card)}
     [data-theme="dark"] .tbl tr:hover td{background:var(--bg-surface)}
-    #dark-toggle{background:none;border:none;cursor:pointer;font-size:1.1rem;
+    #dark-toggle,#cache-clear{background:none;border:none;cursor:pointer;font-size:1.1rem;
       padding:4px 8px;border-radius:var(--rx);opacity:.7;transition:opacity .2s}
-    #dark-toggle:hover{opacity:1}
+    #dark-toggle:hover,#cache-clear:hover{opacity:1}
+    @keyframes spin{to{transform:rotate(360deg)}}
 
     /* ── INSIGHTS ── */
     .insight-card{padding:10px 14px;border-radius:var(--rs);font-size:.8rem;font-weight:600;
@@ -453,7 +454,10 @@
   <div class="brand">
     <div style="display:flex;align-items:center;justify-content:space-between">
       <div class="brand-name">R$ Lari</div>
-      <button id="dark-toggle" onclick="DARKMODE.toggle()" title="Alternar tema">🌙</button>
+      <div style="display:flex;gap:2px">
+        <button id="cache-clear" onclick="clearCache()" title="Atualizar app">↻</button>
+        <button id="dark-toggle" onclick="DARKMODE.toggle()" title="Alternar tema">🌙</button>
+      </div>
     </div>
     <div class="brand-sub">✨ gestão financeira pessoal</div>
   </div>
@@ -2648,6 +2652,14 @@ function delFixa(id){if(!confirm('Remover esta despesa fixa?'))return;ST.data.de
 function delParc(id){if(!confirm('Remover esta parcela?'))return;ST.data.parceladas=ST.data.parceladas.filter(p=>p.id!==id);STORAGE.save();R.parceladas();R.dashboard();toast('Removida','inf')}
 function delInv(id){if(!confirm('Remover este investimento?'))return;(ST.data.desejos||[]).forEach(d=>{if(d.investimentoId===id)d.investimentoId=null;});ST.data.investimentos=ST.data.investimentos.filter(i=>i.id!==id);STORAGE.save();R.investimentos();R.dashboard();toast('Removido','inf')}
 function delConta(id){if(!confirm('Remover esta conta?'))return;ST.data.contas=(ST.data.contas||[]).filter(c=>c.id!==id);STORAGE.save();R.dashboard();toast('Conta removida','inf')}
+function clearCache(){
+  const btn=document.getElementById('cache-clear');
+  if(btn){btn.style.animation='spin .6s linear infinite';btn.style.display='inline-block';}
+  caches.keys().then(keys=>Promise.all(keys.map(k=>caches.delete(k)))).then(()=>{
+    if('serviceWorker' in navigator)navigator.serviceWorker.getRegistration().then(r=>r?.update());
+    setTimeout(()=>location.reload(true),400);
+  }).catch(()=>location.reload(true));
+}
 function addAporte(invId){
   const inv=ST.data.investimentos.find(i=>i.id===invId);if(!inv)return;
   const vs=prompt('Valor do aporte (R$):');if(vs===null)return;
