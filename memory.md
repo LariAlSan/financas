@@ -55,14 +55,19 @@ Dashboard · Salário · Despesas Fixas · Parceladas · Investimentos · Variá
 
 ## Histórico de Atualizações
 
+### 2026-04-24 — v4.1.3 (fix: card Vale Refeição padronizado + saldo acumulado automático)
+- **Card Vale Refeição (Variáveis)**: padronizado com os cards "Pagamento Direto" e "Via Cartão" — exibe apenas o total gasto com ticket + contagem de lançamentos. Removidas as sub-métricas Recebido/Usado/Saldo e a borda laranja.
+- **Saldo acumulado 100% automático**: removido campo "Saldo inicial" manual do dashboard. `C.saldoAcumulado(mo)` agora acumula automaticamente desde o mês mais antigo em `ST.data.salarios`; função `setSaldoInicial` removida.
+- Aplicado em: `lari4.0.html`, `Jamilly.html`, `LYD.html`.
+
 ### 2026-04-24 — v4.1.1 (fix: card Saldo em Contas responsivo)
 - **Layout flex-wrap**: card "Saldo em Contas" agora usa `grid-column:1/-1` (largura total) + `.contas-list{flex-wrap:wrap}` com `.conta-item{flex:1;min-width:200px}` — no desktop 3–4 contas por linha, no mobile empilha automaticamente sem overflow.
 - CSS classes adicionadas: `.sum-card.contas`, `.contas-list`, `.conta-item` (substituem inline styles anteriores).
 - Aplicado em: `lari4.0.html`, `Jamilly.html`, `LYD.html`.
 
 ### 2026-04-24 — v4.1 (saldo acumulado + saldo em contas + alertas reposicionados)
-- **Saldo acumulado (carry-over)**: `C.saldoAcumulado(mo)` soma o saldo dos meses anteriores ao fluxo atual. Âncora opcional: `ST.data.salarios[mo].saldoInicial` permite "reiniciar" o acúmulo a partir de qualquer mês (campo inline no card do Dashboard). Sem âncora: equivale ao saldo simples do mês.
-- **Saldo em Contas**: card no Dashboard com CRUD de contas bancárias (`ST.data.contas[]` — `{id, nome, saldo, atualizadoEm}`). Botão "+ Adicionar" abre modal; ✏️/🗑️ por conta; total automático. Funções globais `setSaldoInicial(val)` e `delConta(id)`.
+- **Saldo acumulado (carry-over)**: `C.saldoAcumulado(mo)` soma o saldo desde o mês mais antigo com salário cadastrado até o mês atual (automático, sem input manual).
+- **Saldo em Contas**: card no Dashboard com CRUD de contas bancárias (`ST.data.contas[]` — `{id, nome, saldo, atualizadoEm}`). Botão "+ Adicionar" abre modal; ✏️/🗑️ por conta; total automático. Função global `delConta(id)`.
 - **Alertas/insights movidos**: painéis `dash-alerts` e `dash-insights` relocados do topo do Dashboard para o final (após `dash-orcamentos`), mantendo os cards de resumo em destaque.
 - **Service worker v6**: `CACHE = 'lari-v6'`; invalida cache anterior para forçar atualização nos navegadores.
 - Aplicado em: `lari4.0.html`, `Jamilly.html`, `LYD.html`.
