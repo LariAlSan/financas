@@ -1,7 +1,9 @@
-const CACHE = 'lari-v1';
+const CACHE = 'lari-v2';
 const ASSETS = [
   '/financas/',
   '/financas/index.html',
+  '/financas/icon-192.png',
+  '/financas/icon-512.png',
   'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js',
   'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,700&family=Nunito:wght@400;500;600;700;800&display=swap'
 ];
