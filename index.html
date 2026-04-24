@@ -7,6 +7,8 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#3d1f2e">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,700&family=Nunito:wght@400;500;600;700;800&display=swap');
     :root {
@@ -340,6 +342,7 @@
 </head>
 <body>
 <div id="app">
+<div id="offline-bar" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#ef4444;color:#fff;text-align:center;padding:7px 16px;font-size:.82rem;font-weight:700;letter-spacing:.2px">📵 Sem conexão — dados salvos localmente</div>
 
 <!-- ── SIDEBAR ── -->
 <nav id="sidebar">
@@ -415,6 +418,7 @@
     <div id="dash-alerts" style="margin-bottom:14px"></div>
     <div class="sum-grid" id="sum-cards"></div>
     <div class="q-grid" id="q-lists"></div>
+    <div id="dash-orcamentos"></div>
   </section>
 
   <!-- SALÁRIO -->
@@ -894,6 +898,12 @@ const GDRIVE={
       const dt=new Date(driveData.meta?.lastUpdated||0);
       const lt=new Date(ST.data.meta?.lastUpdated||0);
       if(dt>lt){
+        const dtStr=new Date(driveData.meta?.lastUpdated).toLocaleString('pt-BR');
+        if(!confirm(`O Google Drive tem dados mais recentes (salvo em ${dtStr}).\nSubstituir dados locais?`)){
+          this._doSave(ST.data);
+          toast('Dados locais mantidos e enviados ao Drive','ok');
+          return;
+        }
         ST.data={...JSON.parse(JSON.stringify(DEF)),...driveData};
         await STORAGE._idbSet('data','main',ST.data).catch(()=>{});
         R.all();
@@ -921,6 +931,32 @@ const GDRIVE={
     }else{
       el.innerHTML=`<span style="color:rgba(255,255,255,.3)">☁️ Drive não conectado</span>`;
     }
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════
+   NOTIF
+═══════════════════════════════════════════════════════════ */
+const NOTIF={
+  async init(){
+    if(!('Notification' in window))return;
+    if(Notification.permission==='default')await Notification.requestPermission();
+    if(Notification.permission==='granted')this.check();
+  },
+  check(){
+    const mo=ST.month;
+    const hoje=new Date();
+    const isCurr=mo===`${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
+    if(!isCurr)return;
+    const dH=hoje.getDate();
+    ST.data.despesasFixas.filter(d=>d.vencimento!=null&&!d.pagamentos?.[mo]).forEach(d=>{
+      const diff=d.vencimento-dH;
+      if(diff>=0&&diff<=3)this._notify(d.nome,diff,d.valor);
+    });
+  },
+  _notify(nome,dias,valor){
+    const body=dias===0?`"${nome}" vence hoje — ${fmtBRL(valor)}`:`"${nome}" vence em ${dias} dia${dias!==1?'s':''} — ${fmtBRL(valor)}`;
+    try{new Notification('Vencimento próximo',{body,icon:'/financas/icon-192.png'});}catch(e){}
   }
 };
 
@@ -1074,6 +1110,21 @@ const R={
           <div class="bal-row">− Faturas <b style="color:var(--pink)">${fmtBRL(fat)}</b></div>
         </div>
       </div>`;
+    // Budget semaphore
+    const orcEntries=Object.entries(ST.data.orcamentos||{});
+    const semEl=document.getElementById('dash-orcamentos');
+    if(semEl){
+      if(orcEntries.length){
+        const semHtml=orcEntries.map(([cat,lim])=>{
+          const g=C.gastoCategoria(cat,mo);
+          const pct=lim>0?(g/lim*100):0;
+          const color=pct<80?'var(--green)':pct<=100?'var(--gold)':'var(--red)';
+          const pw=Math.min(pct,100).toFixed(1);
+          return`<div style="background:var(--bg-surface);border-radius:var(--rs);padding:12px 14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:.8rem;font-weight:700">${CATS[cat]?.i||''} ${CATS[cat]?.l||cat}</span><span style="font-size:.78rem;font-weight:700;color:${color}">${fmtBRL(g)} / ${fmtBRL(lim)}</span></div><div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="height:100%;width:${pw}%;background:${color};border-radius:3px"></div></div><div style="font-size:.68rem;color:${color};text-align:right;margin-top:3px;font-weight:600">${pct.toFixed(0)}%</div></div>`;
+        }).join('');
+        semEl.innerHTML=`<div class="card" style="margin-top:16px"><div class="q-title" style="margin-bottom:12px">🎯 Orçamentos — ${mlabel(mo)}</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">${semHtml}</div></div>`;
+      }else{semEl.innerHTML='';}
+    }
     const unpaid=ST.data.despesasFixas.filter(d=>!d.pagamentos?.[mo]);
     const ativas=ST.data.parceladas.filter(p=>C.parcAtiva(p,mo));
     document.getElementById('q-lists').innerHTML=`
@@ -1461,17 +1512,23 @@ const R={
     }
   },
 
-  relatorio(){
+  relatorio(mode='mensal'){
     const mo=ST.month;
     document.getElementById('rel-lbl').textContent=mlabel(mo);
-    document.getElementById('rel-content').innerHTML=`
-      <div class="charts-grid">
-        <div class="cc"><div class="cc-title">Despesas Fixas por Categoria</div><canvas id="ch-fixas"></canvas></div>
-        <div class="cc"><div class="cc-title">Variáveis por Categoria — ${mlabel(mo)}</div><canvas id="ch-vars"></canvas></div>
-        <div class="cc full"><div class="cc-title">Últimos 6 Meses — Salário × Despesas × Saldo</div><canvas id="ch-6m" style="max-height:280px"></canvas></div>
-        <div class="cc full"><div class="cc-title">Portfólio por Tipo de Investimento</div><canvas id="ch-inv"></canvas></div>
-      </div>`;
-    requestAnimationFrame(()=>CHART.render());
+    const toggle=`<div style="display:flex;gap:8px;margin-bottom:16px"><button class="btn ${mode==='mensal'?'btn-p':'btn-g'}" style="font-size:.78rem;padding:6px 16px" onclick="R.relatorio('mensal')">📊 Mensal</button><button class="btn ${mode==='anual'?'btn-p':'btn-g'}" style="font-size:.78rem;padding:6px 16px" onclick="R.relatorio('anual')">📅 Anual</button></div>`;
+    if(mode==='anual'){
+      document.getElementById('rel-content').innerHTML=toggle+`<div id="rel-anual-content"></div>`;
+      requestAnimationFrame(()=>CHART.renderAnual());
+    }else{
+      document.getElementById('rel-content').innerHTML=toggle+`
+        <div class="charts-grid">
+          <div class="cc"><div class="cc-title">Despesas Fixas por Categoria</div><canvas id="ch-fixas"></canvas></div>
+          <div class="cc"><div class="cc-title">Variáveis por Categoria — ${mlabel(mo)}</div><canvas id="ch-vars"></canvas></div>
+          <div class="cc full"><div class="cc-title">Últimos 6 Meses — Salário × Despesas × Saldo</div><canvas id="ch-6m" style="max-height:280px"></canvas></div>
+          <div class="cc full"><div class="cc-title">Portfólio por Tipo de Investimento</div><canvas id="ch-inv"></canvas></div>
+        </div>`;
+      requestAnimationFrame(()=>CHART.render());
+    }
   },
 
   desejos(){
@@ -1718,6 +1775,46 @@ const CHART={
       labels:Object.keys(bInv),
       datasets:[{data:Object.values(bInv),backgroundColor:Object.keys(bInv).map(k=>IC[k]||'#94a3b8'),borderWidth:2,borderColor:'#fff'}]
     },options:{responsive:true,plugins:{legend:legOpts,tooltip:ttBRL}}});
+  },
+
+  renderAnual(){
+    const mo=ST.month;
+    const year=mo.split('-')[0];
+    const months=[];for(let m=1;m<=12;m++)months.push(`${year}-${String(m).padStart(2,'0')}`);
+    const CC={'moradia':'#0ea5e9','alimentacao':'#eab308','saude':'#22c55e','transporte':'#3b82f6','lazer':'#a855f7','beleza':'#ec4899','moda':'#9c27a0','outros':'#94a3b8'};
+    const legOpts={labels:{color:'#1e293b',font:{size:11}}};
+    const el=document.getElementById('rel-anual-content');
+    if(!el)return;
+    const MS=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const totRec=months.map(m=>C.salario(m));
+    const totDesp=months.map(m=>C.fixas(m)+C.parceladas(m)+C.variaveis(m)+C.totalFaturas(m));
+    const totSaldo=months.map(m=>C.saldo(m));
+    const bCatAnual={};
+    months.forEach(m=>{ST.data.despesasVariaveis.filter(d=>d.data?.startsWith(m)).forEach(d=>{bCatAnual[d.categoria]=(bCatAnual[d.categoria]||0)+d.valor})});
+    const totalRec=totRec.reduce((a,v)=>a+v,0);
+    const totalDesp=totDesp.reduce((a,v)=>a+v,0);
+    const totalSaldo=totSaldo.reduce((a,v)=>a+v,0);
+    el.innerHTML=`<div class="charts-grid">
+      <div class="cc full"><div class="cc-title">📅 ${year} — Salário × Despesas × Saldo</div><canvas id="ch-anual-bar" style="max-height:280px"></canvas></div>
+      <div class="cc"><div class="cc-title">Variáveis por Categoria — Acumulado ${year}</div><canvas id="ch-anual-cat"></canvas></div>
+      <div class="cc"><div class="cc-title">Saldo Mês a Mês — ${year}</div><canvas id="ch-anual-line"></canvas></div>
+      <div class="cc full"><div class="cc-title">Resumo ${year}</div><div style="overflow-x:auto"><table class="comp-table"><thead><tr><th>Mês</th><th>Receita</th><th>Despesas</th><th>Saldo</th></tr></thead><tbody>${months.map((m,i)=>`<tr><td>${MS[i]}</td><td style="color:var(--green);font-weight:600">${fmtBRL(totRec[i])}</td><td style="color:var(--red);font-weight:600">${fmtBRL(totDesp[i])}</td><td style="color:${totSaldo[i]>=0?'var(--green)':'var(--red)'};font-weight:700">${fmtBRL(totSaldo[i])}</td></tr>`).join('')}<tr style="border-top:2px solid var(--border);background:var(--bg-surface)"><td style="font-weight:800">Total</td><td style="color:var(--green);font-weight:800">${fmtBRL(totalRec)}</td><td style="color:var(--red);font-weight:800">${fmtBRL(totalDesp)}</td><td style="color:${totalSaldo>=0?'var(--green)':'var(--red)'};font-weight:800">${fmtBRL(totalSaldo)}</td></tr></tbody></table></div></div>
+    </div>`;
+    this.mk('ch-anual-bar',{type:'bar',data:{labels:MS,datasets:[
+      {label:'Salário',data:totRec,backgroundColor:'#bbf7d0',borderColor:'#22c55e',borderWidth:1.5},
+      {label:'Despesas',data:totDesp,backgroundColor:'#fecaca',borderColor:'#ef4444',borderWidth:1.5},
+      {label:'Saldo',data:totSaldo,backgroundColor:'#bfdbfe',borderColor:'#3b82f6',borderWidth:1.5}
+    ]},options:{responsive:true,maintainAspectRatio:true,
+      plugins:{legend:legOpts,tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmtBRL(c.raw)}`}}},
+      scales:{x:{ticks:{color:'#64748b'},grid:{color:'#f1f5f9'}},y:{ticks:{color:'#64748b',callback:v=>'R$'+v.toLocaleString('pt-BR')},grid:{color:'#f1f5f9'}}}}});
+    if(Object.keys(bCatAnual).length)this.mk('ch-anual-cat',{type:'doughnut',data:{
+      labels:Object.keys(bCatAnual).map(k=>CATS[k]?.l||k),
+      datasets:[{data:Object.values(bCatAnual),backgroundColor:Object.keys(bCatAnual).map(k=>CC[k]||'#94a3b8'),borderWidth:2,borderColor:'#fff'}]
+    },options:{responsive:true,plugins:{legend:legOpts,tooltip:{callbacks:{label:c=>` ${fmtBRL(c.raw)}`}}}}});
+    this.mk('ch-anual-line',{type:'line',data:{labels:MS,datasets:[
+      {label:'Saldo',data:totSaldo,borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.08)',tension:0.3,fill:true,pointRadius:4}
+    ]},options:{responsive:true,plugins:{legend:legOpts,tooltip:{callbacks:{label:c=>` ${fmtBRL(c.raw)}`}}},
+      scales:{x:{ticks:{color:'#64748b'},grid:{color:'#f1f5f9'}},y:{ticks:{color:'#64748b',callback:v=>'R$'+v.toLocaleString('pt-BR')},grid:{color:'#f1f5f9'}}}}});
   }
 };
 
@@ -2608,6 +2705,16 @@ document.addEventListener('DOMContentLoaded',async()=>{
   initPicker();
   goTo(location.hash.slice(1)||'dashboard');
   GDRIVE.init();
+  NOTIF.init();
+  // Offline indicator
+  const ob=document.getElementById('offline-bar');
+  if(ob){
+    if(!navigator.onLine)ob.style.display='block';
+    window.addEventListener('offline',()=>{ob.style.display='block';toast('Sem conexão — dados salvos localmente','err')});
+    window.addEventListener('online',()=>{ob.style.display='none';toast('Conexão restaurada','ok')});
+  }
+  // Service Worker (PWA)
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('/financas/sw.js').catch(()=>{});
 });
 </script>
 </body>
