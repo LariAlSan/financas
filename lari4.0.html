@@ -729,7 +729,8 @@ const ST={
   desejoFilt:'todos',
   parcFilter:'all',
   invFilter:'all',
-  cartaoAtivo:null
+  cartaoAtivo:null,
+  varSearch:''
 };
 
 /* ═══════════════════════════════════════════════════════════
@@ -901,9 +902,14 @@ const STORAGE={
     const r=new FileReader();
     r.onload=e=>{
       try{
-        ST.data={...JSON.parse(JSON.stringify(DEF)),...JSON.parse(e.target.result)};
-        STORAGE.save();R.all();toast('Dados importados!','ok');
-      }catch{toast('Arquivo inválido','err')}
+        const parsed=JSON.parse(e.target.result);
+        const keys=['despesasFixas','parceladas','investimentos','despesasVariaveis','cartoes'];
+        if(!keys.some(k=>Array.isArray(parsed[k]))){
+          toast('Arquivo inválido: não parece um backup do Lari','err');return;
+        }
+        ST.data={...JSON.parse(JSON.stringify(DEF)),...parsed};
+        STORAGE.save();R.all();toast('Dados importados com sucesso!','ok');
+      }catch{toast('Arquivo corrompido ou formato inválido','err')}
     };
     r.readAsText(file);
   }
@@ -1229,6 +1235,11 @@ const R={
         if(diff>=0&&diff<=5)alertas.push({t:'warn',m:`⏰ "${d.nome}" vence ${diff===0?'hoje':`em ${diff} dia${diff!==1?'s':''}`} — ${fmtBRL(d.valor)}`});
       });
     }
+    ST.data.parceladas.filter(p=>C.parcAtiva(p,mo)).forEach(p=>{
+      const restantes=p.numParcelas-C.nParcela(p,mo);
+      if(restantes===0)alertas.push({t:'inf',m:`🏁 "${p.descricao}" — última parcela (${C.nParcela(p,mo)}/${p.numParcelas})`});
+      else if(restantes<=2)alertas.push({t:'inf',m:`⏳ "${p.descricao}" — ${restantes} parcela(s) restante(s) (${C.nParcela(p,mo)}/${p.numParcelas})`});
+    });
     Object.entries(ST.data.orcamentos||{}).forEach(([cat,lim])=>{
       const g=C.gastoCategoria(cat,mo);
       if(g>lim)alertas.push({t:'err',m:`⚠️ ${CATS[cat]?.i||''} ${CATS[cat]?.l||cat}: limite ultrapassado — ${fmtBRL(g)} de ${fmtBRL(lim)}`});
@@ -1560,8 +1571,8 @@ const R={
               <td style="font-weight:700;color:${r>=0?'var(--green)':'var(--red)'}">${fmtPct(r)}</td>
               <td>${vencBadge}</td>
               <td>${liqBadge}</td>
-              <td><div class="acts"><button class="ic" onclick="MODAL.open('investimentos','${inv.id}')">✏️</button><button class="ic del" onclick="delInv('${inv.id}')">🗑️</button></div></td>
-            </tr>`;
+              <td><div class="acts"><button class="ic" onclick="MODAL.open('investimentos','${inv.id}')">✏️</button><button class="ic" onclick="addAporte('${inv.id}')" title="Registrar aporte">➕</button><button class="ic del" onclick="delInv('${inv.id}')">🗑️</button></div></td>
+            </tr>${inv.aportes?.length?`<tr style="background:var(--bg-hover,var(--bg-surface))"><td colspan="9" style="padding:5px 16px 8px"><div style="font-size:.72rem;font-weight:700;color:var(--textm);margin-bottom:4px">Aportes</div><div style="display:flex;flex-wrap:wrap;gap:5px">${inv.aportes.map(a=>`<span class="badge bbl" style="font-size:.71rem">${a.data.split('-').reverse().join('/')} — ${fmtBRL(a.valor)} <button class="ic del" style="padding:1px 5px;font-size:.6rem;line-height:1.3" onclick="delAporte('${inv.id}','${a.id}')">✕</button></span>`).join('')}</div></td></tr>`:''}`;
           }).join('')}
         </tbody></table>`:(invf!=='all'?`<div class="empty" style="padding:28px">Nenhum investimento do tipo "${invf}"</div>`:'<div class="empty" style="padding:28px">Nenhum investimento cadastrado</div>')}
       </div>`;
@@ -1588,7 +1599,8 @@ const R={
   variaveis(){
     const mo=ST.month;
     document.getElementById('var-lbl').textContent=mlabel(mo);
-    const items=ST.data.despesasVariaveis.filter(d=>d.data?.startsWith(mo)).sort((a,b)=>b.data.localeCompare(a.data));
+    const q=(ST.varSearch||'').toLowerCase();
+    const items=ST.data.despesasVariaveis.filter(d=>d.data?.startsWith(mo)&&(!q||d.descricao?.toLowerCase().includes(q))).sort((a,b)=>b.data.localeCompare(a.data));
     const total=C.variaveis(mo);
     const viaCartaoVar=items.filter(d=>d.cartaoId).reduce((a,d)=>a+(d.valor||0),0);
     const viaTicket=items.filter(d=>d.formaPagamento==='Vale Refeição').reduce((a,d)=>a+(d.valor||0),0);
@@ -1623,6 +1635,7 @@ const R={
         </div>`:''}
       </div>
       <div class="card">
+        <div style="margin-bottom:12px"><input id="var-search" type="search" placeholder="🔍 Buscar descrição…" style="width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid var(--border);border-radius:var(--rs);background:var(--bg-input,var(--bg-surface));color:var(--text);font-size:.85rem" oninput="ST.varSearch=this.value;R.variaveis()" value="${ST.varSearch||''}"></div>
         ${items.length?`<table class="tbl"><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Pagamento</th><th>Valor</th><th></th></tr></thead><tbody>
           ${items.map(d=>{
             const cat=CATS[d.categoria]||CATS.outros;
@@ -2589,6 +2602,25 @@ function togPago(id){
 function delFixa(id){if(!confirm('Remover esta despesa fixa?'))return;ST.data.despesasFixas=ST.data.despesasFixas.filter(d=>d.id!==id);STORAGE.save();R.fixas();R.dashboard();toast('Removida','inf')}
 function delParc(id){if(!confirm('Remover esta parcela?'))return;ST.data.parceladas=ST.data.parceladas.filter(p=>p.id!==id);STORAGE.save();R.parceladas();R.dashboard();toast('Removida','inf')}
 function delInv(id){if(!confirm('Remover este investimento?'))return;(ST.data.desejos||[]).forEach(d=>{if(d.investimentoId===id)d.investimentoId=null;});ST.data.investimentos=ST.data.investimentos.filter(i=>i.id!==id);STORAGE.save();R.investimentos();R.dashboard();toast('Removido','inf')}
+function addAporte(invId){
+  const inv=ST.data.investimentos.find(i=>i.id===invId);if(!inv)return;
+  const vs=prompt('Valor do aporte (R$):');if(vs===null)return;
+  const valor=parseFloat(vs.replace(',','.'));
+  if(!valor||isNaN(valor)||valor<=0){toast('Valor inválido','err');return;}
+  const data=prompt('Data (AAAA-MM-DD):',new Date().toISOString().slice(0,10));if(!data)return;
+  if(!inv.aportes)inv.aportes=[];
+  inv.aportes.push({id:Date.now().toString(),data,valor});
+  inv.valorInvestido=(inv.valorInvestido||0)+valor;
+  STORAGE.save();R.investimentos();toast('Aporte registrado!','ok');
+}
+function delAporte(invId,apId){
+  const inv=ST.data.investimentos.find(i=>i.id===invId);if(!inv?.aportes)return;
+  const ap=inv.aportes.find(a=>a.id===apId);if(!ap)return;
+  if(!confirm('Remover aporte?'))return;
+  inv.valorInvestido=Math.max(0,(inv.valorInvestido||0)-ap.valor);
+  inv.aportes=inv.aportes.filter(a=>a.id!==apId);
+  STORAGE.save();R.investimentos();toast('Aporte removido','ok');
+}
 function toggleAutoCalcField(){
   const idx=document.getElementById('in-idx')?.value;
   const auto=document.getElementById('in-auto')?.value==='sim';
@@ -3073,7 +3105,21 @@ document.addEventListener('DOMContentLoaded',async()=>{
     window.addEventListener('online',()=>{ob.style.display='none';toast('Conexão restaurada','ok')});
   }
   // Service Worker (PWA)
-  if('serviceWorker' in navigator)navigator.serviceWorker.register('/financas/sw.js').catch(()=>{});
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('/financas/sw.js').then(reg=>{
+      reg.onupdatefound=()=>{
+        const sw=reg.installing;
+        sw.onstatechange=()=>{
+          if(sw.state==='installed'&&navigator.serviceWorker.controller){
+            const bar=document.createElement('div');
+            bar.style='position:fixed;bottom:70px;left:50%;transform:translateX(-50%);z-index:9999;background:var(--text);color:#fff;padding:10px 20px;border-radius:var(--r);font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:12px;box-shadow:0 4px 20px rgba(0,0,0,.25)';
+            bar.innerHTML='🔄 Nova versão disponível <button onclick="location.reload()" style="background:var(--pink);color:#fff;border:none;border-radius:var(--rx);padding:4px 12px;cursor:pointer;font-weight:700">Atualizar</button>';
+            document.body.appendChild(bar);
+          }
+        };
+      };
+    }).catch(()=>{});
+  }
 });
 </script>
 </body>
