@@ -714,7 +714,8 @@ const DEF={
   orcamentos:{},
   notas:{},
   receitasRecorrentes:[],
-  metasEconomia:{}
+  metasEconomia:{},
+  contas:[]
 };
 
 /* ═══════════════════════════════════════════════════════════
@@ -1175,6 +1176,18 @@ const C={
     return v+f+p;
   },
   saldo(mo){return this.salario(mo)-this.fixas(mo)-this.parceladas(mo)-this.variaveis(mo)-this.totalFaturas(mo)},
+  saldoAcumulado(mo){
+    let anchorMo=null,anchorVal=0;
+    for(let i=0;i<=36;i++){
+      const m=this.addM(mo,-i);
+      const s=ST.data.salarios[m];
+      if(s?.saldoInicial!==undefined){anchorMo=m;anchorVal=s.saldoInicial;break;}
+    }
+    if(!anchorMo)return this.saldo(mo);
+    let acc=anchorVal,m=anchorMo;
+    while(m<=mo){acc+=this.saldo(m);m=this.addM(m,1);}
+    return acc;
+  },
   rent(inv){const va=C.valorCalc(inv)??inv.valorAtual??inv.valorInvestido;return inv.valorInvestido?((va-inv.valorInvestido)/inv.valorInvestido)*100:0},
   valorDesejo(d){
     if(!d.investimentoId)return d.valorGuardado||0;
@@ -1213,7 +1226,8 @@ const R={
   dashboard(){
     const mo=ST.month;
     const sal=C.salario(mo),fx=C.fixas(mo),pc=C.parceladas(mo),vr=C.variaveis(mo),fat=C.totalFaturas(mo);
-    const inv=C.totalAtual(),saldo=C.saldo(mo);
+    const inv=C.totalAtual(),fluxo=C.saldo(mo),saldo=C.saldoAcumulado(mo);
+    const anterior=saldo-fluxo;
     const prev=C.addM(mo,-1);
     const sal_p=C.salario(prev),fx_p=C.fixas(prev),pc_p=C.parceladas(prev),vr_p=C.variaveis(prev),fat_p=C.totalFaturas(prev);
     const saldo_p=sal_p-fx_p-pc_p-vr_p-fat_p;
@@ -1222,7 +1236,7 @@ const R={
     // Previsão de saldo
     const mediaVar=[1,2,3].reduce((a,i)=>a+C.variaveis(C.addM(mo,-i)),0)/3;
     const varProj=Math.max(vr,mediaVar);
-    const saldoProj=sal-fx-pc-varProj-fat;
+    const saldoProj=anterior+sal-fx-pc-varProj-fat;
     // Alertas inteligentes
     const hoje=new Date();
     const isCurr=mo===`${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
@@ -1288,27 +1302,56 @@ const R={
             <div style="font-size:1.3rem;font-weight:800;color:${saldoProj>=0?'var(--green)':'var(--red)'};margin-top:3px">${fmtBRL(saldoProj)}</div>
             <div style="font-size:.71rem;color:var(--textm);margin-top:2px">Média variáveis (3m): ${fmtBRL(mediaVar)}</div>
           </div>
+          <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+            <div style="font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--textm);margin-bottom:5px">Saldo inicial deste mês</div>
+            <input type="number" step="0.01" placeholder="R$ 0,00 (carry-over automático)"
+              value="${ST.data.salarios[mo]?.saldoInicial??''}"
+              onchange="setSaldoInicial(this.value)"
+              style="width:100%;box-sizing:border-box;padding:6px 10px;border:1px solid var(--border);border-radius:var(--rs);background:var(--bg-input,var(--bg-surface));color:var(--text);font-size:.82rem">
+            <div style="font-size:.67rem;color:var(--textm);margin-top:3px">Deixe vazio para usar saldo de ${mlabel(prev)} automaticamente</div>
+          </div>
         </div>
         <div class="bal-right">
+          ${anterior!==0?`<div class="bal-row" style="font-weight:600">+ ${mlabel(prev)} <b style="color:var(--green)">${fmtBRL(anterior)}</b></div>`:''}
           <div class="bal-row">Salário <b style="color:var(--green)">${fmtBRL(sal)}</b></div>
           <div class="bal-row">− Fixas <b style="color:var(--red)">${fmtBRL(fx)}</b></div>
           <div class="bal-row">− Parcelas <b style="color:var(--gold)">${fmtBRL(pc)}</b></div>
           <div class="bal-row">− Variáveis <b style="color:var(--blue)">${fmtBRL(vr)}</b></div>
           <div class="bal-row">− Faturas <b style="color:var(--pink)">${fmtBRL(fat)}</b></div>
         </div>
-      </div>`;
+      </div>
+      ${(ST.data.contas||[]).length>0||isCurr?`<div class="sum-card" style="flex-direction:column;align-items:flex-start;gap:10px">
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
+          <span style="font-size:.67rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--textm)">🏦 Saldo em Contas</span>
+          <button class="btn btn-p" style="font-size:.72rem;padding:5px 12px" onclick="MODAL.open('contas')">+ Adicionar</button>
+        </div>
+        ${(ST.data.contas||[]).length?`
+        <div style="width:100%;display:flex;flex-direction:column;gap:6px">
+          ${(ST.data.contas||[]).map(c=>`<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+            <span style="font-size:.85rem;font-weight:500;color:var(--text)">${c.nome}</span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:.9rem;font-weight:700;color:var(--green)">${fmtBRL(c.saldo||0)}</span>
+              <div class="acts" style="gap:2px"><button class="ic" onclick="MODAL.open('contas','${c.id}')">✏️</button><button class="ic del" onclick="delConta('${c.id}')">🗑️</button></div>
+            </div>
+          </div>`).join('')}
+          <div style="border-top:1px solid var(--border);padding-top:7px;display:flex;justify-content:space-between;margin-top:3px">
+            <span style="font-size:.78rem;font-weight:700;color:var(--textm)">Total</span>
+            <span style="font-size:.93rem;font-weight:800;color:var(--text)">${fmtBRL((ST.data.contas||[]).reduce((a,c)=>a+(c.saldo||0),0))}</span>
+          </div>
+        </div>`:'<div style="font-size:.8rem;color:var(--textm)">Nenhuma conta cadastrada ainda.</div>'}
+      </div>`:''}`;
     // Meta de economia
     const metaEl=document.getElementById('dash-meta');
     if(metaEl){
       const metaVal=ST.data.metasEconomia?.[mo]||0;
-      const pctMeta=metaVal>0?Math.min(saldo/metaVal*100,100):0;
-      const barColor=saldo>=metaVal&&metaVal>0?'done':'';
+      const pctMeta=metaVal>0?Math.min(fluxo/metaVal*100,100):0;
+      const barColor=fluxo>=metaVal&&metaVal>0?'done':'';
       const metaInput=`<input class="meta-input" type="number" min="0" step="50" placeholder="Definir meta…"
         value="${metaVal||''}" onchange="ST.data.metasEconomia=ST.data.metasEconomia||{};ST.data.metasEconomia['${mo}']=parseFloat(this.value)||0;STORAGE.save();R.dashboard()" style="width:140px">`;
       if(metaVal>0){
-        const falta=metaVal-saldo;
-        const statusMsg=saldo>=metaVal
-          ?`<span style="color:var(--green);font-weight:700">✅ Meta atingida! ${fmtBRL(saldo)} poupado</span>`
+        const falta=metaVal-fluxo;
+        const statusMsg=fluxo>=metaVal
+          ?`<span style="color:var(--green);font-weight:700">✅ Meta atingida! ${fmtBRL(fluxo)} poupado</span>`
           :`<span style="color:var(--textm)">Faltam <b style="color:var(--pink)">${fmtBRL(falta)}</b> para a meta</span>`;
         metaEl.innerHTML=`<div class="card" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
           <div style="flex:1;min-width:200px">
@@ -2183,9 +2226,10 @@ const MODAL={
       else if(sec==='recorrente')d=(ST.data.receitasRecorrentes||[]).find(x=>x.id===id);
       else if(sec==='cartao')d=(ST.data.cartoes||[]).find(x=>x.id===id);
       else if(sec==='gastoFatura')d=(ST.data.faturas[ST.month]?.[ST.cartaoAtivo]?.gastos||[]).find(x=>x.id===id);
+      else if(sec==='contas')d=(ST.data.contas||[]).find(x=>x.id===id);
     }
-    const names={fixas:'Despesa Fixa',parceladas:'Compra Parcelada',investimentos:'Investimento',variaveis:'Despesa Variável',combustivel:'Abastecimento',extra:'Renda Extra',desejos:'Desejo',recorrente:'Receita Recorrente',cartao:'Cartão de Crédito',gastoFatura:'Gasto na Fatura'};
-    const icons={fixas:'📋',parceladas:'🛒',investimentos:'📈',variaveis:'🧾',combustivel:'⛽',extra:'💼',desejos:'🌟',recorrente:'🔄',cartao:'💳',gastoFatura:'💳'};
+    const names={fixas:'Despesa Fixa',parceladas:'Compra Parcelada',investimentos:'Investimento',variaveis:'Despesa Variável',combustivel:'Abastecimento',extra:'Renda Extra',desejos:'Desejo',recorrente:'Receita Recorrente',cartao:'Cartão de Crédito',gastoFatura:'Gasto na Fatura',contas:'Conta Bancária'};
+    const icons={fixas:'📋',parceladas:'🛒',investimentos:'📈',variaveis:'🧾',combustivel:'⛽',extra:'💼',desejos:'🌟',recorrente:'🔄',cartao:'💳',gastoFatura:'💳',contas:'🏦'};
     document.getElementById('m-title').textContent=`${icons[sec]||''} ${d?'Editar':'Adicionar'} ${names[sec]||''}`;
     document.getElementById('m-body').innerHTML=this.form(sec,d||{});
     document.getElementById('overlay').classList.add('open');
@@ -2383,6 +2427,10 @@ const MODAL={
         <div class="frow"><label>Dia de Vencimento</label><input id="ca-venc" type="number" min="1" max="31" placeholder="1–31" value="${v.diaVencimento||''}"></div>
       </div>`;
     }
+    if(sec==='contas')return`<div class="fg">
+      <div class="frow"><label>Nome da Conta</label><input id="ct-nome" placeholder="Ex: Nubank Conta, C6, Bradesco" value="${v.nome||''}"></div>
+      <div class="frow"><label>Saldo atual (R$)</label><input id="ct-saldo" type="number" step="0.01" placeholder="0,00" value="${v.saldo||''}"></div>
+    </div>`;
     if(sec==='gastoFatura')return`<div class="fg">
       <div class="frow"><label>Descrição</label><input id="gf-desc" placeholder="Ex: Restaurante, Amazon" value="${v.descricao||''}"></div>
       <div class="fg fg2">
@@ -2586,6 +2634,15 @@ const MODAL={
       else ST.data.faturas[mo][cid].gastos.push({id:uid(),descricao:desc,valor:val,data:dt,categoria:cat});
       STORAGE.save();this.close();R.cartoes();R.dashboard();toast(id?'Gasto atualizado!':'Gasto lançado!','ok');
     }
+    else if(sec==='contas'){
+      const nome=document.getElementById('ct-nome')?.value.trim();
+      const saldo=pnum(document.getElementById('ct-saldo')?.value);
+      if(!nome){toast('Informe o nome da conta','err');return}
+      if(!ST.data.contas)ST.data.contas=[];
+      if(id){const i=ST.data.contas.findIndex(c=>c.id===id);if(i!==-1)Object.assign(ST.data.contas[i],{nome,saldo,atualizadoEm:new Date().toISOString().slice(0,10)})}
+      else ST.data.contas.push({id:uid(),nome,saldo:saldo||0,atualizadoEm:new Date().toISOString().slice(0,10)});
+      STORAGE.save();this.close();R.dashboard();toast(id?'Conta atualizada!':'Conta adicionada! 🏦','ok');
+    }
   }
 };
 
@@ -2602,6 +2659,15 @@ function togPago(id){
 function delFixa(id){if(!confirm('Remover esta despesa fixa?'))return;ST.data.despesasFixas=ST.data.despesasFixas.filter(d=>d.id!==id);STORAGE.save();R.fixas();R.dashboard();toast('Removida','inf')}
 function delParc(id){if(!confirm('Remover esta parcela?'))return;ST.data.parceladas=ST.data.parceladas.filter(p=>p.id!==id);STORAGE.save();R.parceladas();R.dashboard();toast('Removida','inf')}
 function delInv(id){if(!confirm('Remover este investimento?'))return;(ST.data.desejos||[]).forEach(d=>{if(d.investimentoId===id)d.investimentoId=null;});ST.data.investimentos=ST.data.investimentos.filter(i=>i.id!==id);STORAGE.save();R.investimentos();R.dashboard();toast('Removido','inf')}
+function setSaldoInicial(val){
+  const mo=ST.month;
+  if(!ST.data.salarios[mo])ST.data.salarios[mo]={};
+  const n=parseFloat(val);
+  if(val===''||isNaN(n))delete ST.data.salarios[mo].saldoInicial;
+  else ST.data.salarios[mo].saldoInicial=n;
+  STORAGE.save();R.dashboard();
+}
+function delConta(id){if(!confirm('Remover esta conta?'))return;ST.data.contas=(ST.data.contas||[]).filter(c=>c.id!==id);STORAGE.save();R.dashboard();toast('Conta removida','inf')}
 function addAporte(invId){
   const inv=ST.data.investimentos.find(i=>i.id===invId);if(!inv)return;
   const vs=prompt('Valor do aporte (R$):');if(vs===null)return;
