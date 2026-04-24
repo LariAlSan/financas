@@ -258,6 +258,7 @@
     .cc{background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
     .cc.full{grid-column:1/-1}
     .cc-title{font-family:var(--font-h);font-size:.88rem;font-weight:700;font-style:italic;color:var(--text2);margin-bottom:14px}
+    #mobile-month-bar{display:none}
 
     /* RESPONSIVE */
     @media(max-width:768px){
@@ -269,7 +270,7 @@
         border-left:none;border-top:3px solid transparent;min-width:55px;text-align:center;justify-content:center}
       .nav-item.active{border-left:none;border-top-color:var(--pink)}
       .nav-icon{font-size:1.1rem}
-      #content{margin-left:0;margin-bottom:58px}
+      #content{margin-left:0;margin-top:48px;margin-bottom:58px}
       .charts-grid{grid-template-columns:1fr}
       .fg.fg2,.fg.fg3{grid-template-columns:1fr}
       .sum-card.bal{flex-direction:column;align-items:flex-start}
@@ -279,7 +280,7 @@
       /* Mobile month bar */
       #mobile-month-bar{display:flex;align-items:center;justify-content:space-between;
         background:var(--bg-surface);border-bottom:1px solid var(--border);
-        padding:8px 16px;position:sticky;top:0;z-index:10}
+        position:fixed;top:0;left:0;right:0;z-index:50;height:48px;padding:0 16px}
       #mobile-month-bar button{background:none;border:none;font-size:1.8rem;
         color:var(--pink);padding:0 6px;cursor:pointer;line-height:1;
         min-width:40px;min-height:40px;display:flex;align-items:center;justify-content:center}
@@ -292,6 +293,7 @@
       .ic{min-height:36px;min-width:36px;padding:6px 10px}
       .tpaid{min-height:36px;padding:6px 14px}
       .orc-edit{min-height:36px}
+      #offline-bar{top:48px!important}
     }
     @media(max-width:600px){
       .section{padding:16px 14px 80px}
@@ -320,7 +322,6 @@
 
     /* ── CARTÕES ── */
     .cart-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
-    #mobile-month-bar{display:none}
     .cart-card{background:#fff;border:1.5px solid var(--border);border-radius:var(--r);padding:18px;box-shadow:var(--shadow)}
     .cart-band{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.68rem;font-weight:800;letter-spacing:.2px}
     .band-Visa{background:#1a1f71;color:#fff}.band-Mastercard{background:#eb001b;color:#fff}
