@@ -709,6 +709,8 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
+const APP_VER='4.1.5';
+
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
   config:{taxaCDI:13.75},
@@ -810,8 +812,9 @@ const STORAGE={
   _updLabel(saved=false){
     const el=document.getElementById('sb-upd');
     if(!el)return;
-    if(saved){const d=new Date();el.textContent=`Salvo às ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`}
-    else if(ST.data.meta?.lastUpdated){const d=new Date(ST.data.meta.lastUpdated);el.textContent=`Último save: ${d.toLocaleDateString('pt-BR')} ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`}
+    if(saved){const d=new Date();el.textContent=`v${APP_VER} · Salvo às ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`}
+    else if(ST.data.meta?.lastUpdated){const d=new Date(ST.data.meta.lastUpdated);el.textContent=`v${APP_VER} · ${d.toLocaleDateString('pt-BR')} ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`}
+    else{el.textContent=`v${APP_VER}`}
   },
   async linkFile(){
     if(!window.showOpenFilePicker){toast('Seu browser não suporta File System API. Use Chrome ou Edge.','err');return}
