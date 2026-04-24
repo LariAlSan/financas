@@ -287,7 +287,11 @@
       #mobile-month-bar span{font-weight:700;font-size:.95rem;color:var(--text)}
       /* Tables scroll */
       .tbl,.comp-table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
-      .card{overflow:hidden}
+      .card{overflow-x:auto}
+      .tbl-comb th:nth-child(3),.tbl-comb td:nth-child(3),
+      .tbl-comb th:nth-child(4),.tbl-comb td:nth-child(4),
+      .tbl-comb th:nth-child(7),.tbl-comb td:nth-child(7),
+      .tbl-comb th:nth-child(9),.tbl-comb td:nth-child(9){display:none}
       /* Touch targets */
       .btn{min-height:44px;padding:10px 20px}
       .frow input,.frow select,.frow textarea{min-height:44px;font-size:1rem}
@@ -310,6 +314,8 @@
       .sal-inline{flex-wrap:wrap}
       .sal-inline input{width:100%;max-width:170px}
       .inv-sum{grid-template-columns:1fr}
+      .tbl-comb th:nth-child(2),.tbl-comb td:nth-child(2),
+      .tbl-comb th:nth-child(8),.tbl-comb td:nth-child(8){display:none}
     }
 
     /* ── ORÇAMENTO ── */
@@ -1657,7 +1663,7 @@ const R={
     document.getElementById('comb-content').innerHTML=`
       ${all.length>=2?`<div class="card" style="margin-bottom:16px;padding:16px"><div style="font-weight:600;margin-bottom:12px;color:var(--text1)">Tendência</div><canvas id="ch-comb" height="120"></canvas></div>`:''}
       <div class="card">
-        ${all.length?`<table class="tbl"><thead><tr><th>Data</th><th>Tipo</th><th>Posto</th><th>Litros</th><th>Preço/L</th><th>Total</th><th>Km Rodados</th><th>Km/L</th><th>Pagamento</th><th></th></tr></thead><tbody>
+        ${all.length?`<table class="tbl tbl-comb"><thead><tr><th>Data</th><th>Tipo</th><th>Posto</th><th>Litros</th><th>Preço/L</th><th>Total</th><th>Km Rodados</th><th>Km/L</th><th>Pagamento</th><th></th></tr></thead><tbody>
           ${all.map(d=>{
             const df=d.data?d.data.split('-').reverse().join('/'):'';
             const precoL=(d.litros>0)?(d.valorTotal/d.litros).toFixed(3).replace('.',','):'—';
