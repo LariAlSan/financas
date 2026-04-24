@@ -1181,14 +1181,9 @@ const C={
   },
   saldo(mo){return this.salario(mo)-this.fixas(mo)-this.parceladas(mo)-this.variaveis(mo)-this.totalFaturas(mo)},
   saldoAcumulado(mo){
-    let anchorMo=null,anchorVal=0;
-    for(let i=0;i<=36;i++){
-      const m=this.addM(mo,-i);
-      const s=ST.data.salarios[m];
-      if(s?.saldoInicial!==undefined){anchorMo=m;anchorVal=s.saldoInicial;break;}
-    }
-    if(!anchorMo)return this.saldo(mo);
-    let acc=anchorVal,m=anchorMo;
+    const keys=Object.keys(ST.data.salarios||{}).filter(k=>k<=mo).sort();
+    if(!keys.length)return this.saldo(mo);
+    let acc=0,m=keys[0];
     while(m<=mo){acc+=this.saldo(m);m=this.addM(m,1);}
     return acc;
   },
@@ -1305,14 +1300,6 @@ const R={
             <div style="font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--textm)">🔮 Previsão até fim do mês</div>
             <div style="font-size:1.3rem;font-weight:800;color:${saldoProj>=0?'var(--green)':'var(--red)'};margin-top:3px">${fmtBRL(saldoProj)}</div>
             <div style="font-size:.71rem;color:var(--textm);margin-top:2px">Média variáveis (3m): ${fmtBRL(mediaVar)}</div>
-          </div>
-          <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
-            <div style="font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--textm);margin-bottom:5px">Saldo inicial deste mês</div>
-            <input type="number" step="0.01" placeholder="R$ 0,00 (carry-over automático)"
-              value="${ST.data.salarios[mo]?.saldoInicial??''}"
-              onchange="setSaldoInicial(this.value)"
-              style="width:100%;box-sizing:border-box;padding:6px 10px;border:1px solid var(--border);border-radius:var(--rs);background:var(--bg-input,var(--bg-surface));color:var(--text);font-size:.82rem">
-            <div style="font-size:.67rem;color:var(--textm);margin-top:3px">Deixe vazio para usar saldo de ${mlabel(prev)} automaticamente</div>
           </div>
         </div>
         <div class="bal-right">
@@ -2663,14 +2650,6 @@ function togPago(id){
 function delFixa(id){if(!confirm('Remover esta despesa fixa?'))return;ST.data.despesasFixas=ST.data.despesasFixas.filter(d=>d.id!==id);STORAGE.save();R.fixas();R.dashboard();toast('Removida','inf')}
 function delParc(id){if(!confirm('Remover esta parcela?'))return;ST.data.parceladas=ST.data.parceladas.filter(p=>p.id!==id);STORAGE.save();R.parceladas();R.dashboard();toast('Removida','inf')}
 function delInv(id){if(!confirm('Remover este investimento?'))return;(ST.data.desejos||[]).forEach(d=>{if(d.investimentoId===id)d.investimentoId=null;});ST.data.investimentos=ST.data.investimentos.filter(i=>i.id!==id);STORAGE.save();R.investimentos();R.dashboard();toast('Removido','inf')}
-function setSaldoInicial(val){
-  const mo=ST.month;
-  if(!ST.data.salarios[mo])ST.data.salarios[mo]={};
-  const n=parseFloat(val);
-  if(val===''||isNaN(n))delete ST.data.salarios[mo].saldoInicial;
-  else ST.data.salarios[mo].saldoInicial=n;
-  STORAGE.save();R.dashboard();
-}
 function delConta(id){if(!confirm('Remover esta conta?'))return;ST.data.contas=(ST.data.contas||[]).filter(c=>c.id!==id);STORAGE.save();R.dashboard();toast('Conta removida','inf')}
 function addAporte(invId){
   const inv=ST.data.investimentos.find(i=>i.id===invId);if(!inv)return;
