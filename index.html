@@ -376,6 +376,7 @@
     <button class="btn-sb" onclick="STORAGE.linkFile()">📁 Vincular Sync</button>
     <div id="sb-sync" style="font-size:.62rem;padding:4px 2px 0;text-align:center"></div>
     <button class="btn-sb" onclick="GDRIVE.connect()">☁️ Google Drive</button>
+    <button class="btn-sb" onclick="GDRIVE.syncNow()" style="font-size:.7rem">🔄 Sincronizar agora</button>
     <div id="sb-gdrive" style="font-size:.62rem;padding:4px 2px 0;text-align:center"></div>
     <div id="sb-upd" style="font-size:.62rem;color:rgba(255,255,255,.28);padding:2px 2px 0;text-align:center"></div>
   </div>
@@ -798,7 +799,7 @@ const GDRIVE={
     const waitGIS=()=>{
       if(window.google?.accounts?.oauth2){
         this._initTC();
-        if(this._email)try{this._tc.requestAccessToken({prompt:''});}catch{}
+        if(this._email)try{this._tc.requestAccessToken({prompt:''});}catch(e){console.error('GDRIVE silent auth:',e);}
       }else{setTimeout(waitGIS,300);}
     };
     waitGIS();
@@ -813,9 +814,12 @@ const GDRIVE={
       client_id:GDRIVE_CLIENT_ID,
       scope:'https://www.googleapis.com/auth/drive.file',
       callback:async resp=>{
-        if(resp.error){this._updStatus();return;}
+        if(resp.error){console.error('GDRIVE token error:',resp.error);this._updStatus();return;}
         this._tok=resp.access_token;this._tokExp=Date.now()+(resp.expires_in-60)*1000;
-        if(!this._email){try{const u=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:`Bearer ${this._tok}`}}).then(r=>r.json());this._email=u.email;}catch{}}
+        if(!this._email){
+          try{const u=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:`Bearer ${this._tok}`}}).then(r=>r.json());this._email=u.email;}
+          catch(e){console.error('GDRIVE userinfo:',e);}
+        }
         await STORAGE._idbSet('sync','gdrive',{email:this._email,fileId:this._fileId}).catch(()=>{});
         this._updStatus();
         await this._doLoad();
@@ -843,15 +847,20 @@ const GDRIVE={
 
   async _getOrCreateFile(){
     if(this._fileId)return this._fileId;
-    const r=await fetch("https://www.googleapis.com/drive/v3/files?q=name%3D'lari4_sync.json'%20and%20trashed%3Dfalse&fields=files(id)",{headers:{Authorization:`Bearer ${this._tok}`}}).then(r=>r.json());
+    const searchResp=await fetch("https://www.googleapis.com/drive/v3/files?q=name%3D'lari4_sync.json'%20and%20trashed%3Dfalse&fields=files(id)",{headers:{Authorization:`Bearer ${this._tok}`}});
+    const r=await searchResp.json();
+    if(r.error){console.error('GDRIVE search error:',r.error);return null;}
     if(r.files?.length){
       this._fileId=r.files[0].id;
     }else{
       const form=new FormData();
       form.append('metadata',new Blob([JSON.stringify({name:'lari4_sync.json',mimeType:'application/json'})],{type:'application/json'}));
       form.append('file',new Blob([JSON.stringify(ST.data,null,2)],{type:'application/json'}));
-      const c=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{method:'POST',headers:{Authorization:`Bearer ${this._tok}`},body:form}).then(r=>r.json());
+      const createResp=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{method:'POST',headers:{Authorization:`Bearer ${this._tok}`},body:form});
+      const c=await createResp.json();
+      if(c.error){console.error('GDRIVE create error:',c.error);return null;}
       this._fileId=c.id;
+      toast('Arquivo criado no Google Drive ✓','ok');
     }
     await STORAGE._idbSet('sync','gdrive',{email:this._email,fileId:this._fileId}).catch(()=>{});
     return this._fileId;
@@ -867,8 +876,10 @@ const GDRIVE={
     if(!this._ok())return;
     try{
       const id=await this._getOrCreateFile();
-      await fetch(`https://www.googleapis.com/upload/drive/v3/files/${id}?uploadType=media`,{method:'PATCH',headers:{Authorization:`Bearer ${this._tok}`,'Content-Type':'application/json'},body:JSON.stringify(data,null,2)});
-    }catch{}
+      if(!id){toast('Falha ao salvar no Drive','err');return;}
+      const r=await fetch(`https://www.googleapis.com/upload/drive/v3/files/${id}?uploadType=media`,{method:'PATCH',headers:{Authorization:`Bearer ${this._tok}`,'Content-Type':'application/json'},body:JSON.stringify(data,null,2)});
+      if(!r.ok){const e=await r.json();console.error('GDRIVE save error:',e);}
+    }catch(e){console.error('GDRIVE _doSave:',e);}
   },
 
   async _doLoad(){
@@ -877,7 +888,7 @@ const GDRIVE={
       const id=await this._getOrCreateFile();
       if(!id)return;
       const resp=await fetch(`https://www.googleapis.com/drive/v3/files/${id}?alt=media`,{headers:{Authorization:`Bearer ${this._tok}`}});
-      if(!resp.ok)return;
+      if(!resp.ok){const e=await resp.json();console.error('GDRIVE load error:',e);return;}
       const driveData=await resp.json();
       const dt=new Date(driveData.meta?.lastUpdated||0);
       const lt=new Date(ST.data.meta?.lastUpdated||0);
@@ -886,8 +897,17 @@ const GDRIVE={
         await STORAGE._idbSet('data','main',ST.data).catch(()=>{});
         R.all();
         toast('Dados sincronizados do Google Drive!','ok');
+      }else{
+        toast('Drive: dados já atualizados','ok');
       }
-    }catch{}
+    }catch(e){console.error('GDRIVE _doLoad:',e);}
+  },
+
+  async syncNow(){
+    if(!this._ok()){toast('Reconecte o Google Drive primeiro','err');return;}
+    toast('Sincronizando...','ok');
+    await this._doSave(ST.data);
+    await this._doLoad();
   },
 
   _updStatus(){
