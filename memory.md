@@ -55,6 +55,11 @@ Dashboard · Salário · Despesas Fixas · Parceladas · Investimentos · Variá
 
 ## Histórico de Atualizações
 
+### 2026-04-24 — v4.1.5 (sidebar: botão ↻ limpar cache + grupo 💾 Arquivos)
+- **Botão ↻ Atualizar app**: aparece discreto ao lado do toggle de tema (🌙) na sidebar. Limpa todo o SW cache via `caches.keys()` + `caches.delete()`, força update do service worker e recarrega o app — sem precisar bumpar versão manualmente. Função global `clearCache()`. Nos arquivos sem dark mode (Jamilly, LYD), o botão fica sozinho no canto da brand.
+- **Grupo 💾 Arquivos**: rótulo `.sb-group-label` adicionado antes dos 4 botões de export/import na sidebar (Exportar JSON, Exportar CSV, Importar JSON, Importar Extrato), separando-os visualmente dos botões de sync.
+- Aplicado em: `lari4.0.html`, `Jamilly.html`, `LYD.html`.
+
 ### 2026-04-24 — v4.1.3 (fix: card Vale Refeição padronizado + saldo acumulado automático)
 - **Card Vale Refeição (Variáveis)**: padronizado com os cards "Pagamento Direto" e "Via Cartão" — exibe apenas o total gasto com ticket + contagem de lançamentos. Removidas as sub-métricas Recebido/Usado/Saldo e a borda laranja.
 - **Saldo acumulado 100% automático**: removido campo "Saldo inicial" manual do dashboard. `C.saldoAcumulado(mo)` agora acumula automaticamente desde o mês mais antigo em `ST.data.salarios`; função `setSaldoInicial` removida.
