@@ -1162,6 +1162,12 @@ const C={
   },
   saldo(mo){return this.salario(mo)-this.fixas(mo)-this.parceladas(mo)-this.variaveis(mo)-this.totalFaturas(mo)},
   rent(inv){const va=C.valorCalc(inv)??inv.valorAtual??inv.valorInvestido;return inv.valorInvestido?((va-inv.valorInvestido)/inv.valorInvestido)*100:0},
+  valorDesejo(d){
+    if(!d.investimentoId)return d.valorGuardado||0;
+    const inv=(ST.data.investimentos||[]).find(i=>i.id===d.investimentoId);
+    if(!inv)return d.valorGuardado||0;
+    return C.valorCalc(inv)??inv.valorAtual??inv.valorInvestido;
+  },
   combustivelMes(mo){return(ST.data.combustivel||[]).filter(d=>d.data?.startsWith(mo)).reduce((a,d)=>a+(d.valorTotal||0),0)},
   kmPorLitro(entry){
     if(!(entry.kmRodados>0)||!(entry.litros>0))return null;
@@ -1536,8 +1542,9 @@ const R={
               :`<span style="color:var(--textm)">—</span>`;
             const liqBadge=inv.liquidez?`<span class="badge ${LIQB[inv.liquidez]||'bo'}">${inv.liquidez}</span>`:'<span style="color:var(--textm)">—</span>';
             const autoTag=inv.autoCalc?`<span title="Calculado automaticamente" style="font-size:.65rem;color:var(--textm)"> ⚡</span>`:'';
+            const dvName=(ST.data.desejos||[]).find(d=>d.investimentoId===inv.id)?.nome;
             return`<tr>
-              <td><div style="font-weight:500">${inv.nome}${autoTag}</div>${inv.instituicao?`<div style="font-size:.72rem;color:var(--textm)">${inv.instituicao}</div>`:''}</td>
+              <td><div style="font-weight:500">${inv.nome}${autoTag}</div>${inv.instituicao?`<div style="font-size:.72rem;color:var(--textm)">${inv.instituicao}</div>`:''}${dvName?`<div style="font-size:.68rem;color:var(--pink);margin-top:2px">✨ ${dvName}</div>`:''}</td>
               <td><span class="badge ${INVB[inv.tipo]||'bo'}">${inv.tipo}</span></td>
               <td>${idxBadge}</td>
               <td style="color:var(--text2)">${fmtBRL(inv.valorInvestido)}</td>
@@ -1764,7 +1771,7 @@ const R={
   desejos(){
     const ds=ST.data.desejos||[];
     const totalCusto=ds.reduce((a,d)=>a+(d.custo||0),0);
-    const totalGuardado=ds.reduce((a,d)=>a+(d.valorGuardado||0),0);
+    const totalGuardado=ds.reduce((a,d)=>a+C.valorDesejo(d),0);
     const conquistados=ds.filter(d=>d.status==='conquistado').length;
     const filt=ST.desejoFilt||'todos';
     const show=filt==='todos'?ds:ds.filter(d=>d.status===filt);
@@ -1786,11 +1793,13 @@ const R={
       </div></div>`:`
       <div class="desejo-grid">
         ${show.map(d=>{
-          const pct=d.custo>0?Math.min(100,(d.valorGuardado||0)/d.custo*100):0;
+          const vg=C.valorDesejo(d);
+          const pct=d.custo>0?Math.min(100,vg/d.custo*100):0;
           const pr=PRIORIDADES[d.prioridade]||PRIORIDADES.media;
           const st=STATUS_DESEJO[d.status]||STATUS_DESEJO.sonhando;
           const cat=CATS_DESEJO[d.categoria]||CATS_DESEJO.outros;
-          const faltam=Math.max(0,(d.custo||0)-(d.valorGuardado||0));
+          const faltam=Math.max(0,(d.custo||0)-vg);
+          const invVinc=d.investimentoId?(ST.data.investimentos||[]).find(i=>i.id===d.investimentoId):null;
           return`<div class="dc ${d.status==='conquistado'?'conquistado':''}">
             <div class="dc-top">
               <div class="dc-name">${d.nome}</div>
@@ -1803,11 +1812,12 @@ const R={
               <span class="badge ${st.b}">${st.i} ${st.l}</span>
               <span class="badge ${pr.b}">${pr.l}</span>
               <span class="badge bo">${cat.i} ${cat.l}</span>
+              ${invVinc?`<span class="badge bo" style="color:var(--pink)">💹 ${invVinc.nome}</span>`:''}
             </div>
             <div class="dc-cost">${fmtBRL(d.custo)}</div>
             ${d.custo>0?`
             <div class="dc-prog-label">
-              <span>Guardado: ${fmtBRL(d.valorGuardado||0)}</span>
+              <span>Guardado: ${fmtBRL(vg)}</span>
               <span>${pct.toFixed(0)}%</span>
             </div>
             <div class="dc-prog-w"><div class="dc-prog-b ${pct>=100?'done':''}" style="width:${pct}%"></div></div>
@@ -2372,7 +2382,13 @@ const MODAL={
         <div class="frow"><label>Nome do Desejo</label><input id="dj-nome" placeholder="Ex: Viagem para Paris" value="${v.nome||''}"></div>
         <div class="fg fg2">
           <div class="frow"><label>Custo Estimado (R$)</label><input id="dj-custo" type="number" step="0.01" placeholder="0,00" value="${v.custo||''}"></div>
-          <div class="frow"><label>Já Guardado (R$)</label><input id="dj-guard" type="number" step="0.01" placeholder="0,00" value="${v.valorGuardado||''}"></div>
+          <div class="frow"><label>Já Guardado (R$)</label><input id="dj-guard" type="number" step="0.01" placeholder="0,00" value="${v.valorGuardado||''}" ${v.investimentoId?'disabled':''}></div>
+        </div>
+        <div class="frow"><label>Investimento Vinculado (opcional)</label>
+          <select id="dj-inv" onchange="toggleDJGuard()">
+            <option value="">— Nenhum —</option>
+            ${(ST.data.investimentos||[]).map(inv=>{const va=C.valorCalc(inv)??inv.valorAtual??inv.valorInvestido;return`<option value="${inv.id}"${v.investimentoId===inv.id?' selected':''}>${inv.nome} — ${fmtBRL(va)}</option>`;}).join('')}
+          </select>
         </div>
         <div class="fg fg2">
           <div class="frow"><label>Prioridade</label><select id="dj-pr">${prOpts}</select></div>
@@ -2520,9 +2536,10 @@ const MODAL={
       const st=document.getElementById('dj-st')?.value;
       const data=document.getElementById('dj-data')?.value;
       const notas=document.getElementById('dj-notas')?.value.trim();
+      const invId=document.getElementById('dj-inv')?.value||null;
       if(!nome){toast('Informe o nome do desejo','err');return}
-      if(id){const i=ST.data.desejos.findIndex(d=>d.id===id);if(i!==-1)Object.assign(ST.data.desejos[i],{nome,custo,valorGuardado:guard,prioridade:pr,categoria:cat,status:st,dataMeta:data,notas})}
-      else ST.data.desejos.push({id:uid(),nome,custo,valorGuardado:guard,prioridade:pr,categoria:cat,status:st,dataMeta:data,notas});
+      if(id){const i=ST.data.desejos.findIndex(d=>d.id===id);if(i!==-1)Object.assign(ST.data.desejos[i],{nome,custo,valorGuardado:guard,prioridade:pr,categoria:cat,status:st,dataMeta:data,notas,investimentoId:invId})}
+      else ST.data.desejos.push({id:uid(),nome,custo,valorGuardado:guard,prioridade:pr,categoria:cat,status:st,dataMeta:data,notas,investimentoId:invId});
       STORAGE.save();this.close();R.desejos();toast(id?'Desejo atualizado!':'Desejo adicionado! ✨','ok');
     }
     else if(sec==='cartao'){
@@ -2567,7 +2584,7 @@ function togPago(id){
 }
 function delFixa(id){if(!confirm('Remover esta despesa fixa?'))return;ST.data.despesasFixas=ST.data.despesasFixas.filter(d=>d.id!==id);STORAGE.save();R.fixas();R.dashboard();toast('Removida','inf')}
 function delParc(id){if(!confirm('Remover esta parcela?'))return;ST.data.parceladas=ST.data.parceladas.filter(p=>p.id!==id);STORAGE.save();R.parceladas();R.dashboard();toast('Removida','inf')}
-function delInv(id){if(!confirm('Remover este investimento?'))return;ST.data.investimentos=ST.data.investimentos.filter(i=>i.id!==id);STORAGE.save();R.investimentos();R.dashboard();toast('Removido','inf')}
+function delInv(id){if(!confirm('Remover este investimento?'))return;(ST.data.desejos||[]).forEach(d=>{if(d.investimentoId===id)d.investimentoId=null;});ST.data.investimentos=ST.data.investimentos.filter(i=>i.id!==id);STORAGE.save();R.investimentos();R.dashboard();toast('Removido','inf')}
 function toggleAutoCalcField(){
   const idx=document.getElementById('in-idx')?.value;
   const auto=document.getElementById('in-auto')?.value==='sim';
@@ -2634,6 +2651,7 @@ function delExtra(id){
 function delDesejo(id){if(!confirm('Remover este desejo?'))return;ST.data.desejos=(ST.data.desejos||[]).filter(d=>d.id!==id);STORAGE.save();R.desejos();toast('Removido','inf')}
 function delRecorrente(id){if(!confirm('Remover esta receita recorrente?'))return;ST.data.receitasRecorrentes=(ST.data.receitasRecorrentes||[]).filter(r=>r.id!==id);STORAGE.save();R.salario();R.dashboard();toast('Removida','inf')}
 function setDF(f){ST.desejoFilt=f;R.desejos()}
+function toggleDJGuard(){const g=document.getElementById('dj-guard');if(g)g.disabled=!!document.getElementById('dj-inv')?.value;}
 function setF(f){ST.filter=f;R.fixas()}
 function setParcFilter(f){ST.parcFilter=f;R.parceladas()}
 function setInvFilter(f){ST.invFilter=f;R.investimentos()}
