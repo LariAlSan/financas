@@ -2547,6 +2547,7 @@ function goTo(sec){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById(`s-${sec}`)?.classList.add('active');
   document.querySelector(`[data-s="${sec}"]`)?.classList.add('active');
+  location.hash=sec;
   if(sec==='dashboard')R.dashboard();
   else if(sec==='salario')R.salario();
   else if(sec==='fixas'){ST.filter='all';R.fixas()}
@@ -2584,7 +2585,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){MODAL.close();IMPOR
 document.addEventListener('DOMContentLoaded',async()=>{
   await STORAGE.load();
   initPicker();
-  goTo('dashboard');
+  goTo(location.hash.slice(1)||'dashboard');
   GDRIVE.init();
 });
 </script>
