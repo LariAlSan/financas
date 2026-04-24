@@ -1329,7 +1329,7 @@ const R={
                 <button class="btn btn-p" style="padding:6px 13px;font-size:.76rem" onclick="abrirGastoFatura('${c.id}')">+ Gasto</button>
               </div>
             </div>
-            ${(gastos.length||fixasVinc.length||varVinc.length||parcVinc.length)?`<table class="tbl"><thead><tr><th>Descrição</th><th>Categoria</th><th>Valor</th><th></th></tr></thead><tbody>
+            ${(gastos.length||fixasVinc.length||varVinc.length||parcVinc.length)?`<div style="overflow:hidden;border-radius:calc(var(--r) - 2px);border:1px solid var(--border);margin-top:10px"><table class="tbl"><thead><tr><th>Descrição</th><th>Categoria</th><th>Valor</th><th>Origem</th></tr></thead><tbody>
               ${gastos.map(g=>{const cat=CATS[g.categoria]||CATS.outros;return`<tr>
                 <td style="font-size:.8rem">${g.descricao}</td>
                 <td><span class="badge ${cat.b}" style="font-size:.68rem">${cat.i} ${cat.l}</span></td>
@@ -1354,7 +1354,7 @@ const R={
                 <td style="font-weight:600;font-size:.8rem">${fmtBRL(p.valorParcela)} <span style="font-size:.65rem;color:var(--textm)">${C.nParcela(p,mo)}/${p.numParcelas}</span></td>
                 <td style="text-align:center"><span class="badge bbl" style="font-size:.65rem">parcela</span></td>
               </tr>`).join('')}
-            </tbody></table>`:'<div class="empty" style="font-size:.78rem;padding:8px 0">Nenhum gasto lançado nesta fatura</div>'}
+            </tbody></table></div>`:'<div class="empty" style="font-size:.78rem;padding:8px 0">Nenhum gasto lançado nesta fatura</div>'}
           </div>`;
         }).join('')}
       </div>`}`;
