@@ -104,6 +104,10 @@
     .sum-card.bal{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;
       padding:22px 26px;flex-wrap:wrap;gap:12px;
       background:linear-gradient(135deg,#fdf5f8,#f5eaf1);border-color:var(--pink)}
+    .sum-card.contas{grid-column:1/-1;display:flex;flex-direction:column;gap:10px}
+    .contas-list{display:flex;flex-wrap:wrap;gap:8px}
+    .conta-item{display:flex;align-items:center;justify-content:space-between;gap:12px;
+      flex:1;min-width:200px;padding:9px 12px;background:var(--bg);border-radius:10px;border:1px solid var(--border)}
     .sicon{width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.05rem;margin-bottom:9px}
     .ig{background:#e8f5e9} .ir{background:#ffebee} .igo{background:#fff3e0}
     .ib{background:#f2edf8} .ip{background:#fce8ef}
@@ -1320,24 +1324,24 @@ const R={
           <div class="bal-row">− Faturas <b style="color:var(--pink)">${fmtBRL(fat)}</b></div>
         </div>
       </div>
-      ${(ST.data.contas||[]).length>0||isCurr?`<div class="sum-card" style="flex-direction:column;align-items:flex-start;gap:10px">
-        <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
-          <span style="font-size:.67rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--textm)">🏦 Saldo em Contas</span>
+      ${(ST.data.contas||[]).length>0||isCurr?`<div class="sum-card contas">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span class="slabel">🏦 Saldo em Contas</span>
           <button class="btn btn-p" style="font-size:.72rem;padding:5px 12px" onclick="MODAL.open('contas')">+ Adicionar</button>
         </div>
         ${(ST.data.contas||[]).length?`
-        <div style="width:100%;display:flex;flex-direction:column;gap:6px">
-          ${(ST.data.contas||[]).map(c=>`<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-            <span style="font-size:.85rem;font-weight:500;color:var(--text)">${c.nome}</span>
-            <div style="display:flex;align-items:center;gap:8px">
-              <span style="font-size:.9rem;font-weight:700;color:var(--green)">${fmtBRL(c.saldo||0)}</span>
+        <div class="contas-list">
+          ${(ST.data.contas||[]).map(c=>`<div class="conta-item">
+            <span style="font-size:.85rem;font-weight:600;color:var(--text)">${c.nome}</span>
+            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+              <span style="font-size:.95rem;font-weight:700;color:var(--green)">${fmtBRL(c.saldo||0)}</span>
               <div class="acts" style="gap:2px"><button class="ic" onclick="MODAL.open('contas','${c.id}')">✏️</button><button class="ic del" onclick="delConta('${c.id}')">🗑️</button></div>
             </div>
           </div>`).join('')}
-          <div style="border-top:1px solid var(--border);padding-top:7px;display:flex;justify-content:space-between;margin-top:3px">
-            <span style="font-size:.78rem;font-weight:700;color:var(--textm)">Total</span>
-            <span style="font-size:.93rem;font-weight:800;color:var(--text)">${fmtBRL((ST.data.contas||[]).reduce((a,c)=>a+(c.saldo||0),0))}</span>
-          </div>
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:8px;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:.78rem;font-weight:700;color:var(--textm)">Total em contas</span>
+          <span style="font-size:1rem;font-weight:800;color:var(--text)">${fmtBRL((ST.data.contas||[]).reduce((a,c)=>a+(c.saldo||0),0))}</span>
         </div>`:'<div style="font-size:.8rem;color:var(--textm)">Nenhuma conta cadastrada ainda.</div>'}
       </div>`:''}`;
     // Meta de economia
