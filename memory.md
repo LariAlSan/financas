@@ -55,6 +55,11 @@ Dashboard · Salário · Despesas Fixas · Parceladas · Investimentos · Variá
 
 ## Histórico de Atualizações
 
+### 2026-04-24 — v4.1.1 (fix: card Saldo em Contas responsivo)
+- **Layout flex-wrap**: card "Saldo em Contas" agora usa `grid-column:1/-1` (largura total) + `.contas-list{flex-wrap:wrap}` com `.conta-item{flex:1;min-width:200px}` — no desktop 3–4 contas por linha, no mobile empilha automaticamente sem overflow.
+- CSS classes adicionadas: `.sum-card.contas`, `.contas-list`, `.conta-item` (substituem inline styles anteriores).
+- Aplicado em: `lari4.0.html`, `Jamilly.html`, `LYD.html`.
+
 ### 2026-04-24 — v4.1 (saldo acumulado + saldo em contas + alertas reposicionados)
 - **Saldo acumulado (carry-over)**: `C.saldoAcumulado(mo)` soma o saldo dos meses anteriores ao fluxo atual. Âncora opcional: `ST.data.salarios[mo].saldoInicial` permite "reiniciar" o acúmulo a partir de qualquer mês (campo inline no card do Dashboard). Sem âncora: equivale ao saldo simples do mês.
 - **Saldo em Contas**: card no Dashboard com CRUD de contas bancárias (`ST.data.contas[]` — `{id, nome, saldo, atualizadoEm}`). Botão "+ Adicionar" abre modal; ✏️/🗑️ por conta; total automático. Funções globais `setSaldoInicial(val)` e `delConta(id)`.
