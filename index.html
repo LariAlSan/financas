@@ -1886,30 +1886,26 @@ const R={
                 <button class="btn btn-p" style="padding:6px 13px;font-size:.76rem" onclick="abrirGastoFatura('${c.id}')">+ Gasto</button>
               </div>
             </div>
-            ${(gastos.length||fixasVinc.length||varVinc.length||parcVinc.length)?`<div style="overflow:hidden;border-radius:0 0 calc(var(--r) - 2px) calc(var(--r) - 2px);border-top:1px solid var(--border);margin:10px -18px -18px"><table class="tbl"><thead><tr><th style="width:35%">Descrição</th><th>Categoria</th><th style="white-space:nowrap">Valor</th><th>Origem</th></tr></thead><tbody>
+            ${(gastos.length||fixasVinc.length||varVinc.length||parcVinc.length)?`<div style="overflow:hidden;border-radius:0 0 calc(var(--r) - 2px) calc(var(--r) - 2px);border-top:1px solid var(--border);margin:10px -18px -18px"><table class="tbl"><thead><tr><th style="width:45%">Descrição</th><th>Categoria</th><th style="white-space:nowrap;text-align:right">Valor</th></tr></thead><tbody>
               ${gastos.map(g=>{const cat=CATS[g.categoria]||CATS.outros;return`<tr>
                 <td style="font-size:.8rem">${g.descricao}</td>
                 <td><span class="badge ${cat.b}" style="font-size:.68rem">${cat.i} ${cat.l}</span></td>
-                <td style="font-weight:600;font-size:.8rem">${fmtBRL(g.valor)}</td>
-                <td><button class="ic del" onclick="delGastoFatura('${c.id}','${g.id}')" style="padding:3px 6px">🗑️</button></td>
+                <td style="font-weight:600;font-size:.8rem;white-space:nowrap;text-align:right"><span style="display:flex;align-items:center;justify-content:flex-end;gap:8px">${fmtBRL(g.valor)}<button class="ic del" onclick="delGastoFatura('${c.id}','${g.id}')" style="padding:3px 6px">🗑️</button></span></td>
               </tr>`}).join('')}
               ${fixasVinc.map(d=>{const cat=CATS[d.categoria]||CATS.outros;return`<tr style="opacity:.75">
-                <td style="font-size:.8rem">🔗 ${d.nome}</td>
+                <td style="font-size:.8rem">🔗 ${d.nome} <span class="badge bpd" style="font-size:.6rem;margin-left:3px">fixa</span></td>
                 <td><span class="badge ${cat.b}" style="font-size:.68rem">${cat.i} ${cat.l}</span></td>
-                <td style="font-weight:600;font-size:.8rem">${fmtBRL(C.valorFixa(d,mo))}</td>
-                <td style="text-align:center"><span class="badge bpd" style="font-size:.65rem">fixa</span></td>
+                <td style="font-weight:600;font-size:.8rem;white-space:nowrap;text-align:right">${fmtBRL(C.valorFixa(d,mo))}</td>
               </tr>`}).join('')}
               ${varVinc.map(d=>{const cat=CATS[d.categoria]||CATS.outros;return`<tr style="opacity:.75">
-                <td style="font-size:.8rem">🔗 ${d.descricao}</td>
+                <td style="font-size:.8rem">🔗 ${d.descricao} <span class="badge bt" style="font-size:.6rem;margin-left:3px">variável</span></td>
                 <td><span class="badge ${cat.b}" style="font-size:.68rem">${cat.i} ${cat.l}</span></td>
-                <td style="font-weight:600;font-size:.8rem">${fmtBRL(d.valor)}</td>
-                <td style="text-align:center"><span class="badge bt" style="font-size:.65rem">variável</span></td>
+                <td style="font-weight:600;font-size:.8rem;white-space:nowrap;text-align:right">${fmtBRL(d.valor)}</td>
               </tr>`}).join('')}
               ${parcVinc.map(p=>{const catP=p.categoria&&CATS[p.categoria];return`<tr style="opacity:.75">
-                <td style="font-size:.8rem">🔗 ${p.descricao}</td>
+                <td style="font-size:.8rem">🔗 ${p.descricao} <span class="badge bbl" style="font-size:.6rem;margin-left:3px">parcela</span></td>
                 <td>${catP?`<span class="badge ${catP.b}" style="font-size:.68rem">${catP.i} ${catP.l}</span>`:`<span class="badge bbl" style="font-size:.68rem">🛒 parcelado</span>`}</td>
-                <td style="font-weight:600;font-size:.8rem">${fmtBRL(p.valorParcela)} <span style="font-size:.65rem;color:var(--textm)">${C.nParcela(p,mo)}/${p.numParcelas}</span></td>
-                <td style="text-align:center"><span class="badge bbl" style="font-size:.65rem">parcela</span></td>
+                <td style="font-weight:600;font-size:.8rem;white-space:nowrap;text-align:right">${fmtBRL(p.valorParcela)} <span style="font-size:.65rem;color:var(--textm)">${C.nParcela(p,mo)}/${p.numParcelas}</span></td>
               </tr>`}).join('')}
             </tbody></table></div>`:'<div class="empty" style="font-size:.78rem;padding:8px 0">Nenhum gasto lançado nesta fatura</div>'}
           </div>`;
