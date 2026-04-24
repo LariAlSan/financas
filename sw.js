@@ -1,4 +1,4 @@
-const CACHE = 'lari-v3';
+const CACHE = 'lari-v4';
 const ASSETS = [
   '/financas/',
   '/financas/index.html',
