@@ -816,6 +816,7 @@ const GDRIVE={
       callback:async resp=>{
         if(resp.error){console.error('GDRIVE token error:',resp.error);this._updStatus();return;}
         this._tok=resp.access_token;this._tokExp=Date.now()+(resp.expires_in-60)*1000;
+        setTimeout(()=>{if(this._tc)try{this._tc.requestAccessToken({prompt:''});}catch{};},(resp.expires_in-120)*1000);
         if(!this._email){
           try{const u=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:`Bearer ${this._tok}`}}).then(r=>r.json());this._email=u.email;}
           catch(e){console.error('GDRIVE userinfo:',e);}
