@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Migrar dados → GitHub Pages</title>
+<style>
+  body{font-family:sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#fdf5f8;color:#3d1f2e}
+  .box{background:#fff;border-radius:16px;padding:40px 48px;box-shadow:0 4px 24px rgba(0,0,0,.10);max-width:480px;width:100%;text-align:center}
+  h1{font-size:1.4rem;margin:0 0 8px}
+  p{color:#7a5c6e;font-size:.9rem;line-height:1.6;margin:0 0 24px}
+  .btn{display:inline-block;background:#b05480;color:#fff;border:none;border-radius:8px;padding:12px 28px;font-size:1rem;cursor:pointer;text-decoration:none;margin:8px}
+  .btn:hover{background:#8e3d63}
+  .btn.sec{background:#f3e6ec;color:#b05480}
+  .btn.sec:hover{background:#e8ccd8}
+  .status{margin-top:20px;font-size:.85rem;color:#7a5c6e;min-height:24px}
+  .ok{color:#16a34a;font-weight:600}
+  .err{color:#dc2626;font-weight:600}
+</style>
+</head>
+<body>
+<div class="box">
+  <h1>📦 Migrar dados para o app online</h1>
+  <p>Abre o banco de dados local (<strong>lari4db</strong>), exporta seus dados e faz o download automático do JSON.<br>Depois é só importar no app do GitHub Pages.</p>
+  <button class="btn" onclick="migrar()">⬇️ Exportar dados agora</button>
+  <a class="btn sec" href="https://larialsan.github.io/financas/" target="_blank">🌐 Abrir app online</a>
+  <div class="status" id="status">Aguardando...</div>
+</div>
+<script>
+function migrar(){
+  const status=document.getElementById('status');
+  status.textContent='Abrindo banco de dados...';
+  status.className='status';
+
+  const req=indexedDB.open('lari4db',1);
+
+  req.onerror=()=>{
+    status.innerHTML='<span class="err">❌ Não foi possível abrir o banco de dados. Você já usou o app neste browser?</span>';
+  };
+
+  req.onsuccess=e=>{
+    const db=e.target.result;
+    const stores=[...db.objectStoreNames];
+    if(!stores.includes('data')){
+      status.innerHTML='<span class="err">❌ Store "data" não encontrada. Verifique se o banco está correto.</span>';
+      db.close();return;
+    }
+    const tx=db.transaction('data','readonly');
+    const store=tx.objectStore('data');
+    const getReq=store.get('main');
+
+    getReq.onsuccess=()=>{
+      const data=getReq.result;
+      if(!data){
+        status.innerHTML='<span class="err">❌ Nenhum dado encontrado. O app foi usado neste browser/arquivo?</span>';
+        db.close();return;
+      }
+      const json=JSON.stringify(data,null,2);
+      const blob=new Blob([json],{type:'application/json'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      const now=new Date();
+      const ts=`${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
+      a.href=url;
+      a.download=`lari4_backup_${ts}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      db.close();
+      status.innerHTML='<span class="ok">✅ JSON baixado! Agora clique em "Abrir app online", vá na sidebar → ⬆️ Importar JSON e selecione o arquivo.</span>';
+    };
+
+    getReq.onerror=()=>{
+      status.innerHTML='<span class="err">❌ Erro ao ler os dados do banco.</span>';
+      db.close();
+    };
+  };
+}
+</script>
+</body>
+</html>
