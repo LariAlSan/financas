@@ -55,6 +55,11 @@ Dashboard · Salário · Despesas Fixas · Parceladas · Investimentos · Variá
 
 ## Histórico de Atualizações
 
+### 2026-04-24 — v4.1.8 (UX mobile: toast visível + gradiente na nav)
+- **Toast acima da barra**: `#toast` sobrescrito no media query mobile para `bottom:calc(58px + 12px)` — antes ficava escondido atrás da barra de navegação de 58px.
+- **Gradiente na nav**: removido `overflow:hidden` do `#sidebar` mobile (seguro — demais filhos têm `display:none`); adicionado `#sidebar::after` com `linear-gradient(transparent → var(--sidebar-bg))` de 40px na borda direita, indicando que há mais módulos para rolar.
+- Aplicado em: `lari4.0.html`, `index.html`, `Jamilly.html`, `LYD.html`.
+
 ### 2026-04-24 — v4.1.7 (fixes mobile: barra fixa + zoom inputs)
 - **Barra de módulos fixa**: adicionado `position:fixed` explicitamente na regra `#sidebar` do media query `@media(max-width:768px)`. Antes era herdado do desktop mas iOS Safari podia perder o comportamento fixo durante transições de viewport (barra de URL).
 - **Zoom em inputs**: `font-size` dos campos de formulário em mobile alterado de `1rem` (= 14px com base 14px) para `16px`. iOS Safari faz auto-zoom em qualquer `<input>/<select>` com `font-size < 16px`; ao recarregar a página o zoom persistia.

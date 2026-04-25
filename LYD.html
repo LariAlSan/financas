@@ -268,7 +268,9 @@
     /* RESPONSIVE */
     @media(max-width:768px){
       #sidebar{position:fixed;width:100%;height:58px;top:auto;bottom:0;flex-direction:row;
-        border-right:none;border-top:1px solid var(--border);overflow:hidden}
+        border-right:none;border-top:1px solid var(--border)}
+      #sidebar::after{content:'';position:absolute;right:0;top:0;bottom:0;width:40px;
+        background:linear-gradient(to right,transparent,var(--sidebar-bg));pointer-events:none}
       .brand,.month-sel,.sidebar-btns{display:none}
       .nav-links{display:flex;flex-direction:row;padding:0;width:100%;overflow-x:auto}
       .nav-item{flex-direction:column;gap:1px;padding:7px 10px;font-size:.6rem;
@@ -287,6 +289,7 @@
       .btn{min-height:44px;padding:10px 20px}
       .frow input,.frow select,.frow textarea{min-height:44px;font-size:16px}
       .ic{min-height:36px;min-width:36px;padding:6px 10px}
+      #toast{bottom:calc(58px + 12px);right:12px}
     }
     @media(max-width:480px){
       .section{padding:14px;padding-bottom:80px}
