@@ -2355,8 +2355,8 @@ const R={
       if(!dayItems[d])dayItems[d]=[];
       dayItems[d].push({label,val,icon});
     };
-    ST.data.despesasVariaveis.forEach(d=>addDay(d.data,d.descricao,d.valor,CATS[d.categoria]?.i||'🧾'));
-    ST.data.combustivel.forEach(d=>addDay(d.data,`Combustível ${d.posto||''}`.trim(),d.valorTotal||0,'⛽'));
+    (ST.data.despesasVariaveis||[]).forEach(d=>addDay(d.data,d.descricao,d.valor,CATS[d.categoria]?.i||'🧾'));
+    (ST.data.combustivel||[]).forEach(d=>addDay(d.data,`Combustível ${d.posto||''}`.trim(),d.valorTotal||0,'⛽'));
     (ST.data.cartoes||[]).forEach(c=>{
       (ST.data.faturas[mo]?.[c.id]?.gastos||[]).forEach(g=>addDay(g.data,g.descricao,g.valor,'💳'));
     });
