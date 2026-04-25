@@ -10,7 +10,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#3d1f2e">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,700&family=Nunito:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600;1,700;1,800&display=swap');
     :root {
       --bg-base: #fdf5f8;
       --bg-surface: #f5eaf1;
@@ -29,7 +29,7 @@
       --shadow-h: 0 8px 28px rgba(201,96,126,.11);
       --r: 20px; --rs: 14px; --rx: 8px;
       --font: 'Nunito','Segoe UI',system-ui,sans-serif;
-      --font-h: 'Playfair Display',Georgia,serif;
+      --font-h: 'Nunito','Segoe UI',system-ui,sans-serif;
       --pg: linear-gradient(135deg,#c9607e,#dfa0b4);
       --pg2: linear-gradient(135deg,#dfa0b4,#eec4d4);
       --sidebar-bg: linear-gradient(180deg,#3d1f2e 0%,#231018 100%);
@@ -79,7 +79,7 @@
     .section{display:none;padding:26px}
     .section.active{display:block}
     .sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:10px}
-    .sec-title{font-family:var(--font-h);font-size:1.45rem;font-weight:800;color:var(--text);font-style:italic}
+    .sec-title{font-family:var(--font-h);font-size:1.45rem;font-weight:800;color:var(--text)}
     .sec-sub{font-size:.76rem;color:var(--textm);margin-top:3px}
 
     /* ── BUTTONS ── */
@@ -115,7 +115,7 @@
     .ib{background:#f2edf8} .ip{background:#fce8ef}
     .slabel{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--textm);margin-bottom:5px}
     .sval{font-size:1.4rem;font-weight:800}
-    .bal-left h2{font-family:var(--font-h);font-size:.8rem;font-style:italic;color:var(--textm);margin-bottom:5px}
+    .bal-left h2{font-family:var(--font-h);font-size:.8rem;color:var(--textm);margin-bottom:5px}
     .bal-amt{font-family:var(--font-h);font-size:2.2rem;font-weight:800;letter-spacing:-1px}
     .bal-amt.pos{color:var(--green)}.bal-amt.neg{color:var(--red)}
     .bal-sub{font-size:.76rem;color:var(--textm);margin-top:4px}
@@ -160,7 +160,7 @@
     @keyframes conquest{0%{transform:scale(1)}40%{transform:scale(1.025)}100%{transform:scale(1)}}
     .dc.conquistado{border-color:#a5d6a7;background:linear-gradient(135deg,#f9fff9,#f1f8e9);animation:conquest .5s ease}
     .dc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
-    .dc-name{font-family:var(--font-h);font-size:.95rem;font-weight:700;font-style:italic;color:var(--text);flex:1;padding-right:8px}
+    .dc-name{font-family:var(--font-h);font-size:.95rem;font-weight:700;color:var(--text);flex:1;padding-right:8px}
     .dc-badges{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
     .dc-cost{font-size:1.25rem;font-weight:800;color:var(--text);margin-bottom:4px}
     .dc-prog-label{display:flex;justify-content:space-between;font-size:.72rem;color:var(--textm);margin-bottom:5px}
@@ -190,9 +190,9 @@
     /* ── SALARY ── */
     .sal-wrap{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
     .sal-main{flex:1}.sal-lbl{font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--textm)}
-    .sal-amt{font-family:var(--font-h);font-size:2rem;font-weight:800;color:var(--green);letter-spacing:-.5px;font-style:italic}
+    .sal-amt{font-family:var(--font-h);font-size:2rem;font-weight:800;color:var(--green);letter-spacing:-.5px}
     .sal-total{text-align:right;font-size:.78rem;color:var(--textm)}
-    .sal-total .big{font-family:var(--font-h);font-size:1.4rem;font-weight:800;color:var(--green);font-style:italic}
+    .sal-total .big{font-family:var(--font-h);font-size:1.4rem;font-weight:800;color:var(--green)}
     .sal-inline{display:flex;align-items:center;gap:7px;margin-top:8px}
     .sal-inline input{padding:8px 12px;border:2px solid var(--pink);border-radius:var(--rs);
       font-size:1rem;font-weight:700;color:var(--green);background:var(--bg-input);
@@ -245,7 +245,7 @@
     @keyframes su{from{transform:translateY(18px) scale(.97);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
     .mhead{padding:20px 20px 14px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;
       background:linear-gradient(135deg,#fdf5f8,#fff)}
-    .mtitle{font-family:var(--font-h);font-size:1rem;font-weight:800;font-style:italic;color:var(--text)}
+    .mtitle{font-family:var(--font-h);font-size:1rem;font-weight:800;color:var(--text)}
     .mclose{width:28px;height:28px;border:none;background:var(--bg-surface);border-radius:50%;
       cursor:pointer;font-size:.85rem;color:var(--text2);display:flex;align-items:center;justify-content:center;transition:.15s}
     .mclose:hover{background:var(--pink);color:#fff}
@@ -264,7 +264,7 @@
     .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
     .cc{background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
     .cc.full{grid-column:1/-1}
-    .cc-title{font-family:var(--font-h);font-size:.88rem;font-weight:700;font-style:italic;color:var(--text2);margin-bottom:14px}
+    .cc-title{font-family:var(--font-h);font-size:.88rem;font-weight:700;color:var(--text2);margin-bottom:14px}
     #mobile-month-bar{display:none}
 
     /* RESPONSIVE */
@@ -362,7 +362,7 @@
     #imp-overlay.open{display:flex}
     .imp-box{background:#fff;border-radius:var(--r);box-shadow:0 24px 64px rgba(201,96,126,.2);width:100%;max-width:780px;max-height:92vh;overflow-y:auto;animation:su .2s ease;display:flex;flex-direction:column}
     .imp-head{padding:18px 20px 14px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#fdf5f8,#fff);flex-shrink:0}
-    .imp-head-title{font-family:var(--font-h);font-size:1rem;font-weight:800;font-style:italic;color:var(--text)}
+    .imp-head-title{font-family:var(--font-h);font-size:1rem;font-weight:800;color:var(--text)}
     .imp-body{padding:18px 20px;flex:1}
     .imp-bank-tag{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:700;margin-bottom:12px}
     .imp-bank-tag.nubank{background:#8a05be18;color:#6a0499}
@@ -435,14 +435,12 @@
     .cal-day-amt{font-size:.72rem;font-weight:800;color:var(--text)}
     .cal-detail{background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--r);
       padding:16px;margin-top:12px;animation:su .15s ease}
-    .cal-detail-title{font-family:var(--font-h);font-size:.95rem;font-weight:800;font-style:italic;
-      color:var(--text);margin-bottom:10px}
+    .cal-detail-title{font-family:var(--font-h);font-size:.95rem;font-weight:800;color:var(--text);margin-bottom:10px}
 
     /* ── CONFIGURAÇÃO ── */
     .cfg-card{background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--r);
       padding:20px 22px;margin-bottom:16px;box-shadow:var(--shadow)}
-    .cfg-card-title{font-family:var(--font-h);font-size:1rem;font-weight:800;font-style:italic;
-      color:var(--text);margin-bottom:16px}
+    .cfg-card-title{font-family:var(--font-h);font-size:1rem;font-weight:800;color:var(--text);margin-bottom:16px}
     .cfg-row{margin-bottom:14px}
     .cfg-row label{display:block;font-size:.82rem;font-weight:700;color:var(--text2);margin-bottom:6px}
     .cfg-input{border:1.5px solid var(--border);border-radius:var(--rs);padding:8px 12px;
@@ -483,7 +481,7 @@
     #onboarding-card .ob-step{display:none;flex-direction:column;align-items:center;text-align:center;gap:14px}
     #onboarding-card .ob-step.active{display:flex}
     #onboarding-card .ob-icon{font-size:2.8rem;line-height:1}
-    #onboarding-card .ob-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:800;color:var(--text)}
+    #onboarding-card .ob-title{font-family:var(--font);font-size:1.3rem;font-weight:800;color:var(--text)}
     #onboarding-card .ob-desc{font-size:.9rem;color:var(--text2);line-height:1.55;max-width:320px}
     #onboarding-card .ob-dots{display:flex;gap:7px;justify-content:center;margin-top:4px}
     #onboarding-card .ob-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:.2s}
@@ -854,7 +852,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.0';
+const APP_VER='4.3.1';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -2121,10 +2119,10 @@ const R={
     const html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
 <title>Relatório — ${mlabel(mo)}</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Nunito:wght@400;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,700&display=swap');
   body{font-family:'Nunito',sans-serif;color:#2d1a24;padding:32px;max-width:760px;margin:0 auto;font-size:13px}
-  h1{font-family:'Playfair Display',serif;font-style:italic;color:#3d1f2e;margin-bottom:4px}
-  h2{font-family:'Playfair Display',serif;font-size:1rem;color:#7a5067;margin:24px 0 8px;border-bottom:1px solid #eedde7;padding-bottom:4px}
+  h1{font-family:'Nunito',sans-serif;font-weight:800;color:#3d1f2e;margin-bottom:4px}
+  h2{font-family:'Nunito',sans-serif;font-size:1rem;font-weight:700;color:#7a5067;margin:24px 0 8px;border-bottom:1px solid #eedde7;padding-bottom:4px}
   table{width:100%;border-collapse:collapse;margin-bottom:12px}
   td,th{padding:7px 12px;border-bottom:1px solid #f5eaf1}
   th{background:#fdf5f8;font-weight:800;font-size:.75rem;text-transform:uppercase;letter-spacing:.4px;color:#7a5067}
@@ -2235,7 +2233,7 @@ const R={
             <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px">
               <div>
                 <span class="cart-band band-${c.bandeira}">${c.bandeira}</span>
-                <div style="font-family:var(--font-h);font-size:1rem;font-weight:700;font-style:italic;color:var(--text);margin-top:5px">${c.nome}</div>
+                <div style="font-family:var(--font-h);font-size:1rem;font-weight:700;color:var(--text);margin-top:5px">${c.nome}</div>
               </div>
               <div style="display:flex;gap:4px">
                 <button class="ic" onclick="MODAL.open('cartao','${c.id}')">✏️</button>
