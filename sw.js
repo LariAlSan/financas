@@ -1,9 +1,9 @@
-const CACHE = 'lari-v8';
+const CACHE = 'lari-v9';
 const ASSETS = [
   '/financas/icon-192.png',
   '/financas/icon-512.png',
   'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js',
-  'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,700&family=Nunito:wght@400;500;600;700;800&display=swap'
+  'https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600;1,700;1,800&display=swap'
 ];
 
 self.addEventListener('install', e => {
