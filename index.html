@@ -437,6 +437,44 @@
     .cal-detail-title{font-family:var(--font-h);font-size:.95rem;font-weight:800;font-style:italic;
       color:var(--text);margin-bottom:10px}
 
+    /* ── CONFIGURAÇÃO ── */
+    .cfg-card{background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--r);
+      padding:20px 22px;margin-bottom:16px;box-shadow:var(--shadow)}
+    .cfg-card-title{font-family:var(--font-h);font-size:1rem;font-weight:800;font-style:italic;
+      color:var(--text);margin-bottom:16px}
+    .cfg-row{margin-bottom:14px}
+    .cfg-row label{display:block;font-size:.82rem;font-weight:700;color:var(--text2);margin-bottom:6px}
+    .cfg-input{border:1.5px solid var(--border);border-radius:var(--rs);padding:8px 12px;
+      background:var(--bg-input);color:var(--text);outline:none;font-size:.9rem;width:200px;
+      transition:.2s}
+    .cfg-input:focus{border-color:var(--border-f)}
+    .cfg-input-sm{width:80px}
+    .cfg-icon-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+    .cfg-icon-chip{padding:6px 10px;border-radius:var(--rx);border:1.5px solid var(--border);
+      background:var(--bg-surface);cursor:pointer;font-size:1rem;transition:.15s;user-select:none}
+    .cfg-icon-chip:hover{border-color:var(--border-f);background:var(--pink-l)}
+    .cfg-icon-chip.active{border-color:var(--pink);background:var(--pink-l);font-weight:700}
+    .cfg-theme-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-bottom:10px}
+    .cfg-swatch{border-radius:var(--rs);overflow:hidden;cursor:pointer;border:2.5px solid transparent;
+      transition:.2s;box-shadow:var(--shadow)}
+    .cfg-swatch:hover{transform:translateY(-2px);box-shadow:var(--shadow-h)}
+    .cfg-swatch.active{border-color:var(--pink)}
+    .cfg-swatch-preview{height:54px;display:flex;align-items:center;justify-content:center}
+    .cfg-swatch-dot{width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.5)}
+    .cfg-swatch-name{padding:6px 8px;font-size:.76rem;font-weight:700;color:var(--text2);
+      background:var(--bg-surface);text-align:center}
+    .cfg-swatch.active .cfg-swatch-name{color:var(--pink)}
+    .cfg-hint{font-size:.72rem;color:var(--textm)}
+    .cfg-drive-info{font-size:.85rem;color:var(--text2);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .cfg-file-group{margin-bottom:14px}
+    .cfg-file-group:last-child{margin-bottom:0}
+    .cfg-file-label{font-size:.76rem;font-weight:700;color:var(--textm);text-transform:uppercase;
+      letter-spacing:.5px;margin-bottom:8px}
+    .cfg-arquivo-toggle{display:flex;align-items:center;gap:6px;cursor:pointer;
+      padding:8px 0;font-size:.88rem;font-weight:700;color:var(--text2);user-select:none}
+    .cfg-arquivo-toggle:hover{color:var(--pink)}
+    .cfg-arquivo-panel{padding-top:14px;border-top:1px solid var(--border);margin-top:4px}
+
     /* ── PRINT / PDF ── */
     @media print{
       #sidebar,#mobile-month-bar,.sec-header button,.btn-sb,.mclose,
@@ -457,7 +495,7 @@
 <nav id="sidebar">
   <div class="brand">
     <div style="display:flex;align-items:center;justify-content:space-between">
-      <div class="brand-name">R$ Lari</div>
+      <div class="brand-name"><span id="brand-icon">R$</span> <span id="brand-name-text">Lari</span></div>
       <div style="display:flex;gap:2px">
         <button id="cache-clear" onclick="clearCache()" title="Atualizar app">↻</button>
         <button id="dark-toggle" onclick="DARKMODE.toggle()" title="Alternar tema">🌙</button>
@@ -486,6 +524,7 @@
     <div class="nav-item" data-s="desejos"><span class="nav-icon">🌟</span><span>Desejos</span></div>
     <div class="nav-item" data-s="notas"><span class="nav-icon">📝</span><span>Notas</span></div>
     <div class="nav-item" data-s="calendario"><span class="nav-icon">📅</span><span>Calendário</span></div>
+    <div class="nav-item" data-s="configuracao"><span class="nav-icon">⚙️</span><span>Configuração</span></div>
   </div>
   <div class="sidebar-btns">
     <div class="sb-group-label">💾 Arquivos</div>
@@ -649,6 +688,64 @@
     <div id="notas-content"></div>
   </section>
 
+  <!-- CONFIGURAÇÃO -->
+  <section id="s-configuracao" class="section">
+    <div class="sec-header">
+      <div><div class="sec-title">⚙️ Configuração</div><div class="sec-sub">Personalize o app do seu jeito</div></div>
+    </div>
+    <div id="config-content">
+      <div class="cfg-card">
+        <div class="cfg-card-title">✏️ Identidade</div>
+        <div class="cfg-row">
+          <label>Nome <span style="color:var(--textm);font-size:.75rem">(máx. 10 caracteres)</span></label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="text" id="cfg-name" maxlength="10" placeholder="Lari" class="cfg-input">
+            <button class="btn btn-p" onclick="CONFIG.saveName()">Salvar</button>
+          </div>
+        </div>
+        <div class="cfg-row">
+          <label>Ícone / Símbolo <span style="color:var(--textm);font-size:.75rem">(máx. 3 chars ou emoji)</span></label>
+          <div class="cfg-icon-grid" id="cfg-icon-grid"></div>
+          <div style="display:flex;gap:8px;align-items:center;margin-top:4px">
+            <input type="text" id="cfg-icon" maxlength="3" placeholder="R$" class="cfg-input cfg-input-sm">
+            <button class="btn btn-p" onclick="CONFIG.saveIcon()">Salvar</button>
+          </div>
+        </div>
+      </div>
+      <div class="cfg-card">
+        <div class="cfg-card-title">🎨 Tema</div>
+        <div class="cfg-theme-grid" id="cfg-theme-grid"></div>
+        <div class="cfg-hint">Passe o mouse para visualizar • Clique para salvar</div>
+      </div>
+      <div class="cfg-card">
+        <div class="cfg-card-title">☁️ Conta</div>
+        <div id="cfg-drive-info" class="cfg-drive-info"></div>
+      </div>
+      <div class="cfg-card">
+        <div class="cfg-card-title">📁 Arquivo</div>
+        <div class="cfg-arquivo-toggle" onclick="CONFIG.toggleArquivo()">
+          <span id="cfg-arq-icon">▸</span> Gerenciar arquivos
+        </div>
+        <div id="cfg-arquivo-panel" class="cfg-arquivo-panel" style="display:none">
+          <div class="cfg-file-group">
+            <div class="cfg-file-label">Exportar</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-g" onclick="STORAGE.export()">⬇️ JSON</button>
+              <button class="btn btn-g" onclick="STORAGE.exportCSV()">📊 CSV</button>
+            </div>
+          </div>
+          <div class="cfg-file-group">
+            <div class="cfg-file-label">Importar</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-g" onclick="document.getElementById('imp').click()">⬆️ JSON</button>
+              <button class="btn btn-g" onclick="document.getElementById('imp-ext').click()">📥 CSV / PDF</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
 </main>
 </div>
 
@@ -712,11 +809,11 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.1.5';
+const APP_VER='4.2.0';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
-  config:{taxaCDI:13.75},
+  config:{taxaCDI:13.75,brandName:'Lari',brandIcon:'R$',theme:'rosa'},
   salarios:{},
   despesasFixas:[],
   parceladas:[],
@@ -1131,6 +1228,159 @@ const DARKMODE={
   _updBtn(theme){
     const btn=document.getElementById('dark-toggle');
     if(btn)btn.textContent=theme==='dark'?'☀️':'🌙';
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════
+   THEMES
+═══════════════════════════════════════════════════════════ */
+const THEMES={
+  rosa:{label:'Rosa',sidebarColor:'#3d1f2e',accentColor:'#c9607e',
+    vars:{'--pink':'#c9607e','--pink-d':'#a8485f','--pink-l':'#fce8ef','--rose':'#dfa0b4','--rose-l':'#fce8ef','--border-f':'#c9607e','--border':'#eedde7','--text2':'#7a5067','--textm':'#b896aa','--pg':'linear-gradient(135deg,#c9607e,#dfa0b4)','--pg2':'linear-gradient(135deg,#dfa0b4,#eec4d4)','--sidebar-bg':'linear-gradient(180deg,#3d1f2e 0%,#231018 100%)','--shadow':'0 2px 14px rgba(201,96,126,.06),0 0 1px rgba(201,96,126,.04)','--shadow-h':'0 8px 28px rgba(201,96,126,.11)','--bg-base':'#fdf5f8','--bg-surface':'#f5eaf1'}},
+  violeta:{label:'Violeta',sidebarColor:'#2e1f3d',accentColor:'#9a5bc9',
+    vars:{'--pink':'#9a5bc9','--pink-d':'#7a42a8','--pink-l':'#f0e8fc','--rose':'#b88cdc','--rose-l':'#f0e8fc','--border-f':'#9a5bc9','--border':'#e2d8f0','--text2':'#5a3d72','--textm':'#9a82b4','--pg':'linear-gradient(135deg,#9a5bc9,#b88cdc)','--pg2':'linear-gradient(135deg,#b88cdc,#d4c4ec)','--sidebar-bg':'linear-gradient(180deg,#2e1f3d 0%,#180e2e 100%)','--shadow':'0 2px 14px rgba(154,91,201,.06),0 0 1px rgba(154,91,201,.04)','--shadow-h':'0 8px 28px rgba(154,91,201,.11)','--bg-base':'#faf5fd','--bg-surface':'#f0e8fa'}},
+  oceano:{label:'Oceano',sidebarColor:'#1a2e4a',accentColor:'#3b7ec9',
+    vars:{'--pink':'#3b7ec9','--pink-d':'#2a5ea8','--pink-l':'#e0eeff','--rose':'#7eaadc','--rose-l':'#e0eeff','--border-f':'#3b7ec9','--border':'#d4e4f5','--text2':'#2a4a72','--textm':'#6896b8','--pg':'linear-gradient(135deg,#3b7ec9,#7eaadc)','--pg2':'linear-gradient(135deg,#7eaadc,#b8cef0)','--sidebar-bg':'linear-gradient(180deg,#1a2e4a 0%,#0e1a28 100%)','--shadow':'0 2px 14px rgba(59,126,201,.06),0 0 1px rgba(59,126,201,.04)','--shadow-h':'0 8px 28px rgba(59,126,201,.11)','--bg-base':'#f5f8fd','--bg-surface':'#e8f0fa'}},
+  floresta:{label:'Floresta',sidebarColor:'#1a3d2a',accentColor:'#3d8f5e',
+    vars:{'--pink':'#3d8f5e','--pink-d':'#2d6e48','--pink-l':'#e0f5ea','--rose':'#6db890','--rose-l':'#e0f5ea','--border-f':'#3d8f5e','--border':'#d0ead8','--text2':'#2a4a38','--textm':'#6a9878','--pg':'linear-gradient(135deg,#3d8f5e,#6db890)','--pg2':'linear-gradient(135deg,#6db890,#a8d8bc)','--sidebar-bg':'linear-gradient(180deg,#1a3d2a 0%,#0e2018 100%)','--shadow':'0 2px 14px rgba(61,143,94,.06),0 0 1px rgba(61,143,94,.04)','--shadow-h':'0 8px 28px rgba(61,143,94,.11)','--bg-base':'#f5fdf8','--bg-surface':'#eaf5f0'}},
+  rubi:{label:'Rubi',sidebarColor:'#3d1f1f',accentColor:'#c94949',
+    vars:{'--pink':'#c94949','--pink-d':'#a83535','--pink-l':'#fce8e8','--rose':'#dc8080','--rose-l':'#fce8e8','--border-f':'#c94949','--border':'#f0d8d8','--text2':'#7a3535','--textm':'#b87878','--pg':'linear-gradient(135deg,#c94949,#dc8080)','--pg2':'linear-gradient(135deg,#dc8080,#eec4c4)','--sidebar-bg':'linear-gradient(180deg,#3d1f1f 0%,#231010 100%)','--shadow':'0 2px 14px rgba(201,73,73,.06),0 0 1px rgba(201,73,73,.04)','--shadow-h':'0 8px 28px rgba(201,73,73,.11)','--bg-base':'#fdf5f5','--bg-surface':'#f5e8e8'}},
+  ambar:{label:'Âmbar',sidebarColor:'#3d2e1a',accentColor:'#c98a3b',
+    vars:{'--pink':'#c98a3b','--pink-d':'#a86e2a','--pink-l':'#fdf0e0','--rose':'#dcaa70','--rose-l':'#fdf0e0','--border-f':'#c98a3b','--border':'#f0e4d0','--text2':'#7a5a2a','--textm':'#b8946a','--pg':'linear-gradient(135deg,#c98a3b,#dcaa70)','--pg2':'linear-gradient(135deg,#dcaa70,#eecca8)','--sidebar-bg':'linear-gradient(180deg,#3d2e1a 0%,#231a0a 100%)','--shadow':'0 2px 14px rgba(201,138,59,.06),0 0 1px rgba(201,138,59,.04)','--shadow-h':'0 8px 28px rgba(201,138,59,.11)','--bg-base':'#fdf8f0','--bg-surface':'#f5ece0'}},
+  cafe:{label:'Café',sidebarColor:'#2e2016',accentColor:'#8b6343',
+    vars:{'--pink':'#8b6343','--pink-d':'#6e4e35','--pink-l':'#f5eee6','--rose':'#b88c6e','--rose-l':'#f5eee6','--border-f':'#8b6343','--border':'#e8ddd0','--text2':'#5a4030','--textm':'#9a7a60','--pg':'linear-gradient(135deg,#8b6343,#b88c6e)','--pg2':'linear-gradient(135deg,#b88c6e,#d4b89e)','--sidebar-bg':'linear-gradient(180deg,#2e2016 0%,#18100a 100%)','--shadow':'0 2px 14px rgba(139,99,67,.06),0 0 1px rgba(139,99,67,.04)','--shadow-h':'0 8px 28px rgba(139,99,67,.11)','--bg-base':'#fdf5ee','--bg-surface':'#f0e8dc'}},
+  obsidiana:{label:'Obsidiana',sidebarColor:'#1e1f2e',accentColor:'#818cf8',forceDark:true,
+    vars:{'--pink':'#818cf8','--pink-d':'#6366f1','--pink-l':'#e8e9fe','--rose':'#a5b4fc','--rose-l':'#e8e9fe','--border-f':'#818cf8','--border':'#d8daf8','--text2':'#4a4e80','--textm':'#7880b4','--pg':'linear-gradient(135deg,#6366f1,#818cf8)','--pg2':'linear-gradient(135deg,#818cf8,#a5b4fc)','--sidebar-bg':'linear-gradient(180deg,#1e1f2e 0%,#0e0f1a 100%)','--shadow':'0 2px 14px rgba(99,102,241,.06),0 0 1px rgba(99,102,241,.04)','--shadow-h':'0 8px 28px rgba(99,102,241,.11)','--bg-base':'#f5f5fd','--bg-surface':'#ebebfa'}},
+  creme:{label:'Creme',sidebarColor:'#3d3020',accentColor:'#9a8060',forceLight:true,
+    vars:{'--pink':'#9a8060','--pink-d':'#7a6048','--pink-l':'#f5f0e8','--rose':'#c4aa88','--rose-l':'#f5f0e8','--border-f':'#9a8060','--border':'#e8e0d0','--text2':'#5a4838','--textm':'#9a8870','--pg':'linear-gradient(135deg,#9a8060,#c4aa88)','--pg2':'linear-gradient(135deg,#c4aa88,#ddd0b8)','--sidebar-bg':'linear-gradient(180deg,#3d3020 0%,#231c10 100%)','--shadow':'0 2px 14px rgba(154,128,96,.06),0 0 1px rgba(154,128,96,.04)','--shadow-h':'0 8px 28px rgba(154,128,96,.11)','--bg-base':'#fdfaf5','--bg-surface':'#f5f0e8'}}
+};
+
+function applyTheme(key,save=false){
+  const t=THEMES[key];if(!t)return;
+  const r=document.documentElement;
+  Object.entries(t.vars).forEach(([k,v])=>r.style.setProperty(k,v));
+  if(t.forceDark){r.setAttribute('data-theme','dark');localStorage.setItem('lari-theme','dark')}
+  if(t.forceLight){r.setAttribute('data-theme','light');localStorage.setItem('lari-theme','light')}
+  DARKMODE._updBtn(r.getAttribute('data-theme')||'light');
+  if(save){if(!ST.data.config)ST.data.config={};ST.data.config.theme=key;STORAGE.save()}
+}
+
+function applyBrand(){
+  const c=ST.data.config||{};
+  const iconEl=document.getElementById('brand-icon');
+  const nameEl=document.getElementById('brand-name-text');
+  if(iconEl)iconEl.textContent=c.brandIcon||'R$';
+  if(nameEl)nameEl.textContent=c.brandName||'Lari';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CONFIG
+═══════════════════════════════════════════════════════════ */
+const CONFIG={
+  _icons:['💰','💸','💎','🏆','⭐','🌸','✨','🎯','🪙','🌿','🔥','💜','R$','€','£','$'],
+  _prevTheme:null,
+
+  render(){
+    const c=ST.data.config||{};
+    const nameEl=document.getElementById('cfg-name');
+    const iconEl=document.getElementById('cfg-icon');
+    if(nameEl)nameEl.value=c.brandName||'Lari';
+    if(iconEl)iconEl.value=c.brandIcon||'R$';
+    this._renderIcons(c.brandIcon||'R$');
+    this._renderThemes(c.theme||'rosa');
+    this._renderDrive();
+  },
+
+  _renderIcons(current){
+    const g=document.getElementById('cfg-icon-grid');
+    if(!g)return;
+    g.innerHTML=this._icons.map(ic=>
+      `<div class="cfg-icon-chip${ic===current?' active':''}" onclick="CONFIG.selectIcon('${ic}')">${ic}</div>`
+    ).join('');
+  },
+
+  _renderThemes(current){
+    const g=document.getElementById('cfg-theme-grid');
+    if(!g)return;
+    g.innerHTML=Object.entries(THEMES).map(([key,t])=>
+      `<div class="cfg-swatch${key===current?' active':''}" data-theme-key="${key}"
+        onmouseenter="CONFIG.previewTheme('${key}')"
+        onmouseleave="CONFIG.cancelPreview()"
+        onclick="CONFIG.applyAndSave('${key}')">
+        <div class="cfg-swatch-preview" style="background:${t.sidebarColor}">
+          <div class="cfg-swatch-dot" style="background:${t.accentColor}"></div>
+        </div>
+        <div class="cfg-swatch-name">${t.label}</div>
+      </div>`
+    ).join('');
+  },
+
+  _renderDrive(){
+    const el=document.getElementById('cfg-drive-info');
+    if(!el)return;
+    if(GDRIVE._email&&GDRIVE._ok&&GDRIVE._ok()){
+      el.innerHTML=`<span style="color:var(--green)">☁️</span> <strong>${GDRIVE._email}</strong> <span style="color:var(--textm);font-size:.78rem">conectado</span>`;
+    }else if(GDRIVE._email){
+      el.innerHTML=`<span style="color:var(--gold)">⚠️</span> ${GDRIVE._email} <span style="color:var(--textm);font-size:.78rem">— token expirado</span> <button class="btn btn-g" style="font-size:.75rem;padding:4px 10px" onclick="GDRIVE.connect()">Reconectar</button>`;
+    }else{
+      el.innerHTML=`<span style="color:var(--textm)">☁️ Drive não conectado</span> <button class="btn btn-g" style="font-size:.75rem;padding:4px 10px" onclick="GDRIVE.connect()">Conectar</button>`;
+    }
+  },
+
+  selectIcon(ic){
+    const inp=document.getElementById('cfg-icon');
+    if(inp)inp.value=ic;
+    this._renderIcons(ic);
+  },
+
+  saveName(){
+    const inp=document.getElementById('cfg-name');
+    if(!inp)return;
+    const v=inp.value.trim().slice(0,10)||'Lari';
+    inp.value=v;
+    if(!ST.data.config)ST.data.config={};
+    ST.data.config.brandName=v;
+    STORAGE.save();
+    applyBrand();
+    toast('Nome atualizado!','ok');
+  },
+
+  saveIcon(){
+    const inp=document.getElementById('cfg-icon');
+    if(!inp)return;
+    const v=inp.value.trim().slice(0,3)||'R$';
+    inp.value=v;
+    if(!ST.data.config)ST.data.config={};
+    ST.data.config.brandIcon=v;
+    STORAGE.save();
+    applyBrand();
+    this._renderIcons(v);
+    toast('Ícone atualizado!','ok');
+  },
+
+  previewTheme(key){
+    if(!this._prevTheme)this._prevTheme=ST.data.config?.theme||'rosa';
+    applyTheme(key,false);
+  },
+
+  cancelPreview(){
+    if(this._prevTheme){applyTheme(this._prevTheme,false);this._prevTheme=null}
+  },
+
+  applyAndSave(key){
+    this._prevTheme=null;
+    applyTheme(key,true);
+    this._renderThemes(key);
+    toast(`Tema ${THEMES[key].label} aplicado!`,'ok');
+  },
+
+  toggleArquivo(){
+    const panel=document.getElementById('cfg-arquivo-panel');
+    const icon=document.getElementById('cfg-arq-icon');
+    if(!panel)return;
+    const open=panel.style.display==='none';
+    panel.style.display=open?'block':'none';
+    if(icon)icon.textContent=open?'▾':'▸';
   }
 };
 
@@ -3120,6 +3370,7 @@ function goTo(sec){
   else if(sec==='orcamento')R.orcamento();
   else if(sec==='notas')R.notas();
   else if(sec==='calendario')R.calendario();
+  else if(sec==='configuracao')CONFIG.render();
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -3159,6 +3410,8 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){MODAL.close();IMPOR
 document.addEventListener('DOMContentLoaded',async()=>{
   DARKMODE.init();
   await STORAGE.load();
+  applyTheme(ST.data.config?.theme||'rosa');
+  applyBrand();
   initPicker();
   goTo(location.hash.slice(1)||'dashboard');
   GDRIVE.init();
