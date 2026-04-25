@@ -476,10 +476,24 @@
     .cfg-arquivo-toggle:hover{color:var(--pink)}
     .cfg-arquivo-panel{padding-top:14px;border-top:1px solid var(--border);margin-top:4px}
 
+    /* ── ONBOARDING ── */
+    #onboarding-overlay{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px}
+    #onboarding-card{background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--r);padding:32px 28px 24px;max-width:420px;width:100%;position:relative;box-shadow:0 16px 48px rgba(0,0,0,.22)}
+    #onboarding-card .ob-close{position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--textm);line-height:1}
+    #onboarding-card .ob-step{display:none;flex-direction:column;align-items:center;text-align:center;gap:14px}
+    #onboarding-card .ob-step.active{display:flex}
+    #onboarding-card .ob-icon{font-size:2.8rem;line-height:1}
+    #onboarding-card .ob-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:800;color:var(--text)}
+    #onboarding-card .ob-desc{font-size:.9rem;color:var(--text2);line-height:1.55;max-width:320px}
+    #onboarding-card .ob-dots{display:flex;gap:7px;justify-content:center;margin-top:4px}
+    #onboarding-card .ob-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:.2s}
+    #onboarding-card .ob-dot.active{background:var(--pink)}
+    #onboarding-card .ob-actions{display:flex;gap:10px;justify-content:center;width:100%;margin-top:8px}
+
     /* ── PRINT / PDF ── */
     @media print{
       #sidebar,#mobile-month-bar,.sec-header button,.btn-sb,.mclose,
-      #toast,#offline-bar,#overlay,.sidebar-btns{display:none!important}
+      #toast,#offline-bar,#overlay,#onboarding-overlay,.sidebar-btns{display:none!important}
       #content{margin-left:0!important;margin-bottom:0!important}
       .section{display:block!important;padding:20px!important}
       .section:not(.active){display:none!important}
@@ -491,6 +505,36 @@
 <body>
 <div id="app">
 <div id="offline-bar" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#ef4444;color:#fff;text-align:center;padding:7px 16px;font-size:.82rem;font-weight:700;letter-spacing:.2px">📵 Sem conexão — dados salvos localmente</div>
+<!-- ── ONBOARDING ── -->
+<div id="onboarding-overlay" style="display:none">
+  <div id="onboarding-card">
+    <button class="ob-close" onclick="closeOnboarding()">✕</button>
+    <div class="ob-step active" id="ob-s0">
+      <div class="ob-icon">✨</div>
+      <div class="ob-title">Bem-vindo ao Lari!</div>
+      <div class="ob-desc">Seu gestor financeiro pessoal. Vamos configurar tudo em 3 passos simples.</div>
+    </div>
+    <div class="ob-step" id="ob-s1">
+      <div class="ob-icon">⚙️</div>
+      <div class="ob-title">Personalize o app</div>
+      <div class="ob-desc">Acesse <strong>Configuração</strong> para definir seu nome, ícone e tema de cor.</div>
+    </div>
+    <div class="ob-step" id="ob-s2">
+      <div class="ob-icon">💰</div>
+      <div class="ob-title">Registre seu salário</div>
+      <div class="ob-desc">Na seção <strong>Salário</strong>, informe sua renda mensal para começar o controle.</div>
+    </div>
+    <div class="ob-dots">
+      <div class="ob-dot active" id="ob-d0"></div>
+      <div class="ob-dot" id="ob-d1"></div>
+      <div class="ob-dot" id="ob-d2"></div>
+    </div>
+    <div class="ob-actions">
+      <button class="btn btn-g" id="ob-skip" onclick="closeOnboarding()" style="font-size:.82rem;padding:7px 18px">Pular</button>
+      <button class="btn btn-p" id="ob-next" onclick="obNext()" style="font-size:.82rem;padding:7px 22px">Próximo →</button>
+    </div>
+  </div>
+</div>
 
 <!-- ── SIDEBAR ── -->
 <nav id="sidebar">
@@ -810,7 +854,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.2.0';
+const APP_VER='4.3.0';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -958,7 +1002,16 @@ const STORAGE={
       const fileData=JSON.parse(await file.text());
       const fileTime=new Date(fileData.meta?.lastUpdated||0);
       const localTime=new Date(ST.data.meta?.lastUpdated||0);
-      if(fileTime>localTime){ST.data={...JSON.parse(JSON.stringify(DEF)),...fileData};await this._idbSet('data','main',ST.data);toast('Dados sincronizados do arquivo!','ok')}
+      if(fileTime>localTime){
+        const _merged2={...JSON.parse(JSON.stringify(DEF)),...fileData};
+        if(!_merged2.config?.theme)_merged2.config={...(_merged2.config||{}),theme:ST.data.config?.theme||'rosa'};
+        if(!_merged2.config?.brandName)_merged2.config.brandName=ST.data.config?.brandName||'Lari';
+        if(!_merged2.config?.brandIcon)_merged2.config.brandIcon=ST.data.config?.brandIcon||'R$';
+        ST.data=_merged2;
+        await this._idbSet('data','main',ST.data);
+        applyTheme(ST.data.config?.theme||'rosa');applyBrand();
+        toast('Dados sincronizados do arquivo!','ok');
+      }
       this._updSyncStatus(handle.name);
     }catch{this._updSyncStatus(handle.name,true)}
   },
@@ -1022,7 +1075,12 @@ const STORAGE={
         if(!keys.some(k=>Array.isArray(parsed[k]))){
           toast('Arquivo inválido: não parece um backup do Lari','err');return;
         }
-        ST.data={...JSON.parse(JSON.stringify(DEF)),...parsed};
+        const _merged1={...JSON.parse(JSON.stringify(DEF)),...parsed};
+        if(!_merged1.config?.theme)_merged1.config={...(_merged1.config||{}),theme:ST.data.config?.theme||'rosa'};
+        if(!_merged1.config?.brandName)_merged1.config.brandName=ST.data.config?.brandName||'Lari';
+        if(!_merged1.config?.brandIcon)_merged1.config.brandIcon=ST.data.config?.brandIcon||'R$';
+        ST.data=_merged1;
+        applyTheme(ST.data.config?.theme||'rosa');applyBrand();
         STORAGE.save();R.all();toast('Dados importados com sucesso!','ok');
       }catch{toast('Arquivo corrompido ou formato inválido','err')}
     };
@@ -1154,8 +1212,13 @@ const GDRIVE={
           toast('Dados locais mantidos e enviados ao Drive','ok');
           return;
         }
-        ST.data={...JSON.parse(JSON.stringify(DEF)),...driveData};
+        const _merged3={...JSON.parse(JSON.stringify(DEF)),...driveData};
+        if(!_merged3.config?.theme)_merged3.config={...(_merged3.config||{}),theme:ST.data.config?.theme||'rosa'};
+        if(!_merged3.config?.brandName)_merged3.config.brandName=ST.data.config?.brandName||'Lari';
+        if(!_merged3.config?.brandIcon)_merged3.config.brandIcon=ST.data.config?.brandIcon||'R$';
+        ST.data=_merged3;
         await STORAGE._idbSet('data','main',ST.data).catch(()=>{});
+        applyTheme(ST.data.config?.theme||'rosa');applyBrand();
         R.all();
         toast('Dados sincronizados do Google Drive!','ok');
       }else{
@@ -2024,7 +2087,7 @@ const R={
 
   relatorio(mode='mensal'){
     const mo=ST.month;
-    document.getElementById('rel-lbl').textContent=mlabel(mo);
+    document.getElementById('rel-lbl').textContent=mode==='anual'?`Anual ${mo.split('-')[0]}`:mlabel(mo);
     const toggle=`<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap"><button class="btn ${mode==='mensal'?'btn-p':'btn-g'}" style="font-size:.78rem;padding:6px 16px" onclick="R.relatorio('mensal')">📊 Mensal</button><button class="btn ${mode==='anual'?'btn-p':'btn-g'}" style="font-size:.78rem;padding:6px 16px" onclick="R.relatorio('anual')">📅 Anual</button><button class="btn btn-g" style="font-size:.78rem;padding:6px 16px;margin-left:auto" onclick="R.exportPDF()">🖨️ Exportar PDF</button></div>`;
     if(mode==='anual'){
       document.getElementById('rel-content').innerHTML=toggle+`<div id="rel-anual-content"></div>`;
@@ -2729,7 +2792,7 @@ const MODAL={
       const pag=document.getElementById('fi-pag')?.value;
       const cartaoId=pag==='Crédito'?(document.getElementById('fi-cartao')?.value||''):'';
       const desde=document.getElementById('fi-desde')?.value||mo;
-      if(!nome||!valor){toast('Preencha nome e valor','err');return}
+      if(!nome||!(valor>0)){toast('Preencha nome e valor (positivo)','err');return}
       if(id){
         const i=ST.data.despesasFixas.findIndex(d=>d.id===id);
         if(i!==-1){
@@ -2755,7 +2818,7 @@ const MODAL={
       const pag=document.getElementById('pa-pag')?.value;
       const cartaoId=pag==='Crédito'?(document.getElementById('pa-cartao')?.value||''):'';
       const cat=document.getElementById('pa-cat')?.value||'';
-      if(!desc||!tot||!ini){toast('Preencha todos os campos','err');return}
+      if(!desc||!(tot>0)||!ini){toast('Preencha todos os campos (valor positivo)','err');return}
       const vp=parseFloat((tot/np).toFixed(2));
       if(id){const i=ST.data.parceladas.findIndex(p=>p.id===id);if(i!==-1)Object.assign(ST.data.parceladas[i],{descricao:desc,valorTotal:tot,numParcelas:np,mesInicio:ini,valorParcela:vp,formaPagamento:pag,cartaoId:cartaoId||'',categoria:cat})}
       else ST.data.parceladas.push({id:uid(),descricao:desc,valorTotal:tot,numParcelas:np,mesInicio:ini,valorParcela:vp,formaPagamento:pag,cartaoId:cartaoId||'',categoria:cat});
@@ -2775,7 +2838,7 @@ const MODAL={
       const venc=document.getElementById('in-venc')?.value||null;
       const liq=document.getElementById('in-liq')?.value||null;
       const dt=document.getElementById('in-dt')?.value;
-      if(!nome||!inv){toast('Preencha nome e valor investido','err');return}
+      if(!nome||!(inv>0)){toast('Preencha nome e valor investido (positivo)','err');return}
       const obj={nome,tipo,instituicao:inst,indexador:idx,percentual:pct,autoCalc,
                  valorInvestido:inv,valorAtual:at||inv,dataAplicacao:apl,
                  dataVencimento:venc,liquidez:liq,dataAtualizacao:dt};
@@ -2790,7 +2853,7 @@ const MODAL={
       const cat=document.getElementById('va-cat')?.value;
       const pag=document.getElementById('va-pag')?.value;
       const cartaoId=pag==='Crédito'?(document.getElementById('va-cartao')?.value||''):'';
-      if(!desc||!val||!dt){toast('Preencha todos os campos','err');return}
+      if(!desc||!(val>0)||!dt){toast('Preencha todos os campos (valor positivo)','err');return}
       if(new Date(dt+'T00:00:00')>new Date())toast('⚠️ Data no futuro — verifique se está correto','warn');
       if(id){const i=ST.data.despesasVariaveis.findIndex(d=>d.id===id);if(i!==-1)Object.assign(ST.data.despesasVariaveis[i],{descricao:desc,valor:val,data:dt,categoria:cat,formaPagamento:pag,cartaoId:cartaoId||''})}
       else ST.data.despesasVariaveis.push({id:uid(),descricao:desc,valor:val,data:dt,categoria:cat,formaPagamento:pag,cartaoId:cartaoId||''});
@@ -2876,7 +2939,7 @@ const MODAL={
       const dt=document.getElementById('gf-dt')?.value;
       const cat=document.getElementById('gf-cat')?.value;
       const cid=ST.cartaoAtivo;
-      if(!desc||!val||!dt){toast('Preencha todos os campos','err');return}
+      if(!desc||!(val>0)||!dt){toast('Preencha todos os campos (valor positivo)','err');return}
       if(!cid){toast('Cartão não identificado','err');return}
       if(!ST.data.faturas)ST.data.faturas={};
       if(!ST.data.faturas[mo])ST.data.faturas[mo]={};
@@ -3403,11 +3466,44 @@ function mobileMonthNav(delta){
   R.all();
 }
 
+/* ── ONBOARDING ── */
+let _obStep=0;
+function closeOnboarding(){
+  const ov=document.getElementById('onboarding-overlay');
+  if(ov)ov.style.display='none';
+  localStorage.setItem('lari-onboarding','done');
+}
+function obNext(){
+  const steps=3;
+  if(_obStep<steps-1){
+    document.getElementById(`ob-s${_obStep}`).classList.remove('active');
+    document.getElementById(`ob-d${_obStep}`).classList.remove('active');
+    _obStep++;
+    document.getElementById(`ob-s${_obStep}`).classList.add('active');
+    document.getElementById(`ob-d${_obStep}`).classList.add('active');
+    if(_obStep===steps-1){
+      document.getElementById('ob-next').textContent='Começar 🚀';
+      document.getElementById('ob-next').onclick=()=>{closeOnboarding();goTo('salario')};
+    }
+  }
+}
+function showOnboarding(){
+  _obStep=0;
+  [0,1,2].forEach(i=>{
+    document.getElementById(`ob-s${i}`)?.classList.toggle('active',i===0);
+    document.getElementById(`ob-d${i}`)?.classList.toggle('active',i===0);
+  });
+  const nb=document.getElementById('ob-next');
+  if(nb){nb.textContent='Próximo →';nb.onclick=obNext;}
+  const ov=document.getElementById('onboarding-overlay');
+  if(ov)ov.style.display='flex';
+}
+
 /* ═══════════════════════════════════════════════════════════
    INIT
 ═══════════════════════════════════════════════════════════ */
 document.querySelectorAll('.nav-item').forEach(el=>el.addEventListener('click',()=>goTo(el.dataset.s)));
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){MODAL.close();IMPORT.close()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){MODAL.close();IMPORT.close();closeOnboarding()}});
 document.addEventListener('DOMContentLoaded',async()=>{
   DARKMODE.init();
   await STORAGE.load();
@@ -3415,6 +3511,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   applyBrand();
   initPicker();
   goTo(location.hash.slice(1)||'dashboard');
+  if(!localStorage.getItem('lari-onboarding')&&!Object.keys(ST.data.salarios||{}).length)showOnboarding();
   GDRIVE.init();
   NOTIF.init();
   // Offline indicator
