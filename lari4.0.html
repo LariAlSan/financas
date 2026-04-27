@@ -854,7 +854,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.2';
+const APP_VER='4.3.3';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -1893,8 +1893,8 @@ const R={
         <div class="card"><div class="lbl">Disponível (Diária)</div><div class="val" style="color:var(--green)">${fmtBRL(tl)}</div></div>
       </div>
       ${invs.length>=2?`<div class="inv-charts">
-        <div class="card" style="padding:16px"><div style="font-weight:600;margin-bottom:8px;color:var(--text1);font-size:.82rem">Por Indexador</div><canvas id="ch-inv-idx" height="160"></canvas></div>
-        <div class="card" style="padding:16px"><div style="font-weight:600;margin-bottom:8px;color:var(--text1);font-size:.82rem">Por Liquidez</div><canvas id="ch-inv-liq" height="160"></canvas></div>
+        <div class="card" style="padding:16px"><div style="font-weight:600;margin-bottom:8px;color:var(--text1);font-size:.82rem">Por Indexador</div><canvas id="ch-inv-idx" height="110"></canvas></div>
+        <div class="card" style="padding:16px"><div style="font-weight:600;margin-bottom:8px;color:var(--text1);font-size:.82rem">Por Liquidez</div><canvas id="ch-inv-liq" height="110"></canvas></div>
       </div>`:''}
       ${tiposExistentes.length>1?`<div class="pills">
         <div class="pill ${invf==='all'?'on':''}" onclick="setInvFilter('all')">Todos</div>

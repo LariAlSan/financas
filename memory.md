@@ -55,6 +55,9 @@ Dashboard · Salário · Despesas Fixas · Parceladas · Investimentos · Variá
 
 ## Histórico de Atualizações
 
+### 2026-04-26 — v4.3.3 (gráficos Investimentos menores)
+- **Canvas height**: `ch-inv-idx` e `ch-inv-liq` reduzidos de `height="160"` → `height="110"` — donuts da seção Investimentos ficaram mais compactos.
+
 ### 2026-04-26 — v4.3.2 (novo ícone PWA — ChatGPT gradient rosa/roxo)
 - **Ícone redesenhado**: substituído por imagem gerada via ChatGPT — gradiente rosa→roxo, cantos arredondados, fundo rosé. Gerado via Pillow (512×512 e 192×192) a partir de `ChatGPT Image 26 de abr. de 2026, 22_59_04.png`.
 - **manifest.json**: `purpose` alterado de `"any maskable"` para `"any"` — imagem já tem cantos próprios, máscara do SO recortaria as bordas.
