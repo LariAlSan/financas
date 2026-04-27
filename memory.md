@@ -55,6 +55,9 @@ Dashboard · Salário · Despesas Fixas · Parceladas · Investimentos · Variá
 
 ## Histórico de Atualizações
 
+### 2026-04-26 — v4.3.4 (Relatório: 3 donuts lado a lado)
+- **Layout Relatório**: grid 2→3 colunas via `.charts-grid.g3`; `ch-inv` removido de `.cc full` — os 3 donuts (Fixas, Variáveis, Portfólio) ficam na mesma linha. `ch-6m` permanece abaixo como full-width. Mobile (≤768px) continua empilhado em 1 coluna.
+
 ### 2026-04-26 — v4.3.3 (gráficos Investimentos menores)
 - **Canvas height**: `ch-inv-idx` e `ch-inv-liq` reduzidos de `height="160"` → `height="110"` — donuts da seção Investimentos ficaram mais compactos.
 

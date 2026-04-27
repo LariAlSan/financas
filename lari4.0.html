@@ -262,6 +262,7 @@
 
     /* ── CHARTS ── */
     .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .charts-grid.g3{grid-template-columns:1fr 1fr 1fr}
     .cc{background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
     .cc.full{grid-column:1/-1}
     .cc-title{font-family:var(--font-h);font-size:.88rem;font-weight:700;color:var(--text2);margin-bottom:14px}
@@ -280,7 +281,7 @@
       .nav-item.active{border-left:none;border-top-color:var(--pink)}
       .nav-icon{font-size:1.1rem}
       #content{margin-left:0;margin-top:48px;margin-bottom:58px}
-      .charts-grid{grid-template-columns:1fr}
+      .charts-grid,.charts-grid.g3{grid-template-columns:1fr}
       .fg.fg2,.fg.fg3{grid-template-columns:1fr}
       .sum-card.bal{flex-direction:column;align-items:flex-start}
       .bal-right{text-align:left;margin-top:6px}
@@ -854,7 +855,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.3';
+const APP_VER='4.3.4';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -2094,11 +2095,11 @@ const R={
       requestAnimationFrame(()=>CHART.renderAnual());
     }else{
       document.getElementById('rel-content').innerHTML=toggle+`
-        <div class="charts-grid">
-          <div class="cc"><div class="cc-title">Despesas Fixas por Categoria</div><canvas id="ch-fixas"></canvas></div>
-          <div class="cc"><div class="cc-title">Variáveis por Categoria — ${mlabel(mo)}</div><canvas id="ch-vars"></canvas></div>
+        <div class="charts-grid g3">
+          <div class="cc"><div class="cc-title">Despesas Fixas por Categoria</div><canvas id="ch-fixas" height="150"></canvas></div>
+          <div class="cc"><div class="cc-title">Variáveis por Categoria — ${mlabel(mo)}</div><canvas id="ch-vars" height="150"></canvas></div>
+          <div class="cc"><div class="cc-title">Portfólio por Tipo de Investimento</div><canvas id="ch-inv" height="150"></canvas></div>
           <div class="cc full"><div class="cc-title">Últimos 6 Meses — Salário × Despesas × Saldo</div><canvas id="ch-6m" style="max-height:280px"></canvas></div>
-          <div class="cc full"><div class="cc-title">Portfólio por Tipo de Investimento</div><canvas id="ch-inv"></canvas></div>
         </div>`;
       requestAnimationFrame(()=>CHART.render());
     }
