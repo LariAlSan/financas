@@ -55,6 +55,11 @@ Dashboard · Salário · Despesas Fixas · Parceladas · Investimentos · Variá
 
 ## Histórico de Atualizações
 
+### 2026-04-26 — v4.3.2 (novo ícone PWA — ChatGPT gradient rosa/roxo)
+- **Ícone redesenhado**: substituído por imagem gerada via ChatGPT — gradiente rosa→roxo, cantos arredondados, fundo rosé. Gerado via Pillow (512×512 e 192×192) a partir de `ChatGPT Image 26 de abr. de 2026, 22_59_04.png`.
+- **manifest.json**: `purpose` alterado de `"any maskable"` para `"any"` — imagem já tem cantos próprios, máscara do SO recortaria as bordas.
+- **Service worker v11**: `CACHE = 'lari-v11'`; invalida cache anterior para forçar novos ícones.
+
 ### 2026-04-24 — v4.1.8 (UX mobile: toast visível + gradiente na nav)
 - **Toast acima da barra**: `#toast` sobrescrito no media query mobile para `bottom:calc(58px + 12px)` — antes ficava escondido atrás da barra de navegação de 58px.
 - **Gradiente na nav**: removido `overflow:hidden` do `#sidebar` mobile (seguro — demais filhos têm `display:none`); adicionado `#sidebar::after` com `linear-gradient(transparent → var(--sidebar-bg))` de 40px na borda direita, indicando que há mais módulos para rolar.
