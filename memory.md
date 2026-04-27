@@ -162,4 +162,4 @@ Dashboard · Salário · Despesas Fixas · Parceladas · Investimentos · Variá
 - **Usuário GitHub**: `LariAlSan`
 
 ---
-*Atualizado em 2026-04-26*
+*Atualizado em 2026-04-27*
