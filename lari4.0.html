@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Lari — Gestão Financeira</title>
+  <title>Orina — Gestão Financeira</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -512,7 +512,7 @@
     <button class="ob-close" onclick="closeOnboarding()">✕</button>
     <div class="ob-step active" id="ob-s0">
       <div class="ob-icon">✨</div>
-      <div class="ob-title">Bem-vindo ao Lari!</div>
+      <div class="ob-title">Bem-vindo ao Orina!</div>
       <div class="ob-desc">Seu gestor financeiro pessoal. Vamos configurar tudo em 3 passos simples.</div>
     </div>
     <div class="ob-step" id="ob-s1">
@@ -541,7 +541,7 @@
 <nav id="sidebar">
   <div class="brand">
     <div style="display:flex;align-items:center;justify-content:space-between">
-      <div class="brand-name"><span id="brand-icon">R$</span> <span id="brand-name-text">Lari</span></div>
+      <div class="brand-name"><span id="brand-icon">R$</span> <span id="brand-name-text">Orina</span></div>
       <div style="display:flex;gap:2px">
         <button id="cache-clear" onclick="clearCache()" title="Atualizar app">↻</button>
         <button id="dark-toggle" onclick="DARKMODE.toggle()" title="Alternar tema">🌙</button>
@@ -738,7 +738,7 @@
         <div class="cfg-row">
           <label>Nome <span style="color:var(--textm);font-size:.75rem">(máx. 10 caracteres)</span></label>
           <div style="display:flex;gap:8px;align-items:center">
-            <input type="text" id="cfg-name" maxlength="10" placeholder="Lari" class="cfg-input">
+            <input type="text" id="cfg-name" maxlength="10" placeholder="Orina" class="cfg-input">
             <button class="btn btn-p" onclick="CONFIG.saveName()">Salvar</button>
           </div>
         </div>
@@ -855,11 +855,11 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.4';
+const APP_VER='4.3.5';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
-  config:{taxaCDI:13.75,brandName:'Lari',brandIcon:'R$',theme:'rosa'},
+  config:{taxaCDI:13.75,brandName:'Orina',brandIcon:'R$',theme:'rosa'},
   salarios:{},
   despesasFixas:[],
   parceladas:[],
@@ -967,7 +967,7 @@ const STORAGE={
     try{
       let handle;
       try{[handle]=await window.showOpenFilePicker({types:[{description:'JSON',accept:{'application/json':['.json']}}],multiple:false})}
-      catch{handle=await window.showSaveFilePicker({suggestedName:'lari4_sync.json',types:[{description:'JSON',accept:{'application/json':['.json']}}]})}
+      catch{handle=await window.showSaveFilePicker({suggestedName:'orina_sync.json',types:[{description:'JSON',accept:{'application/json':['.json']}}]})}
       await this._idbSet('sync','fileHandle',handle);
       await this._syncToFile();
       this._updSyncStatus(handle.name);
@@ -1006,7 +1006,7 @@ const STORAGE={
       if(fileTime>localTime){
         const _merged2={...JSON.parse(JSON.stringify(DEF)),...fileData};
         if(!_merged2.config?.theme)_merged2.config={...(_merged2.config||{}),theme:ST.data.config?.theme||'rosa'};
-        if(!_merged2.config?.brandName)_merged2.config.brandName=ST.data.config?.brandName||'Lari';
+        if(!_merged2.config?.brandName)_merged2.config.brandName=ST.data.config?.brandName||'Orina';
         if(!_merged2.config?.brandIcon)_merged2.config.brandIcon=ST.data.config?.brandIcon||'R$';
         ST.data=_merged2;
         await this._idbSet('data','main',ST.data);
@@ -1031,7 +1031,7 @@ const STORAGE={
   },
   export(){
     const url=URL.createObjectURL(new Blob([JSON.stringify(ST.data,null,2)],{type:'application/json'}));
-    const a=Object.assign(document.createElement('a'),{href:url,download:`lari4_backup_${ST.month}.json`});
+    const a=Object.assign(document.createElement('a'),{href:url,download:`orina_backup_${ST.month}.json`});
     document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
     toast('Backup exportado!','ok');
   },
@@ -1062,7 +1062,7 @@ const STORAGE={
     (s?.extras||[]).forEach(e=>rows.push(['Renda Extra',`${mo}-01`,e.descricao,'receita','',String(e.valor||0).replace('.',',')]));
     const csv='﻿'+rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
     const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
-    const a=Object.assign(document.createElement('a'),{href:url,download:`lari4_${mo}.csv`});
+    const a=Object.assign(document.createElement('a'),{href:url,download:`orina_${mo}.csv`});
     document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
     toast('CSV exportado!','ok');
   },
@@ -1074,11 +1074,11 @@ const STORAGE={
         const parsed=JSON.parse(e.target.result);
         const keys=['despesasFixas','parceladas','investimentos','despesasVariaveis','cartoes'];
         if(!keys.some(k=>Array.isArray(parsed[k]))){
-          toast('Arquivo inválido: não parece um backup do Lari','err');return;
+          toast('Arquivo inválido: não parece um backup do Orina','err');return;
         }
         const _merged1={...JSON.parse(JSON.stringify(DEF)),...parsed};
         if(!_merged1.config?.theme)_merged1.config={...(_merged1.config||{}),theme:ST.data.config?.theme||'rosa'};
-        if(!_merged1.config?.brandName)_merged1.config.brandName=ST.data.config?.brandName||'Lari';
+        if(!_merged1.config?.brandName)_merged1.config.brandName=ST.data.config?.brandName||'Orina';
         if(!_merged1.config?.brandIcon)_merged1.config.brandIcon=ST.data.config?.brandIcon||'R$';
         ST.data=_merged1;
         applyTheme(ST.data.config?.theme||'rosa');applyBrand();
@@ -1161,14 +1161,14 @@ const GDRIVE={
 
   async _getOrCreateFile(){
     if(this._fileId)return this._fileId;
-    const searchResp=await fetch("https://www.googleapis.com/drive/v3/files?q=name%3D'lari4_sync.json'%20and%20trashed%3Dfalse&fields=files(id)",{headers:{Authorization:`Bearer ${this._tok}`}});
+    const searchResp=await fetch("https://www.googleapis.com/drive/v3/files?q=name%3D'orina_sync.json'%20and%20trashed%3Dfalse&fields=files(id)",{headers:{Authorization:`Bearer ${this._tok}`}});
     const r=await searchResp.json();
     if(r.error){console.error('GDRIVE search error:',r.error);return null;}
     if(r.files?.length){
       this._fileId=r.files[0].id;
     }else{
       const form=new FormData();
-      form.append('metadata',new Blob([JSON.stringify({name:'lari4_sync.json',mimeType:'application/json'})],{type:'application/json'}));
+      form.append('metadata',new Blob([JSON.stringify({name:'orina_sync.json',mimeType:'application/json'})],{type:'application/json'}));
       form.append('file',new Blob([JSON.stringify(ST.data,null,2)],{type:'application/json'}));
       const createResp=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{method:'POST',headers:{Authorization:`Bearer ${this._tok}`},body:form});
       const c=await createResp.json();
@@ -1215,7 +1215,7 @@ const GDRIVE={
         }
         const _merged3={...JSON.parse(JSON.stringify(DEF)),...driveData};
         if(!_merged3.config?.theme)_merged3.config={...(_merged3.config||{}),theme:ST.data.config?.theme||'rosa'};
-        if(!_merged3.config?.brandName)_merged3.config.brandName=ST.data.config?.brandName||'Lari';
+        if(!_merged3.config?.brandName)_merged3.config.brandName=ST.data.config?.brandName||'Orina';
         if(!_merged3.config?.brandIcon)_merged3.config.brandIcon=ST.data.config?.brandIcon||'R$';
         ST.data=_merged3;
         await STORAGE._idbSet('data','main',ST.data).catch(()=>{});
@@ -1279,7 +1279,7 @@ const NOTIF={
 ═══════════════════════════════════════════════════════════ */
 const DARKMODE={
   init(){
-    const saved=localStorage.getItem('lari-theme')||'light';
+    const saved=localStorage.getItem('orina-theme')||'light';
     document.documentElement.setAttribute('data-theme',saved);
     this._updBtn(saved);
   },
@@ -1287,7 +1287,7 @@ const DARKMODE={
     const curr=document.documentElement.getAttribute('data-theme')||'light';
     const next=curr==='dark'?'light':'dark';
     document.documentElement.setAttribute('data-theme',next);
-    localStorage.setItem('lari-theme',next);
+    localStorage.setItem('orina-theme',next);
     this._updBtn(next);
   },
   _updBtn(theme){
@@ -1324,8 +1324,8 @@ function applyTheme(key,save=false){
   const t=THEMES[key];if(!t)return;
   const r=document.documentElement;
   Object.entries(t.vars).forEach(([k,v])=>r.style.setProperty(k,v));
-  if(t.forceDark){r.setAttribute('data-theme','dark');localStorage.setItem('lari-theme','dark')}
-  if(t.forceLight){r.setAttribute('data-theme','light');localStorage.setItem('lari-theme','light')}
+  if(t.forceDark){r.setAttribute('data-theme','dark');localStorage.setItem('orina-theme','dark')}
+  if(t.forceLight){r.setAttribute('data-theme','light');localStorage.setItem('orina-theme','light')}
   DARKMODE._updBtn(r.getAttribute('data-theme')||'light');
   if(save){if(!ST.data.config)ST.data.config={};ST.data.config.theme=key;STORAGE.save()}
 }
@@ -1335,7 +1335,7 @@ function applyBrand(){
   const iconEl=document.getElementById('brand-icon');
   const nameEl=document.getElementById('brand-name-text');
   if(iconEl)iconEl.textContent=c.brandIcon||'R$';
-  if(nameEl)nameEl.textContent=c.brandName||'Lari';
+  if(nameEl)nameEl.textContent=c.brandName||'Orina';
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -1349,7 +1349,7 @@ const CONFIG={
     const c=ST.data.config||{};
     const nameEl=document.getElementById('cfg-name');
     const iconEl=document.getElementById('cfg-icon');
-    if(nameEl)nameEl.value=c.brandName||'Lari';
+    if(nameEl)nameEl.value=c.brandName||'Orina';
     if(iconEl)iconEl.value=c.brandIcon||'R$';
     this._renderIcons(c.brandIcon||'R$');
     this._renderThemes(c.theme||'rosa');
@@ -1401,7 +1401,7 @@ const CONFIG={
   saveName(){
     const inp=document.getElementById('cfg-name');
     if(!inp)return;
-    const v=inp.value.trim().slice(0,10)||'Lari';
+    const v=inp.value.trim().slice(0,10)||'Orina';
     inp.value=v;
     if(!ST.data.config)ST.data.config={};
     ST.data.config.brandName=v;
@@ -3472,7 +3472,7 @@ let _obStep=0;
 function closeOnboarding(){
   const ov=document.getElementById('onboarding-overlay');
   if(ov)ov.style.display='none';
-  localStorage.setItem('lari-onboarding','done');
+  localStorage.setItem('orina-onboarding','done');
 }
 function obNext(){
   const steps=3;
@@ -3512,7 +3512,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   applyBrand();
   initPicker();
   goTo(location.hash.slice(1)||'dashboard');
-  if(!localStorage.getItem('lari-onboarding')&&!Object.keys(ST.data.salarios||{}).length)showOnboarding();
+  if(!localStorage.getItem('orina-onboarding')&&!Object.keys(ST.data.salarios||{}).length)showOnboarding();
   GDRIVE.init();
   NOTIF.init();
   // Offline indicator

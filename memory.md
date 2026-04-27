@@ -1,4 +1,4 @@
-# lari4.0 — Memória do Projeto
+# Orina — Memória do Projeto (antes: lari4.0)
 
 ## Sobre o Projeto
 Gestor financeiro pessoal hospedado no **GitHub Pages** (`https://larialsan.github.io/financas/`).
@@ -54,6 +54,16 @@ Dashboard · Salário · Despesas Fixas · Parceladas · Investimentos · Variá
 ---
 
 ## Histórico de Atualizações
+
+### 2026-04-26 — v4.3.5 (rename oficial: Lari → Orina)
+- **Nome do app**: "Lari" renomeado para "Orina" em toda a interface — título, manifest, brand sidebar, welcome, mensagens de erro, config padrão.
+- **manifest.json**: `name/short_name` → "Orina — Gestão Financeira" / "Orina".
+- **localStorage**: `lari-theme` → `orina-theme`; `lari-onboarding` → `orina-onboarding`.
+- **Drive sync**: arquivo renomeado `lari4_sync.json` → `orina_sync.json` (re-vincular Drive uma vez).
+- **Export filenames**: `lari4_backup_*` → `orina_backup_*`; `lari4_*.csv` → `orina_*.csv`.
+- **SW cache**: `lari-v11` → `orina-v1`.
+- **Preservado**: `lari4db` (IndexedDB) e `lari4_data` (store key) — sem alteração para não perder dados.
+- Aplicado em: `lari4.0.html`, `Jamilly.html`, `LYD.html`, `manifest.json`, `sw.js`, `memory.md`.
 
 ### 2026-04-26 — v4.3.4 (Relatório: 3 donuts lado a lado)
 - **Layout Relatório**: grid 2→3 colunas via `.charts-grid.g3`; `ch-inv` removido de `.cc full` — os 3 donuts (Fixas, Variáveis, Portfólio) ficam na mesma linha. `ch-6m` permanece abaixo como full-width. Mobile (≤768px) continua empilhado em 1 coluna.
@@ -167,7 +177,7 @@ Dashboard · Salário · Despesas Fixas · Parceladas · Investimentos · Variá
 - Scope: `https://www.googleapis.com/auth/drive.file email profile`
 - Auto-save (5s debounce) + auto-load (ao abrir e ao `visibilitychange`)
 - Token salvo em IDB store `sync`, key `gdrive`: `{email, fileId}`
-- Arquivo no Drive: `lari4_sync.json`
+- Arquivo no Drive: `orina_sync.json`
 - Botões na sidebar: ☁️ Google Drive + 🔄 Sincronizar agora
 
 ### 2026-04-23 — v3.1 (GitHub Pages)
