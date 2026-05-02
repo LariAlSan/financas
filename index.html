@@ -889,7 +889,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.14';
+const APP_VER='4.3.15';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -2587,8 +2587,8 @@ const MODAL={
       else if(sec==='gastoFatura')d=(ST.data.faturas[ST.month]?.[ST.cartaoAtivo]?.gastos||[]).find(x=>x.id===id);
       else if(sec==='contas')d=(ST.data.contas||[]).find(x=>x.id===id);
     }
-    const names={fixas:'Despesa Fixa',parceladas:'Compra Parcelada',investimentos:'Investimento',variaveis:'Despesa Variável',combustivel:'Abastecimento',extra:'Renda Extra',desejos:'Desejo',recorrente:'Receita Recorrente',cartao:'Cartão de Crédito',gastoFatura:'Gasto na Fatura',contas:'Conta Bancária',ticket:'Ticket Refeição'};
-    const icons={fixas:'📋',parceladas:'🛒',investimentos:'📈',variaveis:'🧾',combustivel:'⛽',extra:'💼',desejos:'🌟',recorrente:'🔄',cartao:'💳',gastoFatura:'💳',contas:'🏦',ticket:'🍽️'};
+    const names={fixas:'Despesa Fixa',parceladas:'Compra Parcelada',investimentos:'Investimento',variaveis:'Despesa Variável',combustivel:'Abastecimento',extra:'Renda Extra',desejos:'Desejo',recorrente:'Receita Recorrente',cartao:'Cartão de Crédito',gastoFatura:'Gasto na Fatura',contas:'Conta Bancária',ticket:'Ticket Refeição',aporte:'Aporte'};
+    const icons={fixas:'📋',parceladas:'🛒',investimentos:'📈',variaveis:'🧾',combustivel:'⛽',extra:'💼',desejos:'🌟',recorrente:'🔄',cartao:'💳',gastoFatura:'💳',contas:'🏦',ticket:'🍽️',aporte:'💰'};
     document.getElementById('m-title').textContent=`${icons[sec]||''} ${d?'Editar':'Adicionar'} ${names[sec]||''}`;
     document.getElementById('m-body').innerHTML=this.form(sec,d||{});
     if(sec==='cartao'){ST._excFech={...(d?.fechamentosEspeciais||{})};renderExcFech();}
@@ -2770,6 +2770,16 @@ const MODAL={
       <div class="hint">🍽️ Valor recebido em ${mlabel(mo)}</div>
       <div class="frow"><label>Valor (R$)</label><input id="tk-val" type="number" step="0.01" min="0" placeholder="0,00" value="${s.ticket||''}"></div>
     </div>`;}
+    if(sec==='aporte'){
+      const inv=ST.data.investimentos.find(i=>i.id===id)||{};
+      return`<div class="fg">
+        <div class="hint">💰 Aporte em <strong>${inv.nome||'investimento'}</strong></div>
+        <div class="fg fg2">
+          <div class="frow"><label>Valor (R$)</label><input id="ap-val" type="number" step="0.01" min="0.01" placeholder="0,00" autofocus></div>
+          <div class="frow"><label>Data</label><input id="ap-dt" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
+        </div>
+      </div>`;
+    }
     if(sec==='extra')return`<div class="fg">
       <div class="frow"><label>Descrição</label><input id="ex-desc" placeholder="Ex: Freelance, Bônus"></div>
       <div class="frow"><label>Valor (R$)</label><input id="ex-val" type="number" step="0.01" placeholder="0,00"></div>
@@ -2946,6 +2956,18 @@ const MODAL={
       ST.data.salarios[mo].ticket=val;
       STORAGE.save();this.close();R.salario();R.dashboard();toast(`Ticket atualizado: ${fmtBRL(val)}`,'ok');
     }
+    else if(sec==='aporte'){
+      const val=pnum(document.getElementById('ap-val')?.value);
+      const dt=document.getElementById('ap-dt')?.value;
+      if(!(val>0)){toast('Informe um valor positivo','err');return}
+      if(!dt){toast('Informe a data','err');return}
+      const inv=ST.data.investimentos.find(i=>i.id===id);
+      if(!inv){toast('Investimento não encontrado','err');return}
+      if(!inv.aportes)inv.aportes=[];
+      inv.aportes.push({id:uid(),data:dt,valor:val});
+      inv.valorInvestido=(inv.valorInvestido||0)+val;
+      STORAGE.save();this.close();R.investimentos();R.dashboard();toast(`Aporte de ${fmtBRL(val)} registrado!`,'ok');
+    }
     else if(sec==='extra'){
       const desc=document.getElementById('ex-desc')?.value.trim();
       const val=pnum(document.getElementById('ex-val')?.value);
@@ -3043,17 +3065,7 @@ function clearCache(){
     setTimeout(()=>location.reload(true),400);
   }).catch(()=>location.reload(true));
 }
-function addAporte(invId){
-  const inv=ST.data.investimentos.find(i=>i.id===invId);if(!inv)return;
-  const vs=prompt('Valor do aporte (R$):');if(vs===null)return;
-  const valor=parseFloat(vs.replace(',','.'));
-  if(!valor||isNaN(valor)||valor<=0){toast('Valor inválido','err');return;}
-  const data=prompt('Data (AAAA-MM-DD):',new Date().toISOString().slice(0,10));if(!data)return;
-  if(!inv.aportes)inv.aportes=[];
-  inv.aportes.push({id:Date.now().toString(),data,valor});
-  inv.valorInvestido=(inv.valorInvestido||0)+valor;
-  STORAGE.save();R.investimentos();toast('Aporte registrado!','ok');
-}
+function addAporte(invId){MODAL.open('aporte',invId)}
 function delAporte(invId,apId){
   const inv=ST.data.investimentos.find(i=>i.id===invId);if(!inv?.aportes)return;
   const ap=inv.aportes.find(a=>a.id===apId);if(!ap)return;
