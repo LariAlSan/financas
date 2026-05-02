@@ -855,7 +855,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.6';
+const APP_VER='4.3.7';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -909,6 +909,11 @@ function mlabel(ym){if(!ym)return'—';const[y,m]=ym.split('-').map(Number);if(!
 function pnum(v){const n=parseFloat(String(v).replace(',','.'));return isNaN(n)?0:n}
 function fmtBRL(v){return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0)}
 function fmtPct(v){const n=v||0;return`${n>=0?'+':''}${n.toFixed(2).replace('.',',')}%`}
+function diaFechamentoEfetivo(card,mo){return card?.fechamentosEspeciais?.[mo]??card?.diaFechamento??0}
+function faturaMonth(dataStr,card){if(!dataStr)return'';const mo=dataStr.slice(0,7);const dFech=diaFechamentoEfetivo(card,mo);if(!dFech)return mo;const d=parseInt(dataStr.slice(8,10));if(d>dFech){const[y,m]=mo.split('-').map(Number);const next=new Date(y,m,1);return`${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,'0')}`}return mo}
+function renderExcFech(){const el=document.getElementById('ca-exc-lista');if(!el)return;const entries=Object.entries(ST._excFech||{}).sort(([a],[b])=>a.localeCompare(b));el.innerHTML=entries.length?entries.map(([mes,dia])=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="font-size:.82rem;flex:1">${mlabel(mes)}: dia ${dia}</span><button type="button" class="ic del" onclick="delExcFech('${mes}')">🗑️</button></div>`).join(''):`<div style="font-size:.78rem;color:var(--textm)">Nenhuma exceção</div>`}
+function addExcFech(){const mes=document.getElementById('ca-exc-mes')?.value;const dia=parseInt(document.getElementById('ca-exc-dia')?.value);if(!mes||!(dia>=1&&dia<=31)){toast('Informe mês e dia válidos','err');return}if(!ST._excFech)ST._excFech={};ST._excFech[mes]=dia;document.getElementById('ca-exc-mes').value='';document.getElementById('ca-exc-dia').value='';renderExcFech()}
+function delExcFech(mes){delete ST._excFech[mes];renderExcFech()}
 
 /* ═══════════════════════════════════════════════════════════
    STORAGE
@@ -1495,7 +1500,8 @@ const C={
   totalFatura(cid,mo){
     const gastos=(ST.data.faturas[mo]?.[cid]?.gastos||[]).reduce((a,g)=>a+(g.valor||0),0);
     const fixasLink=ST.data.despesasFixas.filter(d=>d.cartaoId===cid).reduce((a,d)=>a+this.valorFixa(d,mo),0);
-    const varLink=ST.data.despesasVariaveis.filter(d=>d.data?.startsWith(mo)&&d.cartaoId===cid).reduce((a,d)=>a+(d.valor||0),0);
+    const cart=(ST.data.cartoes||[]).find(c=>c.id===cid);
+    const varLink=ST.data.despesasVariaveis.filter(d=>d.cartaoId===cid&&faturaMonth(d.data,cart)===mo).reduce((a,d)=>a+(d.valor||0),0);
     const parcLink=ST.data.parceladas.filter(p=>p.cartaoId===cid&&this.parcAtiva(p,mo)).reduce((a,p)=>a+(p.valorParcela||0),0);
     return gastos+fixasLink+varLink+parcLink;
   },
@@ -2227,7 +2233,7 @@ const R={
           const fat=ST.data.faturas[mo]?.[c.id]||{gastos:[],paga:false};
           const gastos=fat.gastos||[];
           const fixasVinc=ST.data.despesasFixas.filter(d=>d.cartaoId===c.id);
-          const varVinc=ST.data.despesasVariaveis.filter(d=>d.cartaoId===c.id&&d.data?.startsWith(mo));
+          const varVinc=ST.data.despesasVariaveis.filter(d=>d.cartaoId===c.id&&faturaMonth(d.data,c)===mo);
           const parcVinc=ST.data.parceladas.filter(p=>p.cartaoId===c.id&&C.parcAtiva(p,mo));
           const totalC=C.totalFatura(c.id,mo);
           const pct=c.limite>0?Math.min(100,(totalC/c.limite)*100):0;
@@ -2243,11 +2249,11 @@ const R={
                 <button class="ic del" onclick="delCartao('${c.id}')">🗑️</button>
               </div>
             </div>
-            ${c.limite?`<div style="font-size:.74rem;color:var(--textm)">Limite: ${fmtBRL(c.limite)} · Fechamento: dia ${c.diaFechamento} · Vencimento: dia ${c.diaVencimento}</div>
+            ${c.limite?`<div style="font-size:.74rem;color:var(--textm)">Limite: ${fmtBRL(c.limite)} · Fechamento: dia ${diaFechamentoEfetivo(c,mo)||'—'} · Vencimento: dia ${c.diaVencimento}</div>
             <div style="display:flex;align-items:center;gap:8px;margin:7px 0 3px">
               <div class="prog-w" style="flex:1;height:8px"><div class="prog-b" style="width:${pct}%;background:${barColor}"></div></div>
               <span style="font-size:.72rem;color:var(--textm);white-space:nowrap">${pct.toFixed(0)}%</span>
-            </div>`:`<div style="font-size:.74rem;color:var(--textm)">Fechamento: dia ${c.diaFechamento||'—'} · Vencimento: dia ${c.diaVencimento||'—'}</div><div style="height:8px"></div>`}
+            </div>`:`<div style="font-size:.74rem;color:var(--textm)">Fechamento: dia ${diaFechamentoEfetivo(c,mo)||'—'} · Vencimento: dia ${c.diaVencimento||'—'}</div><div style="height:8px"></div>`}
             <div style="display:flex;align-items:center;justify-content:space-between;margin:10px 0 8px;padding-top:8px;border-top:1px solid var(--bg-surface)">
               <div>
                 <div style="font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--textm)">Fatura ${mlabel(mo)}</div>
@@ -2543,10 +2549,11 @@ const MODAL={
       else if(sec==='gastoFatura')d=(ST.data.faturas[ST.month]?.[ST.cartaoAtivo]?.gastos||[]).find(x=>x.id===id);
       else if(sec==='contas')d=(ST.data.contas||[]).find(x=>x.id===id);
     }
-    const names={fixas:'Despesa Fixa',parceladas:'Compra Parcelada',investimentos:'Investimento',variaveis:'Despesa Variável',combustivel:'Abastecimento',extra:'Renda Extra',desejos:'Desejo',recorrente:'Receita Recorrente',cartao:'Cartão de Crédito',gastoFatura:'Gasto na Fatura',contas:'Conta Bancária'};
-    const icons={fixas:'📋',parceladas:'🛒',investimentos:'📈',variaveis:'🧾',combustivel:'⛽',extra:'💼',desejos:'🌟',recorrente:'🔄',cartao:'💳',gastoFatura:'💳',contas:'🏦'};
+    const names={fixas:'Despesa Fixa',parceladas:'Compra Parcelada',investimentos:'Investimento',variaveis:'Despesa Variável',combustivel:'Abastecimento',extra:'Renda Extra',desejos:'Desejo',recorrente:'Receita Recorrente',cartao:'Cartão de Crédito',gastoFatura:'Gasto na Fatura',contas:'Conta Bancária',ticket:'Ticket Refeição'};
+    const icons={fixas:'📋',parceladas:'🛒',investimentos:'📈',variaveis:'🧾',combustivel:'⛽',extra:'💼',desejos:'🌟',recorrente:'🔄',cartao:'💳',gastoFatura:'💳',contas:'🏦',ticket:'🍽️'};
     document.getElementById('m-title').textContent=`${icons[sec]||''} ${d?'Editar':'Adicionar'} ${names[sec]||''}`;
     document.getElementById('m-body').innerHTML=this.form(sec,d||{});
+    if(sec==='cartao'){ST._excFech={...(d?.fechamentosEspeciais||{})};renderExcFech();}
     document.getElementById('overlay').classList.add('open');
     setTimeout(()=>{const f=document.querySelector('#m-body input,#m-body select');f?.focus()},80);
   },
@@ -2721,6 +2728,10 @@ const MODAL={
         </div>
       </div>`;
     }
+    if(sec==='ticket'){const s=ST.data.salarios[mo]||{};return`<div class="fg">
+      <div class="hint">🍽️ Valor recebido em ${mlabel(mo)}</div>
+      <div class="frow"><label>Valor (R$)</label><input id="tk-val" type="number" step="0.01" min="0" placeholder="0,00" value="${s.ticket||''}"></div>
+    </div>`;}
     if(sec==='extra')return`<div class="fg">
       <div class="frow"><label>Descrição</label><input id="ex-desc" placeholder="Ex: Freelance, Bônus"></div>
       <div class="frow"><label>Valor (R$)</label><input id="ex-val" type="number" step="0.01" placeholder="0,00"></div>
@@ -2740,6 +2751,7 @@ const MODAL={
           <div class="frow"><label>Dia de Fechamento</label><input id="ca-fech" type="number" min="1" max="31" placeholder="1–31" value="${v.diaFechamento||''}"></div>
         </div>
         <div class="frow"><label>Dia de Vencimento</label><input id="ca-venc" type="number" min="1" max="31" placeholder="1–31" value="${v.diaVencimento||''}"></div>
+        <div class="frow"><label>Exceções de Fechamento</label><div id="ca-exc-lista"></div><div style="display:flex;gap:6px;margin-top:8px;align-items:flex-end"><div style="flex:1"><label style="font-size:.75rem;color:var(--textm)">Mês</label><input id="ca-exc-mes" type="month" style="width:100%"></div><div style="width:70px"><label style="font-size:.75rem;color:var(--textm)">Dia</label><input id="ca-exc-dia" type="number" min="1" max="31" placeholder="1–31" style="width:100%"></div><button type="button" class="btn btn-p" onclick="addExcFech()" style="padding:8px 10px;font-size:.75rem;white-space:nowrap;align-self:flex-end">+ Exc.</button></div></div>
       </div>`;
     }
     if(sec==='contas')return`<div class="fg">
@@ -2889,6 +2901,13 @@ const MODAL={
       }
       STORAGE.save();this.close();R.combustivel();R.variaveis();R.dashboard();toast(id?'Abastecimento atualizado!':'Abastecimento registrado! ⛽','ok');
     }
+    else if(sec==='ticket'){
+      const val=pnum(document.getElementById('tk-val')?.value);
+      if(!(val>=0)){toast('Valor inválido','err');return}
+      if(!ST.data.salarios[mo])ST.data.salarios[mo]={base:0,extras:[]};
+      ST.data.salarios[mo].ticket=val;
+      STORAGE.save();this.close();R.salario();R.dashboard();toast(`Ticket atualizado: ${fmtBRL(val)}`,'ok');
+    }
     else if(sec==='extra'){
       const desc=document.getElementById('ex-desc')?.value.trim();
       const val=pnum(document.getElementById('ex-val')?.value);
@@ -2928,10 +2947,11 @@ const MODAL={
       const lim=pnum(document.getElementById('ca-lim')?.value);
       const fech=parseInt(document.getElementById('ca-fech')?.value)||1;
       const venc=parseInt(document.getElementById('ca-venc')?.value)||10;
+      const excFech={...ST._excFech||{}};
       if(!nome){toast('Informe o nome do cartão','err');return}
       if(!ST.data.cartoes)ST.data.cartoes=[];
-      if(id){const i=ST.data.cartoes.findIndex(c=>c.id===id);if(i!==-1)Object.assign(ST.data.cartoes[i],{nome,bandeira:band,limite:lim,diaFechamento:fech,diaVencimento:venc})}
-      else ST.data.cartoes.push({id:uid(),nome,bandeira:band,limite:lim,diaFechamento:fech,diaVencimento:venc});
+      if(id){const i=ST.data.cartoes.findIndex(c=>c.id===id);if(i!==-1)Object.assign(ST.data.cartoes[i],{nome,bandeira:band,limite:lim,diaFechamento:fech,diaVencimento:venc,fechamentosEspeciais:excFech})}
+      else ST.data.cartoes.push({id:uid(),nome,bandeira:band,limite:lim,diaFechamento:fech,diaVencimento:venc,fechamentosEspeciais:excFech});
       STORAGE.save();this.close();R.cartoes();R.dashboard();toast(id?'Cartão atualizado!':'Cartão adicionado! 💳','ok');
     }
     else if(sec==='gastoFatura'){
@@ -2942,11 +2962,13 @@ const MODAL={
       const cid=ST.cartaoAtivo;
       if(!desc||!(val>0)||!dt){toast('Preencha todos os campos (valor positivo)','err');return}
       if(!cid){toast('Cartão não identificado','err');return}
+      const cartGasto=(ST.data.cartoes||[]).find(c=>c.id===cid);
+      const moAlvo=id?mo:faturaMonth(dt,cartGasto)||mo;
       if(!ST.data.faturas)ST.data.faturas={};
-      if(!ST.data.faturas[mo])ST.data.faturas[mo]={};
-      if(!ST.data.faturas[mo][cid])ST.data.faturas[mo][cid]={gastos:[],paga:false};
+      if(!ST.data.faturas[moAlvo])ST.data.faturas[moAlvo]={};
+      if(!ST.data.faturas[moAlvo][cid])ST.data.faturas[moAlvo][cid]={gastos:[],paga:false};
       if(id){const i=ST.data.faturas[mo][cid].gastos.findIndex(g=>g.id===id);if(i!==-1)Object.assign(ST.data.faturas[mo][cid].gastos[i],{descricao:desc,valor:val,data:dt,categoria:cat})}
-      else ST.data.faturas[mo][cid].gastos.push({id:uid(),descricao:desc,valor:val,data:dt,categoria:cat});
+      else ST.data.faturas[moAlvo][cid].gastos.push({id:uid(),descricao:desc,valor:val,data:dt,categoria:cat});
       STORAGE.save();this.close();R.cartoes();R.dashboard();toast(id?'Gasto atualizado!':'Gasto lançado!','ok');
     }
     else if(sec==='contas'){
@@ -3028,18 +3050,7 @@ function editCDI(){
   STORAGE.save();R.investimentos();
   toast(`CDI atualizado para ${n.toFixed(2).replace('.',',')}% a.a.`,'ok');
 }
-function editTicket(){
-  const mo=ST.month;
-  const atual=((ST.data.salarios[mo]?.ticket)||0).toFixed(2).replace('.',',');
-  const v=prompt(`Ticket Refeição recebido em ${mlabel(mo)} (R$):`,atual);
-  if(v===null)return;
-  const n=parseFloat(v.replace(',','.').replace(/[^\d.]/g,''));
-  if(isNaN(n)||n<0){toast('Valor inválido','err');return}
-  if(!ST.data.salarios[mo])ST.data.salarios[mo]={base:0,extras:[]};
-  ST.data.salarios[mo].ticket=n;
-  STORAGE.save();R.salario();R.dashboard();
-  toast(`Ticket atualizado: ${fmtBRL(n)}`,'ok');
-}
+function editTicket(){MODAL.open('ticket')}
 function delVar(id){if(!confirm('Remover esta despesa?'))return;ST.data.despesasVariaveis=ST.data.despesasVariaveis.filter(d=>d.id!==id);STORAGE.save();R.variaveis();R.dashboard();toast('Removida','inf')}
 function delComb(id){
   if(!confirm('Remover este abastecimento?'))return;
