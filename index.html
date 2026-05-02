@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Lari — Gestão Financeira</title>
+  <title>Orina — Gestão Financeira</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -262,6 +262,7 @@
 
     /* ── CHARTS ── */
     .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .charts-grid.g3{grid-template-columns:1fr 1fr 1fr}
     .cc{background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
     .cc.full{grid-column:1/-1}
     .cc-title{font-family:var(--font-h);font-size:.88rem;font-weight:700;color:var(--text2);margin-bottom:14px}
@@ -280,7 +281,7 @@
       .nav-item.active{border-left:none;border-top-color:var(--pink)}
       .nav-icon{font-size:1.1rem}
       #content{margin-left:0;margin-top:48px;margin-bottom:58px}
-      .charts-grid{grid-template-columns:1fr}
+      .charts-grid,.charts-grid.g3{grid-template-columns:1fr}
       .fg.fg2,.fg.fg3{grid-template-columns:1fr}
       .sum-card.bal{flex-direction:column;align-items:flex-start}
       .bal-right{text-align:left;margin-top:6px}
@@ -511,7 +512,7 @@
     <button class="ob-close" onclick="closeOnboarding()">✕</button>
     <div class="ob-step active" id="ob-s0">
       <div class="ob-icon">✨</div>
-      <div class="ob-title">Bem-vindo ao Lari!</div>
+      <div class="ob-title">Bem-vindo ao Orina!</div>
       <div class="ob-desc">Seu gestor financeiro pessoal. Vamos configurar tudo em 3 passos simples.</div>
     </div>
     <div class="ob-step" id="ob-s1">
@@ -540,7 +541,7 @@
 <nav id="sidebar">
   <div class="brand">
     <div style="display:flex;align-items:center;justify-content:space-between">
-      <div class="brand-name"><span id="brand-icon">R$</span> <span id="brand-name-text">Lari</span></div>
+      <div class="brand-name"><span id="brand-icon">R$</span> <span id="brand-name-text">Orina</span></div>
       <div style="display:flex;gap:2px">
         <button id="cache-clear" onclick="clearCache()" title="Atualizar app">↻</button>
         <button id="dark-toggle" onclick="DARKMODE.toggle()" title="Alternar tema">🌙</button>
@@ -737,7 +738,7 @@
         <div class="cfg-row">
           <label>Nome <span style="color:var(--textm);font-size:.75rem">(máx. 10 caracteres)</span></label>
           <div style="display:flex;gap:8px;align-items:center">
-            <input type="text" id="cfg-name" maxlength="10" placeholder="Lari" class="cfg-input">
+            <input type="text" id="cfg-name" maxlength="10" placeholder="Orina" class="cfg-input">
             <button class="btn btn-p" onclick="CONFIG.saveName()">Salvar</button>
           </div>
         </div>
@@ -854,11 +855,11 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.1';
+const APP_VER='4.3.7';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
-  config:{taxaCDI:13.75,brandName:'Lari',brandIcon:'R$',theme:'rosa'},
+  config:{taxaCDI:13.75,brandName:'Orina',brandIcon:'R$',theme:'rosa'},
   salarios:{},
   despesasFixas:[],
   parceladas:[],
@@ -908,6 +909,11 @@ function mlabel(ym){if(!ym)return'—';const[y,m]=ym.split('-').map(Number);if(!
 function pnum(v){const n=parseFloat(String(v).replace(',','.'));return isNaN(n)?0:n}
 function fmtBRL(v){return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0)}
 function fmtPct(v){const n=v||0;return`${n>=0?'+':''}${n.toFixed(2).replace('.',',')}%`}
+function diaFechamentoEfetivo(card,mo){return card?.fechamentosEspeciais?.[mo]??card?.diaFechamento??0}
+function faturaMonth(dataStr,card){if(!dataStr)return'';const mo=dataStr.slice(0,7);const dFech=diaFechamentoEfetivo(card,mo);if(!dFech)return mo;const d=parseInt(dataStr.slice(8,10));if(d>dFech){const[y,m]=mo.split('-').map(Number);const next=new Date(y,m,1);return`${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,'0')}`}return mo}
+function renderExcFech(){const el=document.getElementById('ca-exc-lista');if(!el)return;const entries=Object.entries(ST._excFech||{}).sort(([a],[b])=>a.localeCompare(b));el.innerHTML=entries.length?entries.map(([mes,dia])=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="font-size:.82rem;flex:1">${mlabel(mes)}: dia ${dia}</span><button type="button" class="ic del" onclick="delExcFech('${mes}')">🗑️</button></div>`).join(''):`<div style="font-size:.78rem;color:var(--textm)">Nenhuma exceção</div>`}
+function addExcFech(){const mes=document.getElementById('ca-exc-mes')?.value;const dia=parseInt(document.getElementById('ca-exc-dia')?.value);if(!mes||!(dia>=1&&dia<=31)){toast('Informe mês e dia válidos','err');return}if(!ST._excFech)ST._excFech={};ST._excFech[mes]=dia;document.getElementById('ca-exc-mes').value='';document.getElementById('ca-exc-dia').value='';renderExcFech()}
+function delExcFech(mes){delete ST._excFech[mes];renderExcFech()}
 
 /* ═══════════════════════════════════════════════════════════
    STORAGE
@@ -966,7 +972,7 @@ const STORAGE={
     try{
       let handle;
       try{[handle]=await window.showOpenFilePicker({types:[{description:'JSON',accept:{'application/json':['.json']}}],multiple:false})}
-      catch{handle=await window.showSaveFilePicker({suggestedName:'lari4_sync.json',types:[{description:'JSON',accept:{'application/json':['.json']}}]})}
+      catch{handle=await window.showSaveFilePicker({suggestedName:'orina_sync.json',types:[{description:'JSON',accept:{'application/json':['.json']}}]})}
       await this._idbSet('sync','fileHandle',handle);
       await this._syncToFile();
       this._updSyncStatus(handle.name);
@@ -1005,7 +1011,7 @@ const STORAGE={
       if(fileTime>localTime){
         const _merged2={...JSON.parse(JSON.stringify(DEF)),...fileData};
         if(!_merged2.config?.theme)_merged2.config={...(_merged2.config||{}),theme:ST.data.config?.theme||'rosa'};
-        if(!_merged2.config?.brandName)_merged2.config.brandName=ST.data.config?.brandName||'Lari';
+        if(!_merged2.config?.brandName)_merged2.config.brandName=ST.data.config?.brandName||'Orina';
         if(!_merged2.config?.brandIcon)_merged2.config.brandIcon=ST.data.config?.brandIcon||'R$';
         ST.data=_merged2;
         await this._idbSet('data','main',ST.data);
@@ -1030,7 +1036,7 @@ const STORAGE={
   },
   export(){
     const url=URL.createObjectURL(new Blob([JSON.stringify(ST.data,null,2)],{type:'application/json'}));
-    const a=Object.assign(document.createElement('a'),{href:url,download:`lari4_backup_${ST.month}.json`});
+    const a=Object.assign(document.createElement('a'),{href:url,download:`orina_backup_${ST.month}.json`});
     document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
     toast('Backup exportado!','ok');
   },
@@ -1061,7 +1067,7 @@ const STORAGE={
     (s?.extras||[]).forEach(e=>rows.push(['Renda Extra',`${mo}-01`,e.descricao,'receita','',String(e.valor||0).replace('.',',')]));
     const csv='﻿'+rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
     const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
-    const a=Object.assign(document.createElement('a'),{href:url,download:`lari4_${mo}.csv`});
+    const a=Object.assign(document.createElement('a'),{href:url,download:`orina_${mo}.csv`});
     document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
     toast('CSV exportado!','ok');
   },
@@ -1073,11 +1079,11 @@ const STORAGE={
         const parsed=JSON.parse(e.target.result);
         const keys=['despesasFixas','parceladas','investimentos','despesasVariaveis','cartoes'];
         if(!keys.some(k=>Array.isArray(parsed[k]))){
-          toast('Arquivo inválido: não parece um backup do Lari','err');return;
+          toast('Arquivo inválido: não parece um backup do Orina','err');return;
         }
         const _merged1={...JSON.parse(JSON.stringify(DEF)),...parsed};
         if(!_merged1.config?.theme)_merged1.config={...(_merged1.config||{}),theme:ST.data.config?.theme||'rosa'};
-        if(!_merged1.config?.brandName)_merged1.config.brandName=ST.data.config?.brandName||'Lari';
+        if(!_merged1.config?.brandName)_merged1.config.brandName=ST.data.config?.brandName||'Orina';
         if(!_merged1.config?.brandIcon)_merged1.config.brandIcon=ST.data.config?.brandIcon||'R$';
         ST.data=_merged1;
         applyTheme(ST.data.config?.theme||'rosa');applyBrand();
@@ -1160,14 +1166,14 @@ const GDRIVE={
 
   async _getOrCreateFile(){
     if(this._fileId)return this._fileId;
-    const searchResp=await fetch("https://www.googleapis.com/drive/v3/files?q=name%3D'lari4_sync.json'%20and%20trashed%3Dfalse&fields=files(id)",{headers:{Authorization:`Bearer ${this._tok}`}});
+    const searchResp=await fetch("https://www.googleapis.com/drive/v3/files?q=name%3D'orina_sync.json'%20and%20trashed%3Dfalse&fields=files(id)",{headers:{Authorization:`Bearer ${this._tok}`}});
     const r=await searchResp.json();
     if(r.error){console.error('GDRIVE search error:',r.error);return null;}
     if(r.files?.length){
       this._fileId=r.files[0].id;
     }else{
       const form=new FormData();
-      form.append('metadata',new Blob([JSON.stringify({name:'lari4_sync.json',mimeType:'application/json'})],{type:'application/json'}));
+      form.append('metadata',new Blob([JSON.stringify({name:'orina_sync.json',mimeType:'application/json'})],{type:'application/json'}));
       form.append('file',new Blob([JSON.stringify(ST.data,null,2)],{type:'application/json'}));
       const createResp=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{method:'POST',headers:{Authorization:`Bearer ${this._tok}`},body:form});
       const c=await createResp.json();
@@ -1214,7 +1220,7 @@ const GDRIVE={
         }
         const _merged3={...JSON.parse(JSON.stringify(DEF)),...driveData};
         if(!_merged3.config?.theme)_merged3.config={...(_merged3.config||{}),theme:ST.data.config?.theme||'rosa'};
-        if(!_merged3.config?.brandName)_merged3.config.brandName=ST.data.config?.brandName||'Lari';
+        if(!_merged3.config?.brandName)_merged3.config.brandName=ST.data.config?.brandName||'Orina';
         if(!_merged3.config?.brandIcon)_merged3.config.brandIcon=ST.data.config?.brandIcon||'R$';
         ST.data=_merged3;
         await STORAGE._idbSet('data','main',ST.data).catch(()=>{});
@@ -1278,7 +1284,7 @@ const NOTIF={
 ═══════════════════════════════════════════════════════════ */
 const DARKMODE={
   init(){
-    const saved=localStorage.getItem('lari-theme')||'light';
+    const saved=localStorage.getItem('orina-theme')||'light';
     document.documentElement.setAttribute('data-theme',saved);
     this._updBtn(saved);
   },
@@ -1286,7 +1292,7 @@ const DARKMODE={
     const curr=document.documentElement.getAttribute('data-theme')||'light';
     const next=curr==='dark'?'light':'dark';
     document.documentElement.setAttribute('data-theme',next);
-    localStorage.setItem('lari-theme',next);
+    localStorage.setItem('orina-theme',next);
     this._updBtn(next);
   },
   _updBtn(theme){
@@ -1323,8 +1329,8 @@ function applyTheme(key,save=false){
   const t=THEMES[key];if(!t)return;
   const r=document.documentElement;
   Object.entries(t.vars).forEach(([k,v])=>r.style.setProperty(k,v));
-  if(t.forceDark){r.setAttribute('data-theme','dark');localStorage.setItem('lari-theme','dark')}
-  if(t.forceLight){r.setAttribute('data-theme','light');localStorage.setItem('lari-theme','light')}
+  if(t.forceDark){r.setAttribute('data-theme','dark');localStorage.setItem('orina-theme','dark')}
+  if(t.forceLight){r.setAttribute('data-theme','light');localStorage.setItem('orina-theme','light')}
   DARKMODE._updBtn(r.getAttribute('data-theme')||'light');
   if(save){if(!ST.data.config)ST.data.config={};ST.data.config.theme=key;STORAGE.save()}
 }
@@ -1334,7 +1340,7 @@ function applyBrand(){
   const iconEl=document.getElementById('brand-icon');
   const nameEl=document.getElementById('brand-name-text');
   if(iconEl)iconEl.textContent=c.brandIcon||'R$';
-  if(nameEl)nameEl.textContent=c.brandName||'Lari';
+  if(nameEl)nameEl.textContent=c.brandName||'Orina';
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -1348,7 +1354,7 @@ const CONFIG={
     const c=ST.data.config||{};
     const nameEl=document.getElementById('cfg-name');
     const iconEl=document.getElementById('cfg-icon');
-    if(nameEl)nameEl.value=c.brandName||'Lari';
+    if(nameEl)nameEl.value=c.brandName||'Orina';
     if(iconEl)iconEl.value=c.brandIcon||'R$';
     this._renderIcons(c.brandIcon||'R$');
     this._renderThemes(c.theme||'rosa');
@@ -1400,7 +1406,7 @@ const CONFIG={
   saveName(){
     const inp=document.getElementById('cfg-name');
     if(!inp)return;
-    const v=inp.value.trim().slice(0,10)||'Lari';
+    const v=inp.value.trim().slice(0,10)||'Orina';
     inp.value=v;
     if(!ST.data.config)ST.data.config={};
     ST.data.config.brandName=v;
@@ -1494,7 +1500,8 @@ const C={
   totalFatura(cid,mo){
     const gastos=(ST.data.faturas[mo]?.[cid]?.gastos||[]).reduce((a,g)=>a+(g.valor||0),0);
     const fixasLink=ST.data.despesasFixas.filter(d=>d.cartaoId===cid).reduce((a,d)=>a+this.valorFixa(d,mo),0);
-    const varLink=ST.data.despesasVariaveis.filter(d=>d.data?.startsWith(mo)&&d.cartaoId===cid).reduce((a,d)=>a+(d.valor||0),0);
+    const cart=(ST.data.cartoes||[]).find(c=>c.id===cid);
+    const varLink=ST.data.despesasVariaveis.filter(d=>d.cartaoId===cid&&faturaMonth(d.data,cart)===mo).reduce((a,d)=>a+(d.valor||0),0);
     const parcLink=ST.data.parceladas.filter(p=>p.cartaoId===cid&&this.parcAtiva(p,mo)).reduce((a,p)=>a+(p.valorParcela||0),0);
     return gastos+fixasLink+varLink+parcLink;
   },
@@ -1893,8 +1900,8 @@ const R={
         <div class="card"><div class="lbl">Disponível (Diária)</div><div class="val" style="color:var(--green)">${fmtBRL(tl)}</div></div>
       </div>
       ${invs.length>=2?`<div class="inv-charts">
-        <div class="card" style="padding:16px"><div style="font-weight:600;margin-bottom:8px;color:var(--text1);font-size:.82rem">Por Indexador</div><canvas id="ch-inv-idx" height="160"></canvas></div>
-        <div class="card" style="padding:16px"><div style="font-weight:600;margin-bottom:8px;color:var(--text1);font-size:.82rem">Por Liquidez</div><canvas id="ch-inv-liq" height="160"></canvas></div>
+        <div class="card" style="padding:16px"><div style="font-weight:600;margin-bottom:8px;color:var(--text1);font-size:.82rem">Por Indexador</div><canvas id="ch-inv-idx" height="110"></canvas></div>
+        <div class="card" style="padding:16px"><div style="font-weight:600;margin-bottom:8px;color:var(--text1);font-size:.82rem">Por Liquidez</div><canvas id="ch-inv-liq" height="110"></canvas></div>
       </div>`:''}
       ${tiposExistentes.length>1?`<div class="pills">
         <div class="pill ${invf==='all'?'on':''}" onclick="setInvFilter('all')">Todos</div>
@@ -2094,11 +2101,11 @@ const R={
       requestAnimationFrame(()=>CHART.renderAnual());
     }else{
       document.getElementById('rel-content').innerHTML=toggle+`
-        <div class="charts-grid">
-          <div class="cc"><div class="cc-title">Despesas Fixas por Categoria</div><canvas id="ch-fixas"></canvas></div>
-          <div class="cc"><div class="cc-title">Variáveis por Categoria — ${mlabel(mo)}</div><canvas id="ch-vars"></canvas></div>
+        <div class="charts-grid g3">
+          <div class="cc"><div class="cc-title">Despesas Fixas por Categoria</div><canvas id="ch-fixas" height="150"></canvas></div>
+          <div class="cc"><div class="cc-title">Variáveis por Categoria — ${mlabel(mo)}</div><canvas id="ch-vars" height="150"></canvas></div>
+          <div class="cc"><div class="cc-title">Portfólio por Tipo de Investimento</div><canvas id="ch-inv" height="150"></canvas></div>
           <div class="cc full"><div class="cc-title">Últimos 6 Meses — Salário × Despesas × Saldo</div><canvas id="ch-6m" style="max-height:280px"></canvas></div>
-          <div class="cc full"><div class="cc-title">Portfólio por Tipo de Investimento</div><canvas id="ch-inv"></canvas></div>
         </div>`;
       requestAnimationFrame(()=>CHART.render());
     }
@@ -2226,7 +2233,7 @@ const R={
           const fat=ST.data.faturas[mo]?.[c.id]||{gastos:[],paga:false};
           const gastos=fat.gastos||[];
           const fixasVinc=ST.data.despesasFixas.filter(d=>d.cartaoId===c.id);
-          const varVinc=ST.data.despesasVariaveis.filter(d=>d.cartaoId===c.id&&d.data?.startsWith(mo));
+          const varVinc=ST.data.despesasVariaveis.filter(d=>d.cartaoId===c.id&&faturaMonth(d.data,c)===mo);
           const parcVinc=ST.data.parceladas.filter(p=>p.cartaoId===c.id&&C.parcAtiva(p,mo));
           const totalC=C.totalFatura(c.id,mo);
           const pct=c.limite>0?Math.min(100,(totalC/c.limite)*100):0;
@@ -2242,11 +2249,11 @@ const R={
                 <button class="ic del" onclick="delCartao('${c.id}')">🗑️</button>
               </div>
             </div>
-            ${c.limite?`<div style="font-size:.74rem;color:var(--textm)">Limite: ${fmtBRL(c.limite)} · Fechamento: dia ${c.diaFechamento} · Vencimento: dia ${c.diaVencimento}</div>
+            ${c.limite?`<div style="font-size:.74rem;color:var(--textm)">Limite: ${fmtBRL(c.limite)} · Fechamento: dia ${diaFechamentoEfetivo(c,mo)||'—'} · Vencimento: dia ${c.diaVencimento}</div>
             <div style="display:flex;align-items:center;gap:8px;margin:7px 0 3px">
               <div class="prog-w" style="flex:1;height:8px"><div class="prog-b" style="width:${pct}%;background:${barColor}"></div></div>
               <span style="font-size:.72rem;color:var(--textm);white-space:nowrap">${pct.toFixed(0)}%</span>
-            </div>`:`<div style="font-size:.74rem;color:var(--textm)">Fechamento: dia ${c.diaFechamento||'—'} · Vencimento: dia ${c.diaVencimento||'—'}</div><div style="height:8px"></div>`}
+            </div>`:`<div style="font-size:.74rem;color:var(--textm)">Fechamento: dia ${diaFechamentoEfetivo(c,mo)||'—'} · Vencimento: dia ${c.diaVencimento||'—'}</div><div style="height:8px"></div>`}
             <div style="display:flex;align-items:center;justify-content:space-between;margin:10px 0 8px;padding-top:8px;border-top:1px solid var(--bg-surface)">
               <div>
                 <div style="font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--textm)">Fatura ${mlabel(mo)}</div>
@@ -2542,10 +2549,11 @@ const MODAL={
       else if(sec==='gastoFatura')d=(ST.data.faturas[ST.month]?.[ST.cartaoAtivo]?.gastos||[]).find(x=>x.id===id);
       else if(sec==='contas')d=(ST.data.contas||[]).find(x=>x.id===id);
     }
-    const names={fixas:'Despesa Fixa',parceladas:'Compra Parcelada',investimentos:'Investimento',variaveis:'Despesa Variável',combustivel:'Abastecimento',extra:'Renda Extra',desejos:'Desejo',recorrente:'Receita Recorrente',cartao:'Cartão de Crédito',gastoFatura:'Gasto na Fatura',contas:'Conta Bancária'};
-    const icons={fixas:'📋',parceladas:'🛒',investimentos:'📈',variaveis:'🧾',combustivel:'⛽',extra:'💼',desejos:'🌟',recorrente:'🔄',cartao:'💳',gastoFatura:'💳',contas:'🏦'};
+    const names={fixas:'Despesa Fixa',parceladas:'Compra Parcelada',investimentos:'Investimento',variaveis:'Despesa Variável',combustivel:'Abastecimento',extra:'Renda Extra',desejos:'Desejo',recorrente:'Receita Recorrente',cartao:'Cartão de Crédito',gastoFatura:'Gasto na Fatura',contas:'Conta Bancária',ticket:'Ticket Refeição'};
+    const icons={fixas:'📋',parceladas:'🛒',investimentos:'📈',variaveis:'🧾',combustivel:'⛽',extra:'💼',desejos:'🌟',recorrente:'🔄',cartao:'💳',gastoFatura:'💳',contas:'🏦',ticket:'🍽️'};
     document.getElementById('m-title').textContent=`${icons[sec]||''} ${d?'Editar':'Adicionar'} ${names[sec]||''}`;
     document.getElementById('m-body').innerHTML=this.form(sec,d||{});
+    if(sec==='cartao'){ST._excFech={...(d?.fechamentosEspeciais||{})};renderExcFech();}
     document.getElementById('overlay').classList.add('open');
     setTimeout(()=>{const f=document.querySelector('#m-body input,#m-body select');f?.focus()},80);
   },
@@ -2720,6 +2728,10 @@ const MODAL={
         </div>
       </div>`;
     }
+    if(sec==='ticket'){const s=ST.data.salarios[mo]||{};return`<div class="fg">
+      <div class="hint">🍽️ Valor recebido em ${mlabel(mo)}</div>
+      <div class="frow"><label>Valor (R$)</label><input id="tk-val" type="number" step="0.01" min="0" placeholder="0,00" value="${s.ticket||''}"></div>
+    </div>`;}
     if(sec==='extra')return`<div class="fg">
       <div class="frow"><label>Descrição</label><input id="ex-desc" placeholder="Ex: Freelance, Bônus"></div>
       <div class="frow"><label>Valor (R$)</label><input id="ex-val" type="number" step="0.01" placeholder="0,00"></div>
@@ -2739,6 +2751,7 @@ const MODAL={
           <div class="frow"><label>Dia de Fechamento</label><input id="ca-fech" type="number" min="1" max="31" placeholder="1–31" value="${v.diaFechamento||''}"></div>
         </div>
         <div class="frow"><label>Dia de Vencimento</label><input id="ca-venc" type="number" min="1" max="31" placeholder="1–31" value="${v.diaVencimento||''}"></div>
+        <div class="frow"><label>Exceções de Fechamento</label><div id="ca-exc-lista"></div><div style="display:flex;gap:6px;margin-top:8px;align-items:flex-end"><div style="flex:1"><label style="font-size:.75rem;color:var(--textm)">Mês</label><input id="ca-exc-mes" type="month" style="width:100%"></div><div style="width:70px"><label style="font-size:.75rem;color:var(--textm)">Dia</label><input id="ca-exc-dia" type="number" min="1" max="31" placeholder="1–31" style="width:100%"></div><button type="button" class="btn btn-p" onclick="addExcFech()" style="padding:8px 10px;font-size:.75rem;white-space:nowrap;align-self:flex-end">+ Exc.</button></div></div>
       </div>`;
     }
     if(sec==='contas')return`<div class="fg">
@@ -2888,6 +2901,13 @@ const MODAL={
       }
       STORAGE.save();this.close();R.combustivel();R.variaveis();R.dashboard();toast(id?'Abastecimento atualizado!':'Abastecimento registrado! ⛽','ok');
     }
+    else if(sec==='ticket'){
+      const val=pnum(document.getElementById('tk-val')?.value);
+      if(!(val>=0)){toast('Valor inválido','err');return}
+      if(!ST.data.salarios[mo])ST.data.salarios[mo]={base:0,extras:[]};
+      ST.data.salarios[mo].ticket=val;
+      STORAGE.save();this.close();R.salario();R.dashboard();toast(`Ticket atualizado: ${fmtBRL(val)}`,'ok');
+    }
     else if(sec==='extra'){
       const desc=document.getElementById('ex-desc')?.value.trim();
       const val=pnum(document.getElementById('ex-val')?.value);
@@ -2927,10 +2947,11 @@ const MODAL={
       const lim=pnum(document.getElementById('ca-lim')?.value);
       const fech=parseInt(document.getElementById('ca-fech')?.value)||1;
       const venc=parseInt(document.getElementById('ca-venc')?.value)||10;
+      const excFech={...ST._excFech||{}};
       if(!nome){toast('Informe o nome do cartão','err');return}
       if(!ST.data.cartoes)ST.data.cartoes=[];
-      if(id){const i=ST.data.cartoes.findIndex(c=>c.id===id);if(i!==-1)Object.assign(ST.data.cartoes[i],{nome,bandeira:band,limite:lim,diaFechamento:fech,diaVencimento:venc})}
-      else ST.data.cartoes.push({id:uid(),nome,bandeira:band,limite:lim,diaFechamento:fech,diaVencimento:venc});
+      if(id){const i=ST.data.cartoes.findIndex(c=>c.id===id);if(i!==-1)Object.assign(ST.data.cartoes[i],{nome,bandeira:band,limite:lim,diaFechamento:fech,diaVencimento:venc,fechamentosEspeciais:excFech})}
+      else ST.data.cartoes.push({id:uid(),nome,bandeira:band,limite:lim,diaFechamento:fech,diaVencimento:venc,fechamentosEspeciais:excFech});
       STORAGE.save();this.close();R.cartoes();R.dashboard();toast(id?'Cartão atualizado!':'Cartão adicionado! 💳','ok');
     }
     else if(sec==='gastoFatura'){
@@ -2941,11 +2962,13 @@ const MODAL={
       const cid=ST.cartaoAtivo;
       if(!desc||!(val>0)||!dt){toast('Preencha todos os campos (valor positivo)','err');return}
       if(!cid){toast('Cartão não identificado','err');return}
+      const cartGasto=(ST.data.cartoes||[]).find(c=>c.id===cid);
+      const moAlvo=id?mo:faturaMonth(dt,cartGasto)||mo;
       if(!ST.data.faturas)ST.data.faturas={};
-      if(!ST.data.faturas[mo])ST.data.faturas[mo]={};
-      if(!ST.data.faturas[mo][cid])ST.data.faturas[mo][cid]={gastos:[],paga:false};
+      if(!ST.data.faturas[moAlvo])ST.data.faturas[moAlvo]={};
+      if(!ST.data.faturas[moAlvo][cid])ST.data.faturas[moAlvo][cid]={gastos:[],paga:false};
       if(id){const i=ST.data.faturas[mo][cid].gastos.findIndex(g=>g.id===id);if(i!==-1)Object.assign(ST.data.faturas[mo][cid].gastos[i],{descricao:desc,valor:val,data:dt,categoria:cat})}
-      else ST.data.faturas[mo][cid].gastos.push({id:uid(),descricao:desc,valor:val,data:dt,categoria:cat});
+      else ST.data.faturas[moAlvo][cid].gastos.push({id:uid(),descricao:desc,valor:val,data:dt,categoria:cat});
       STORAGE.save();this.close();R.cartoes();R.dashboard();toast(id?'Gasto atualizado!':'Gasto lançado!','ok');
     }
     else if(sec==='contas'){
@@ -3027,18 +3050,7 @@ function editCDI(){
   STORAGE.save();R.investimentos();
   toast(`CDI atualizado para ${n.toFixed(2).replace('.',',')}% a.a.`,'ok');
 }
-function editTicket(){
-  const mo=ST.month;
-  const atual=((ST.data.salarios[mo]?.ticket)||0).toFixed(2).replace('.',',');
-  const v=prompt(`Ticket Refeição recebido em ${mlabel(mo)} (R$):`,atual);
-  if(v===null)return;
-  const n=parseFloat(v.replace(',','.').replace(/[^\d.]/g,''));
-  if(isNaN(n)||n<0){toast('Valor inválido','err');return}
-  if(!ST.data.salarios[mo])ST.data.salarios[mo]={base:0,extras:[]};
-  ST.data.salarios[mo].ticket=n;
-  STORAGE.save();R.salario();R.dashboard();
-  toast(`Ticket atualizado: ${fmtBRL(n)}`,'ok');
-}
+function editTicket(){MODAL.open('ticket')}
 function delVar(id){if(!confirm('Remover esta despesa?'))return;ST.data.despesasVariaveis=ST.data.despesasVariaveis.filter(d=>d.id!==id);STORAGE.save();R.variaveis();R.dashboard();toast('Removida','inf')}
 function delComb(id){
   if(!confirm('Remover este abastecimento?'))return;
@@ -3471,7 +3483,7 @@ let _obStep=0;
 function closeOnboarding(){
   const ov=document.getElementById('onboarding-overlay');
   if(ov)ov.style.display='none';
-  localStorage.setItem('lari-onboarding','done');
+  localStorage.setItem('orina-onboarding','done');
 }
 function obNext(){
   const steps=3;
@@ -3511,7 +3523,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   applyBrand();
   initPicker();
   goTo(location.hash.slice(1)||'dashboard');
-  if(!localStorage.getItem('lari-onboarding')&&!Object.keys(ST.data.salarios||{}).length)showOnboarding();
+  if(!localStorage.getItem('orina-onboarding')&&!Object.keys(ST.data.salarios||{}).length)showOnboarding();
   GDRIVE.init();
   NOTIF.init();
   // Offline indicator
