@@ -2303,7 +2303,7 @@ const R={
                 <button class="btn btn-p" style="padding:6px 13px;font-size:.76rem" onclick="abrirGastoFatura('${c.id}')">+ Gasto</button>
               </div>
             </div>
-            ${(gastos.length||fixasVinc.length||varVinc.length||parcVinc.length)?`<div style="border-radius:calc(var(--r) - 2px);border:1px solid var(--border);margin-top:10px;overflow:hidden"><table class="tbl tbl-sm" style="table-layout:fixed;width:100%"><thead><tr><th style="width:50%">Descrição</th><th>Categoria</th><th style="white-space:nowrap;text-align:right;width:28%">Valor</th></tr></thead><tbody>
+            ${(gastos.length||fixasVinc.length||varVinc.length||parcVinc.length)?`<div style="border-radius:calc(var(--r) - 2px);border:1px solid var(--border);margin-top:10px;overflow:hidden"><table class="tbl tbl-sm" style="table-layout:fixed;width:100%"><thead><tr><th style="width:40%">Descrição</th><th>Categoria</th><th style="white-space:nowrap;text-align:right;width:30%">Valor</th></tr></thead><tbody>
               ${gastos.map(g=>{const cat=CATS[g.categoria]||CATS.outros;return`<tr>
                 <td style="font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${g.descricao}</td>
                 <td><span class="badge ${cat.b}" style="font-size:.68rem">${cat.i} ${cat.l}</span></td>
