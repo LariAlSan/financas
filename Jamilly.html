@@ -784,7 +784,7 @@ const STORAGE={
         const parsed=JSON.parse(e.target.result);
         const keys=['despesasFixas','parceladas','investimentos','despesasVariaveis','cartoes'];
         if(!keys.some(k=>Array.isArray(parsed[k]))){
-          toast('Arquivo inválido: não parece um backup do Orina','err');return;
+          toast('Arquivo inválido: não parece um backup do Soldo','err');return;
         }
         ST.data={...JSON.parse(JSON.stringify(DEF)),...parsed};
         STORAGE.save();R.all();toast('Dados importados com sucesso!','ok');

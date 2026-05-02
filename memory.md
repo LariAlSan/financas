@@ -1,7 +1,7 @@
-# Orina — Memória do Projeto
+# Soldo — Memória do Projeto
 
 ## Sobre o Projeto
-App de gestão financeira pessoal com nome oficial **Orina**, hospedado no **GitHub Pages** (`https://larialsan.github.io/financas/`).
+App de gestão financeira pessoal com nome oficial **Soldo**, hospedado no **GitHub Pages** (`https://larialsan.github.io/financas/`).
 Arquivo fonte: `C:\Persona\Financas\lari4.0.html` → publicado como `index.html` no repo `LariAlSan/financas`.
 Sem servidor, sem dependências locais. Dados persistem via **IndexedDB** (database `lari4db`).
 
@@ -11,7 +11,7 @@ Sem servidor, sem dependências locais. Dados persistem via **IndexedDB** (datab
 - PDF.js 3.11.174 (CDN)
 - Google Identity Services (CDN) — OAuth2 Google Drive
 - Google Fonts: Playfair Display (títulos) + Nunito (corpo)
-- PWA: `manifest.json` + `sw.js` (cache `orina-v2`) + ícones 192/512px
+- PWA: `manifest.json` + `sw.js` (cache `soldo-v2`) + ícones 192/512px
 
 ## Seções (13 no total)
 Dashboard · Salário · Despesas Fixas · Parceladas · Investimentos · Variáveis · Combustível · Cartões · Orçamento · Relatório · Desejos · Notas · Calendário
@@ -21,9 +21,9 @@ Dashboard · Salário · Despesas Fixas · Parceladas · Investimentos · Variá
 |--------|-----------------|
 | `ST` | Estado global |
 | `STORAGE` | IndexedDB load/save, export/import, File System API sync |
-| `GDRIVE` | Sync Google Drive bidirecional (OAuth2, token IDB); arquivo `orina_sync.json` |
+| `GDRIVE` | Sync Google Drive bidirecional (OAuth2, token IDB); arquivo `soldo_sync.json` |
 | `NOTIF` | Notificações de vencimento (Browser Notifications) |
-| `DARKMODE` | Toggle claro/escuro; preferência em `localStorage('orina-theme')` |
+| `DARKMODE` | Toggle claro/escuro; preferência em `localStorage('soldo-theme')` |
 | `C` | Todos os cálculos financeiros |
 | `R` | Render de cada seção + calendário + exportPDF |
 | `CHART` | Gráficos Chart.js + relatório anual |
@@ -34,7 +34,7 @@ Dashboard · Salário · Despesas Fixas · Parceladas · Investimentos · Variá
 ```json
 {
   "meta": { "version": "4.0", "lastUpdated": "..." },
-  "config": { "taxaCDI": 13.75, "brandName": "Orina", "brandIcon": "R$", "theme": "rosa" },
+  "config": { "taxaCDI": 13.75, "brandName": "Soldo", "brandIcon": "R$", "theme": "rosa" },
   "salarios": { "YYYY-MM": { "base": 0, "ticket": 0, "extras": [] } },
   "despesasFixas": [{ "id","nome","valor","categoria","vencimento","pagamentos":{},"formaPagamento","cartaoId","historico":[] }],
   "parceladas": [{ "id","descricao","valorTotal","numParcelas","mesInicio","valorParcela","formaPagamento","cartaoId","categoria" }],
@@ -58,15 +58,15 @@ Dashboard · Salário · Despesas Fixas · Parceladas · Investimentos · Variá
 
 ### 2026-04-26 — v4.3.6 (fix: espelhamento do ícone PWA)
 - **Ícone corrigido**: `icon-192.png` e `icon-512.png` estavam espelhados horizontalmente após o resize com Pillow. Aplicado `FLIP_LEFT_RIGHT` para restaurar orientação original (ponto no canto superior esquerdo).
-- **SW cache**: `orina-v1` → `orina-v2` para forçar refresh dos ícones nos dispositivos.
+- **SW cache**: `soldo-v1` → `soldo-v2` para forçar refresh dos ícones nos dispositivos.
 
-### 2026-04-26 — v4.3.5 (rename oficial: Lari → Orina)
-- **Nome do app**: "Lari" renomeado para "Orina" em toda a interface — título, manifest, brand sidebar, welcome, mensagens de erro, config padrão.
-- **manifest.json**: `name/short_name` → "Orina — Gestão Financeira" / "Orina".
-- **localStorage**: `lari-theme` → `orina-theme`; `lari-onboarding` → `orina-onboarding`.
-- **Drive sync**: arquivo renomeado `lari4_sync.json` → `orina_sync.json` (re-vincular Drive uma vez).
-- **Export filenames**: `lari4_backup_*` → `orina_backup_*`; `lari4_*.csv` → `orina_*.csv`.
-- **SW cache**: `lari-v11` → `orina-v1`.
+### 2026-04-26 — v4.3.5 (rename oficial: Lari → Soldo)
+- **Nome do app**: "Lari" renomeado para "Soldo" em toda a interface — título, manifest, brand sidebar, welcome, mensagens de erro, config padrão.
+- **manifest.json**: `name/short_name` → "Soldo — Gestão Financeira" / "Soldo".
+- **localStorage**: `lari-theme` → `soldo-theme`; `lari-onboarding` → `soldo-onboarding`.
+- **Drive sync**: arquivo renomeado `lari4_sync.json` → `soldo_sync.json` (re-vincular Drive uma vez).
+- **Export filenames**: `lari4_backup_*` → `soldo_backup_*`; `lari4_*.csv` → `soldo_*.csv`.
+- **SW cache**: `lari-v11` → `soldo-v1`.
 - **Preservado**: `lari4db` (IndexedDB) e `lari4_data` (store key) — sem alteração para não perder dados.
 - Aplicado em: `lari4.0.html`, `Jamilly.html`, `LYD.html`, `manifest.json`, `sw.js`.
 
@@ -142,7 +142,7 @@ Dashboard · Salário · Despesas Fixas · Parceladas · Investimentos · Variá
 - Client ID: `644762904112-65kfgliosm28n8j1m9862ejpn7j1lttn.apps.googleusercontent.com`
 - Auto-save (5s debounce) + auto-load ao abrir e ao `visibilitychange`.
 - Token salvo em IDB store `sync`, key `gdrive`: `{email, fileId}`.
-- Arquivo no Drive: `orina_sync.json`.
+- Arquivo no Drive: `soldo_sync.json`.
 
 ### 2026-04-23 — v3.1 (GitHub Pages)
 - App publicado em `https://larialsan.github.io/financas/`; deploy via git push.

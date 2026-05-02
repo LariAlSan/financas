@@ -1,6 +1,6 @@
 {
-  "name": "Orina — Gestão Financeira",
-  "short_name": "Orina",
+  "name": "Soldo — Gestão Financeira",
+  "short_name": "Soldo",
   "description": "Controle financeiro pessoal",
   "start_url": "/financas/",
   "display": "standalone",
