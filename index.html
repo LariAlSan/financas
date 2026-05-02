@@ -32,7 +32,7 @@
       --font-h: 'Nunito','Segoe UI',system-ui,sans-serif;
       --pg: linear-gradient(135deg,#c9607e,#dfa0b4);
       --pg2: linear-gradient(135deg,#dfa0b4,#eec4d4);
-      --sidebar-bg: linear-gradient(180deg,#3d1f2e 0%,#231018 100%);
+      --sidebar-bg: linear-gradient(180deg,#5b3d4c 0%,#412e36 100%);
       --sw: 248px;
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -56,7 +56,7 @@
     .month-row select{flex:1;padding:7px 8px;border:1px solid rgba(255,255,255,.12);border-radius:var(--rx);
       background:rgba(255,255,255,.07);color:#fff;font-size:.78rem;font-family:var(--font);cursor:pointer;outline:none}
     .month-row select:focus{border-color:var(--pink)}
-    .month-row select option{background:#2a1022;color:#fff}
+    .month-row select option{background:#412e36;color:#fff}
     .sidebar-nav{flex:1;padding:8px 10px;overflow-y:auto;display:flex;flex-direction:column;gap:1px}
     .nav-group-label{font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
       color:rgba(255,255,255,.3);padding:14px 12px 5px}
@@ -889,7 +889,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.13';
+const APP_VER='4.3.14';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -1344,23 +1344,23 @@ const DARKMODE={
 ═══════════════════════════════════════════════════════════ */
 const THEMES={
   rosa:{label:'Rosa',sidebarColor:'#3d1f2e',accentColor:'#c9607e',
-    vars:{'--pink':'#c9607e','--pink-d':'#a8485f','--pink-l':'#fce8ef','--rose':'#dfa0b4','--rose-l':'#fce8ef','--border-f':'#c9607e','--border':'#eedde7','--text2':'#7a5067','--textm':'#b896aa','--pg':'linear-gradient(135deg,#c9607e,#dfa0b4)','--pg2':'linear-gradient(135deg,#dfa0b4,#eec4d4)','--sidebar-bg':'linear-gradient(180deg,#3d1f2e 0%,#231018 100%)','--shadow':'0 2px 14px rgba(201,96,126,.06),0 0 1px rgba(201,96,126,.04)','--shadow-h':'0 8px 28px rgba(201,96,126,.11)'}},
+    vars:{'--pink':'#c9607e','--pink-d':'#a8485f','--pink-l':'#fce8ef','--rose':'#dfa0b4','--rose-l':'#fce8ef','--border-f':'#c9607e','--border':'#eedde7','--text2':'#7a5067','--textm':'#b896aa','--pg':'linear-gradient(135deg,#c9607e,#dfa0b4)','--pg2':'linear-gradient(135deg,#dfa0b4,#eec4d4)','--sidebar-bg':'linear-gradient(180deg,#5b3d4c 0%,#412e36 100%)','--shadow':'0 2px 14px rgba(201,96,126,.06),0 0 1px rgba(201,96,126,.04)','--shadow-h':'0 8px 28px rgba(201,96,126,.11)'}},
   violeta:{label:'Violeta',sidebarColor:'#2e1f3d',accentColor:'#9a5bc9',
-    vars:{'--pink':'#9a5bc9','--pink-d':'#7a42a8','--pink-l':'#f0e8fc','--rose':'#b88cdc','--rose-l':'#f0e8fc','--border-f':'#9a5bc9','--border':'#e2d8f0','--text2':'#5a3d72','--textm':'#9a82b4','--pg':'linear-gradient(135deg,#9a5bc9,#b88cdc)','--pg2':'linear-gradient(135deg,#b88cdc,#d4c4ec)','--sidebar-bg':'linear-gradient(180deg,#2e1f3d 0%,#180e2e 100%)','--shadow':'0 2px 14px rgba(154,91,201,.06),0 0 1px rgba(154,91,201,.04)','--shadow-h':'0 8px 28px rgba(154,91,201,.11)'}},
+    vars:{'--pink':'#9a5bc9','--pink-d':'#7a42a8','--pink-l':'#f0e8fc','--rose':'#b88cdc','--rose-l':'#f0e8fc','--border-f':'#9a5bc9','--border':'#e2d8f0','--text2':'#5a3d72','--textm':'#9a82b4','--pg':'linear-gradient(135deg,#9a5bc9,#b88cdc)','--pg2':'linear-gradient(135deg,#b88cdc,#d4c4ec)','--sidebar-bg':'linear-gradient(180deg,#4c3d5b 0%,#362c4c 100%)','--shadow':'0 2px 14px rgba(154,91,201,.06),0 0 1px rgba(154,91,201,.04)','--shadow-h':'0 8px 28px rgba(154,91,201,.11)'}},
   oceano:{label:'Oceano',sidebarColor:'#1a2e4a',accentColor:'#3b7ec9',
-    vars:{'--pink':'#3b7ec9','--pink-d':'#2a5ea8','--pink-l':'#e0eeff','--rose':'#7eaadc','--rose-l':'#e0eeff','--border-f':'#3b7ec9','--border':'#d4e4f5','--text2':'#2a4a72','--textm':'#6896b8','--pg':'linear-gradient(135deg,#3b7ec9,#7eaadc)','--pg2':'linear-gradient(135deg,#7eaadc,#b8cef0)','--sidebar-bg':'linear-gradient(180deg,#1a2e4a 0%,#0e1a28 100%)','--shadow':'0 2px 14px rgba(59,126,201,.06),0 0 1px rgba(59,126,201,.04)','--shadow-h':'0 8px 28px rgba(59,126,201,.11)'}},
+    vars:{'--pink':'#3b7ec9','--pink-d':'#2a5ea8','--pink-l':'#e0eeff','--rose':'#7eaadc','--rose-l':'#e0eeff','--border-f':'#3b7ec9','--border':'#d4e4f5','--text2':'#2a4a72','--textm':'#6896b8','--pg':'linear-gradient(135deg,#3b7ec9,#7eaadc)','--pg2':'linear-gradient(135deg,#7eaadc,#b8cef0)','--sidebar-bg':'linear-gradient(180deg,#384c68 0%,#2c3846 100%)','--shadow':'0 2px 14px rgba(59,126,201,.06),0 0 1px rgba(59,126,201,.04)','--shadow-h':'0 8px 28px rgba(59,126,201,.11)'}},
   floresta:{label:'Floresta',sidebarColor:'#1a3d2a',accentColor:'#3d8f5e',
-    vars:{'--pink':'#3d8f5e','--pink-d':'#2d6e48','--pink-l':'#e0f5ea','--rose':'#6db890','--rose-l':'#e0f5ea','--border-f':'#3d8f5e','--border':'#d0ead8','--text2':'#2a4a38','--textm':'#6a9878','--pg':'linear-gradient(135deg,#3d8f5e,#6db890)','--pg2':'linear-gradient(135deg,#6db890,#a8d8bc)','--sidebar-bg':'linear-gradient(180deg,#1a3d2a 0%,#0e2018 100%)','--shadow':'0 2px 14px rgba(61,143,94,.06),0 0 1px rgba(61,143,94,.04)','--shadow-h':'0 8px 28px rgba(61,143,94,.11)'}},
+    vars:{'--pink':'#3d8f5e','--pink-d':'#2d6e48','--pink-l':'#e0f5ea','--rose':'#6db890','--rose-l':'#e0f5ea','--border-f':'#3d8f5e','--border':'#d0ead8','--text2':'#2a4a38','--textm':'#6a9878','--pg':'linear-gradient(135deg,#3d8f5e,#6db890)','--pg2':'linear-gradient(135deg,#6db890,#a8d8bc)','--sidebar-bg':'linear-gradient(180deg,#385b48 0%,#2c3e36 100%)','--shadow':'0 2px 14px rgba(61,143,94,.06),0 0 1px rgba(61,143,94,.04)','--shadow-h':'0 8px 28px rgba(61,143,94,.11)'}},
   rubi:{label:'Rubi',sidebarColor:'#3d1f1f',accentColor:'#c94949',
-    vars:{'--pink':'#c94949','--pink-d':'#a83535','--pink-l':'#fce8e8','--rose':'#dc8080','--rose-l':'#fce8e8','--border-f':'#c94949','--border':'#f0d8d8','--text2':'#7a3535','--textm':'#b87878','--pg':'linear-gradient(135deg,#c94949,#dc8080)','--pg2':'linear-gradient(135deg,#dc8080,#eec4c4)','--sidebar-bg':'linear-gradient(180deg,#3d1f1f 0%,#231010 100%)','--shadow':'0 2px 14px rgba(201,73,73,.06),0 0 1px rgba(201,73,73,.04)','--shadow-h':'0 8px 28px rgba(201,73,73,.11)'}},
+    vars:{'--pink':'#c94949','--pink-d':'#a83535','--pink-l':'#fce8e8','--rose':'#dc8080','--rose-l':'#fce8e8','--border-f':'#c94949','--border':'#f0d8d8','--text2':'#7a3535','--textm':'#b87878','--pg':'linear-gradient(135deg,#c94949,#dc8080)','--pg2':'linear-gradient(135deg,#dc8080,#eec4c4)','--sidebar-bg':'linear-gradient(180deg,#5b3d3d 0%,#412e2e 100%)','--shadow':'0 2px 14px rgba(201,73,73,.06),0 0 1px rgba(201,73,73,.04)','--shadow-h':'0 8px 28px rgba(201,73,73,.11)'}},
   ambar:{label:'Âmbar',sidebarColor:'#3d2e1a',accentColor:'#c98a3b',
-    vars:{'--pink':'#c98a3b','--pink-d':'#a86e2a','--pink-l':'#fdf0e0','--rose':'#dcaa70','--rose-l':'#fdf0e0','--border-f':'#c98a3b','--border':'#f0e4d0','--text2':'#7a5a2a','--textm':'#b8946a','--pg':'linear-gradient(135deg,#c98a3b,#dcaa70)','--pg2':'linear-gradient(135deg,#dcaa70,#eecca8)','--sidebar-bg':'linear-gradient(180deg,#3d2e1a 0%,#231a0a 100%)','--shadow':'0 2px 14px rgba(201,138,59,.06),0 0 1px rgba(201,138,59,.04)','--shadow-h':'0 8px 28px rgba(201,138,59,.11)'}},
+    vars:{'--pink':'#c98a3b','--pink-d':'#a86e2a','--pink-l':'#fdf0e0','--rose':'#dcaa70','--rose-l':'#fdf0e0','--border-f':'#c98a3b','--border':'#f0e4d0','--text2':'#7a5a2a','--textm':'#b8946a','--pg':'linear-gradient(135deg,#c98a3b,#dcaa70)','--pg2':'linear-gradient(135deg,#dcaa70,#eecca8)','--sidebar-bg':'linear-gradient(180deg,#5b4c38 0%,#413828 100%)','--shadow':'0 2px 14px rgba(201,138,59,.06),0 0 1px rgba(201,138,59,.04)','--shadow-h':'0 8px 28px rgba(201,138,59,.11)'}},
   cafe:{label:'Café',sidebarColor:'#2e2016',accentColor:'#8b6343',
-    vars:{'--pink':'#8b6343','--pink-d':'#6e4e35','--pink-l':'#f5eee6','--rose':'#b88c6e','--rose-l':'#f5eee6','--border-f':'#8b6343','--border':'#e8ddd0','--text2':'#5a4030','--textm':'#9a7a60','--pg':'linear-gradient(135deg,#8b6343,#b88c6e)','--pg2':'linear-gradient(135deg,#b88c6e,#d4b89e)','--sidebar-bg':'linear-gradient(180deg,#2e2016 0%,#18100a 100%)','--shadow':'0 2px 14px rgba(139,99,67,.06),0 0 1px rgba(139,99,67,.04)','--shadow-h':'0 8px 28px rgba(139,99,67,.11)'}},
+    vars:{'--pink':'#8b6343','--pink-d':'#6e4e35','--pink-l':'#f5eee6','--rose':'#b88c6e','--rose-l':'#f5eee6','--border-f':'#8b6343','--border':'#e8ddd0','--text2':'#5a4030','--textm':'#9a7a60','--pg':'linear-gradient(135deg,#8b6343,#b88c6e)','--pg2':'linear-gradient(135deg,#b88c6e,#d4b89e)','--sidebar-bg':'linear-gradient(180deg,#4c3e34 0%,#362e28 100%)','--shadow':'0 2px 14px rgba(139,99,67,.06),0 0 1px rgba(139,99,67,.04)','--shadow-h':'0 8px 28px rgba(139,99,67,.11)'}},
   obsidiana:{label:'Obsidiana',sidebarColor:'#1e1f2e',accentColor:'#818cf8',forceDark:true,
-    vars:{'--pink':'#818cf8','--pink-d':'#6366f1','--pink-l':'#e8e9fe','--rose':'#a5b4fc','--rose-l':'#e8e9fe','--border-f':'#818cf8','--border':'#d8daf8','--text2':'#4a4e80','--textm':'#7880b4','--pg':'linear-gradient(135deg,#6366f1,#818cf8)','--pg2':'linear-gradient(135deg,#818cf8,#a5b4fc)','--sidebar-bg':'linear-gradient(180deg,#1e1f2e 0%,#0e0f1a 100%)','--shadow':'0 2px 14px rgba(99,102,241,.06),0 0 1px rgba(99,102,241,.04)','--shadow-h':'0 8px 28px rgba(99,102,241,.11)'}},
+    vars:{'--pink':'#818cf8','--pink-d':'#6366f1','--pink-l':'#e8e9fe','--rose':'#a5b4fc','--rose-l':'#e8e9fe','--border-f':'#818cf8','--border':'#d8daf8','--text2':'#4a4e80','--textm':'#7880b4','--pg':'linear-gradient(135deg,#6366f1,#818cf8)','--pg2':'linear-gradient(135deg,#818cf8,#a5b4fc)','--sidebar-bg':'linear-gradient(180deg,#3c3d4c 0%,#2c2d38 100%)','--shadow':'0 2px 14px rgba(99,102,241,.06),0 0 1px rgba(99,102,241,.04)','--shadow-h':'0 8px 28px rgba(99,102,241,.11)'}},
   creme:{label:'Creme',sidebarColor:'#3d3020',accentColor:'#9a8060',forceLight:true,
-    vars:{'--pink':'#9a8060','--pink-d':'#7a6048','--pink-l':'#f5f0e8','--rose':'#c4aa88','--rose-l':'#f5f0e8','--border-f':'#9a8060','--border':'#e8e0d0','--text2':'#5a4838','--textm':'#9a8870','--pg':'linear-gradient(135deg,#9a8060,#c4aa88)','--pg2':'linear-gradient(135deg,#c4aa88,#ddd0b8)','--sidebar-bg':'linear-gradient(180deg,#3d3020 0%,#231c10 100%)','--shadow':'0 2px 14px rgba(154,128,96,.06),0 0 1px rgba(154,128,96,.04)','--shadow-h':'0 8px 28px rgba(154,128,96,.11)'}}
+    vars:{'--pink':'#9a8060','--pink-d':'#7a6048','--pink-l':'#f5f0e8','--rose':'#c4aa88','--rose-l':'#f5f0e8','--border-f':'#9a8060','--border':'#e8e0d0','--text2':'#5a4838','--textm':'#9a8870','--pg':'linear-gradient(135deg,#9a8060,#c4aa88)','--pg2':'linear-gradient(135deg,#c4aa88,#ddd0b8)','--sidebar-bg':'linear-gradient(180deg,#5b4e3e 0%,#413a2e 100%)','--shadow':'0 2px 14px rgba(154,128,96,.06),0 0 1px rgba(154,128,96,.04)','--shadow-h':'0 8px 28px rgba(154,128,96,.11)'}}
 };
 
 function applyTheme(key,save=false){
