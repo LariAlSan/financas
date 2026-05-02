@@ -855,7 +855,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.9';
+const APP_VER='4.3.10';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -914,7 +914,7 @@ function faturaMonth(dataStr,card){if(!dataStr)return'';const mo=dataStr.slice(0
 function renderExcFech(){const el=document.getElementById('ca-exc-lista');if(!el)return;const entries=Object.entries(ST._excFech||{}).sort(([a],[b])=>a.localeCompare(b));el.innerHTML=entries.length?entries.map(([mes,dia])=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="font-size:.82rem;flex:1">${mlabel(mes)}: dia ${dia}</span><button type="button" class="ic del" onclick="delExcFech('${mes}')">🗑️</button></div>`).join(''):`<div style="font-size:.78rem;color:var(--textm)">Nenhuma exceção</div>`}
 function addExcFech(){const mes=document.getElementById('ca-exc-mes')?.value;const dia=parseInt(document.getElementById('ca-exc-dia')?.value);if(!mes||!(dia>=1&&dia<=31)){toast('Informe mês e dia válidos','err');return}if(!ST._excFech)ST._excFech={};ST._excFech[mes]=dia;document.getElementById('ca-exc-mes').value='';document.getElementById('ca-exc-dia').value='';renderExcFech()}
 function delExcFech(mes){delete ST._excFech[mes];renderExcFech()}
-function limparDadosAntigos(){const corte='2026-04';['salarios','faturas','metasEconomia'].forEach(k=>{if(!ST.data[k])return;Object.keys(ST.data[k]).forEach(mo=>{if(mo<corte)delete ST.data[k][mo]});});ST.data.despesasVariaveis=(ST.data.despesasVariaveis||[]).filter(d=>d.data>='2026-04-01');ST.data.combustivel=(ST.data.combustivel||[]).filter(c=>c.data>='2026-04-01');STORAGE.save();R.dashboard();R.salario();R.variaveis();R.cartoes();toast('Dados anteriores a abril/2026 removidos','ok')}
+function limparDadosAntigos(){const corte='2026-04';['salarios','faturas','metasEconomia'].forEach(k=>{if(!ST.data[k])return;Object.keys(ST.data[k]).forEach(mo=>{if(mo<corte)delete ST.data[k][mo]});});ST.data.despesasVariaveis=(ST.data.despesasVariaveis||[]).filter(d=>d.data>='2026-04-01');STORAGE.save();R.dashboard();R.salario();R.variaveis();R.cartoes();toast('Dados anteriores a abril/2026 removidos','ok')}
 function restaurarCombustivel(dados){if(!Array.isArray(dados)){toast('Dados inválidos — passe um array','err');return}const atuais=ST.data.combustivel||[];const idsAtuais=new Set(atuais.map(c=>c.id));const novos=dados.filter(c=>c.id&&!idsAtuais.has(c.id));ST.data.combustivel=[...atuais,...novos];STORAGE.save();R.combustivel();R.dashboard();toast(`${novos.length} abastecimento(s) restaurado(s)`,'ok')}
 
 /* ═══════════════════════════════════════════════════════════
