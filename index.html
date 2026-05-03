@@ -890,7 +890,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.29';
+const APP_VER='4.3.30';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -943,6 +943,7 @@ function toast(msg,t='inf'){
 function mlabel(ym){if(!ym)return'—';const[y,m]=ym.split('-').map(Number);if(!y||!m)return'—';return`${MESES[m-1]} ${y}`}
 function pnum(v){const n=parseFloat(String(v).replace(',','.'));return isNaN(n)?0:n}
 function fmtBRL(v){return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0)}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function fmtPct(v){const n=v||0;return`${n>=0?'+':''}${n.toFixed(2).replace('.',',')}%`}
 function diaFechamentoEfetivo(card,mo){return card?.fechamentosEspeciais?.[mo]??card?.diaFechamento??0}
 function faturaMonth(dataStr,card){if(!dataStr)return'';const mo=dataStr.slice(0,7);const dFech=diaFechamentoEfetivo(card,mo);if(!dFech)return mo;const d=parseInt(dataStr.slice(8,10));if(d>dFech){const[y,m]=mo.split('-').map(Number);const next=new Date(y,m,1);return`${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,'0')}`}return mo}
@@ -1501,8 +1502,8 @@ const C={
   addM(ym,n){const[y,m]=ym.split('-').map(Number),d=new Date(y,m-1+n,1);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`},
   salario(mo){const s=ST.data.salarios[mo];const rec=(ST.data.receitasRecorrentes||[]).reduce((a,r)=>a+(r.valor||0),0);if(!s)return rec;return(s.base||0)+(s.ticket||0)+(s.extras||[]).reduce((a,e)=>a+(e.valor||0),0)+rec},
   ticketUsado(mo){return(ST.data.despesasVariaveis||[]).filter(d=>d.data?.startsWith(mo)&&d.formaPagamento==='Vale Refeição').reduce((a,d)=>a+(d.valor||0),0)},
-  ticketDisponivel(mo,depth=0){if(depth>24)return ST.data.salarios[mo]?.ticket||0;const[y,m]=mo.split('-').map(Number);const prev=m===1?`${y-1}-12`:`${y}-${String(m-1).padStart(2,'0')}`;const ps=ST.data.salarios[prev];if(!ps||(!ps.ticket&&!this.ticketUsado(prev)))return ST.data.salarios[mo]?.ticket||0;const prevDisp=this.ticketDisponivel(prev,depth+1);return Math.max(0,prevDisp-this.ticketUsado(prev))+(ST.data.salarios[mo]?.ticket||0);},
-  salarioDisponivel(mo,depth=0){if(depth>24)return this.salario(mo);const[y,m]=mo.split('-').map(Number);const prev=m===1?`${y-1}-12`:`${y}-${String(m-1).padStart(2,'0')}`;const ps=ST.data.salarios[prev];if(!ps||!ps.base)return this.salario(mo);const prevDisp=this.salarioDisponivel(prev,depth+1);const prevGastos=this.salario(prev)-this.saldo(prev);return Math.max(0,prevDisp-prevGastos)+this.salario(mo);},
+  ticketDisponivel(mo){const keys=Object.keys(ST.data.salarios||{}).filter(k=>k<=mo).sort();if(!keys.length)return ST.data.salarios[mo]?.ticket||0;let carry=0,m=keys[0];while(m<mo){carry=Math.max(0,(ST.data.salarios[m]?.ticket||0)+carry-this.ticketUsado(m));m=this.addM(m,1);}return(ST.data.salarios[mo]?.ticket||0)+carry;},
+  salarioDisponivel(mo){const keys=Object.keys(ST.data.salarios||{}).filter(k=>k<=mo).sort();if(!keys.length)return this.salario(mo);let carry=0,m=keys[0];while(m<mo){carry=Math.max(0,this.saldo(m)+carry);m=this.addM(m,1);}return this.salario(mo)+carry;},
   salarioUsado(mo){const fx=this.fixas(mo);const pc=this.parceladas(mo);const vr=(ST.data.despesasVariaveis||[]).filter(d=>d.data?.startsWith(mo)&&!d.cartaoId&&d.formaPagamento!=='Vale Refeição').reduce((a,d)=>a+(d.valor||0),0);const fat=(ST.data.cartoes||[]).reduce((a,c)=>a+(ST.data.faturas?.[mo]?.[c.id]?.paga?this.totalFatura(c.id,mo):0),0);return fx+pc+vr+fat;},
   valorFixa(d,mo){
     if(!d.historico?.length)return d.valor||0;
@@ -1513,7 +1514,7 @@ const C={
     if(!mo)mo=ST.month;
     return ST.data.despesasFixas.filter(d=>!d.cartaoId).reduce((a,d)=>a+this.valorFixa(d,mo),0);
   },
-  parcAtiva(p,mo){const d=this.mdiff(p.mesInicio,mo);return d>=0&&d<p.numParcelas},
+  parcAtiva(p,mo){const np=p.numParcelas||0;if(!np)return false;const d=this.mdiff(p.mesInicio,mo);return d>=0&&d<np},
   nParcela(p,mo){return this.mdiff(p.mesInicio,mo)+1},
   parceladas(mo){return ST.data.parceladas.filter(p=>this.parcAtiva(p,mo)&&!p.cartaoId).reduce((a,p)=>a+(p.valorParcela||0),0)},
   variaveis(mo){return ST.data.despesasVariaveis.filter(d=>d.data?.startsWith(mo)&&!d.cartaoId).reduce((a,d)=>a+(d.valor||0),0)},
@@ -1572,7 +1573,7 @@ const C={
   combustivelMes(mo){return(ST.data.combustivel||[]).filter(d=>d.data?.startsWith(mo)).reduce((a,d)=>a+(d.valorTotal||0),0)},
   kmPorLitro(entry){
     if(!(entry.kmRodados>0)||!(entry.litros>0))return null;
-    return(entry.kmRodados/entry.litros).toFixed(2);
+    return+(entry.kmRodados/entry.litros).toFixed(2);
   }
 };
 
@@ -2314,29 +2315,30 @@ const R={
             ${allItems.length?`<div style="border-radius:calc(var(--r) - 2px);border:1px solid var(--border);margin-top:10px;overflow:hidden"><table class="tbl tbl-sm" style="table-layout:fixed;width:100%"><thead><tr><th style="width:33%">Descrição</th><th style="width:24%">Categoria</th><th style="white-space:nowrap;width:13%">Data</th><th style="white-space:nowrap;text-align:right;width:30%">Valor</th></tr></thead><tbody>
               ${allItems.map(item=>{
                 if(item._t==='g'){const cat=CATS[item.categoria]||CATS.outros;return`<tr>
-                  <td style="font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.descricao}</td>
+                  <td style="font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(item.descricao)}</td>
                   <td><span class="badge ${cat.b}" style="font-size:.68rem">${cat.i} ${cat.l}</span></td>
                   <td style="font-size:.82rem;white-space:nowrap;color:var(--text2)">${item.data?item.data.slice(8,10)+'/'+item.data.slice(5,7):'—'}</td>
                   <td style="font-weight:600;font-size:.82rem;white-space:nowrap;text-align:right"><span style="display:flex;align-items:center;justify-content:flex-end;gap:6px">${fmtBRL(item.valor)}<button class="ic del" onclick="delGastoFatura('${c.id}','${item.id}')" style="padding:3px 6px">🗑️</button></span></td>
                 </tr>`;}
                 if(item._t==='f'){const cat=CATS[item.categoria]||CATS.outros;return`<tr style="opacity:.8">
-                  <td style="font-size:.82rem"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">🔗 ${item.nome}</span><span class="badge bpd" style="font-size:.6rem">fixa</span></td>
+                  <td style="font-size:.82rem"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">🔗 ${esc(item.nome)}</span><span class="badge bpd" style="font-size:.6rem">fixa</span></td>
                   <td><span class="badge ${cat.b}" style="font-size:.68rem">${cat.i} ${cat.l}</span></td>
                   <td style="font-size:.82rem;white-space:nowrap;color:var(--text2)">${item.vencimento?String(item.vencimento).padStart(2,'0')+'/'+mo.slice(5,7):'—'}</td>
                   <td style="font-weight:600;font-size:.82rem;white-space:nowrap;text-align:right">${fmtBRL(C.valorFixa(item,mo))}</td>
                 </tr>`;}
                 if(item._t==='v'){const cat=CATS[item.categoria]||CATS.outros;return`<tr style="opacity:.8">
-                  <td style="font-size:.82rem"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">🔗 ${item.descricao}</span><span class="badge bt" style="font-size:.6rem">variável</span></td>
+                  <td style="font-size:.82rem"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">🔗 ${esc(item.descricao)}</span><span class="badge bt" style="font-size:.6rem">variável</span></td>
                   <td><span class="badge ${cat.b}" style="font-size:.68rem">${cat.i} ${cat.l}</span></td>
                   <td style="font-size:.82rem;white-space:nowrap;color:var(--text2)">${item.data?item.data.slice(8,10)+'/'+item.data.slice(5,7):'—'}</td>
                   <td style="font-weight:600;font-size:.82rem;white-space:nowrap;text-align:right">${fmtBRL(item.valor)}</td>
                 </tr>`;}
                 if(item._t==='p'){const catP=item.categoria&&CATS[item.categoria];return`<tr style="opacity:.8">
-                  <td style="font-size:.82rem"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">🔗 ${item.descricao}</span><span class="badge bbl" style="font-size:.6rem">parcela ${C.nParcela(item,mo)}/${item.numParcelas}</span></td>
+                  <td style="font-size:.82rem"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">🔗 ${esc(item.descricao)}</span><span class="badge bbl" style="font-size:.6rem">parcela ${C.nParcela(item,mo)}/${item.numParcelas}</span></td>
                   <td>${catP?`<span class="badge ${catP.b}" style="font-size:.68rem">${catP.i} ${catP.l}</span>`:`<span class="badge bbl" style="font-size:.68rem">🛒 parcelado</span>`}</td>
                   <td style="font-size:.82rem;white-space:nowrap;color:var(--text2)">${item.mesInicio?'01/'+item.mesInicio.slice(5,7):'—'}</td>
                   <td style="font-weight:600;font-size:.82rem;white-space:nowrap;text-align:right">${fmtBRL(item.valorParcela)}</td>
                 </tr>`;}
+                return '';
               }).join('')}
             </tbody></table></div>`:'<div class="empty" style="font-size:.78rem;padding:8px 0">Nenhum gasto lançado nesta fatura</div>'}
           </div>`;
@@ -2889,12 +2891,13 @@ const MODAL={
     else if(sec==='parceladas'){
       const desc=document.getElementById('pa-desc')?.value.trim();
       const tot=pnum(document.getElementById('pa-tot')?.value);
-      const np=parseInt(document.getElementById('pa-np')?.value)||1;
+      const np=parseInt(document.getElementById('pa-np')?.value)||0;
       const ini=document.getElementById('pa-ini')?.value;
       const pag=document.getElementById('pa-pag')?.value;
       const cartaoId=pag==='Crédito'?(document.getElementById('pa-cartao')?.value||''):'';
       const cat=document.getElementById('pa-cat')?.value||'';
       if(!desc||!(tot>0)||!ini){toast('Preencha todos os campos (valor positivo)','err');return}
+      if(!(np>=1)){toast('Número de parcelas deve ser pelo menos 1','err');return}
       const vp=parseFloat((tot/np).toFixed(2));
       if(id){const i=ST.data.parceladas.findIndex(p=>p.id===id);if(i!==-1)Object.assign(ST.data.parceladas[i],{descricao:desc,valorTotal:tot,numParcelas:np,mesInicio:ini,valorParcela:vp,formaPagamento:pag,cartaoId:cartaoId||'',categoria:cat})}
       else ST.data.parceladas.push({id:uid(),descricao:desc,valorTotal:tot,numParcelas:np,mesInicio:ini,valorParcela:vp,formaPagamento:pag,cartaoId:cartaoId||'',categoria:cat});
@@ -3513,6 +3516,7 @@ function goTo(sec){
   else if(sec==='notas')R.notas();
   else if(sec==='calendario')R.calendario();
   else if(sec==='configuracao')CONFIG.render();
+  else R.dashboard();
 }
 
 /* ═══════════════════════════════════════════════════════════
