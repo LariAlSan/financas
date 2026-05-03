@@ -890,7 +890,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.30';
+const APP_VER='4.3.31';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -2105,7 +2105,7 @@ const R={
               <td style="color:var(--gold);font-size:.82rem">R$ ${precoL}</td>
               <td style="font-weight:600;color:var(--blue)">${fmtBRL(d.valorTotal)}</td>
               <td style="color:var(--text2)">${d.kmRodados>0?d.kmRodados.toLocaleString('pt-BR')+' km':'—'}</td>
-              <td style="font-weight:600;color:${kpl?'var(--green)':'var(--textm)'}">${kpl?kpl.replace('.',',')+' km/L':'—'}</td>
+              <td style="font-weight:600;color:${kpl?'var(--green)':'var(--textm)'}">${kpl?kpl.toFixed(2).replace('.',',')+' km/L':'—'}</td>
               <td>${pb}${cartaoTag}</td>
               <td><div class="acts"><button class="ic" onclick="MODAL.open('combustivel','${d.id}')">✏️</button><button class="ic del" onclick="delComb('${d.id}')">🗑️</button></div></td>
             </tr>`;
