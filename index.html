@@ -890,7 +890,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.24';
+const APP_VER='4.3.25';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -2325,7 +2325,7 @@ const R={
               ${parcVinc.map(p=>{const catP=p.categoria&&CATS[p.categoria];return`<tr style="opacity:.8">
                 <td style="font-size:.82rem"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">🔗 ${p.descricao}</span><span class="badge bbl" style="font-size:.6rem">parcela ${C.nParcela(p,mo)}/${p.numParcelas}</span></td>
                 <td>${catP?`<span class="badge ${catP.b}" style="font-size:.68rem">${catP.i} ${catP.l}</span>`:`<span class="badge bbl" style="font-size:.68rem">🛒 parcelado</span>`}</td>
-                <td style="font-size:.82rem;white-space:nowrap;color:var(--text2)">${p.mesInicio?p.mesInicio.slice(5,7)+'/'+p.mesInicio.slice(2,4):'—'}</td>
+                <td style="font-size:.82rem;white-space:nowrap;color:var(--text2)">${p.mesInicio?'01/'+p.mesInicio.slice(5,7):'—'}</td>
                 <td style="font-weight:600;font-size:.82rem;white-space:nowrap;text-align:right">${fmtBRL(p.valorParcela)}</td>
               </tr>`}).join('')}
             </tbody></table></div>`:'<div class="empty" style="font-size:.78rem;padding:8px 0">Nenhum gasto lançado nesta fatura</div>'}
