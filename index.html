@@ -44,8 +44,13 @@
     /* ── SIDEBAR ── */
     .sidebar{width:var(--sw);background:var(--sidebar-bg);border-right:none;
       display:flex;flex-direction:column;position:fixed;left:0;top:0;height:100vh;
-      overflow-y:auto;z-index:100;transition:background .3s}
-    .sidebar-brand{padding:22px 18px 16px;border-bottom:1px solid rgba(255,255,255,.07)}
+      overflow-y:auto;z-index:100;transform:translateX(0);transition:transform .25s ease,background .3s}
+    .sidebar-brand{padding:22px 18px 16px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+    .sb-close-btn{display:none;align-items:center;justify-content:center;flex-shrink:0;
+      background:rgba(255,255,255,.1);border:none;border-radius:var(--rx);
+      color:rgba(255,255,255,.65);cursor:pointer;font-size:.95rem;
+      width:28px;height:28px;line-height:1;transition:.15s;padding:0;margin-top:2px}
+    .sb-close-btn:hover{background:rgba(255,255,255,.22);color:#fff}
     .brand-name{font-family:var(--font-h);font-size:1.5rem;font-weight:800;color:#fff;letter-spacing:-.3px}
     #brand-icon{color:var(--pink)}
     .brand-sub{font-size:.7rem;color:rgba(255,255,255,.4);margin-top:3px;letter-spacing:.2px}
@@ -330,6 +335,24 @@
       .tbl-comb th:nth-child(8),.tbl-comb td:nth-child(8){display:none}
     }
 
+    /* ── SIDEBAR RETRÁTIL (tablet 769px–1100px) ── */
+    #sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:99;cursor:pointer}
+    .ham-btn{position:fixed;top:14px;left:14px;z-index:101;
+      display:none;align-items:center;justify-content:center;
+      width:38px;height:38px;border-radius:var(--rx);padding:0;
+      background:var(--bg-card);border:1.5px solid var(--border);
+      color:var(--text2);font-size:1.15rem;cursor:pointer;
+      box-shadow:var(--shadow);transition:.15s;line-height:1}
+    .ham-btn:hover{background:var(--bg-surface)}
+    @media(min-width:769px) and (max-width:1100px){
+      .sidebar{transform:translateX(-100%)}
+      #content{margin-left:0}
+      .ham-btn{display:flex}
+      .sb-close-btn{display:flex}
+      #app.sb-open .sidebar{transform:translateX(0)}
+      #app.sb-open #sb-overlay{display:block}
+    }
+
     /* ── ORÇAMENTO ── */
     .orc-prog{height:8px;border-radius:20px;overflow:hidden;background:var(--bg-surface);margin:7px 0 4px}
     .orc-bar{height:100%;border-radius:20px;transition:width .4s}
@@ -496,7 +519,7 @@
     /* ── PRINT / PDF ── */
     @media print{
       .sidebar,.bottom-nav,.mais-overlay,.sec-header button,.btn-sb,.mclose,
-      #toast,#offline-bar,#overlay,#onboarding-overlay{display:none!important}
+      .ham-btn,#sb-overlay,#toast,#offline-bar,#overlay,#onboarding-overlay{display:none!important}
       #content{margin-left:0!important;margin-bottom:0!important}
       .section{display:block!important;padding:20px!important}
       .section:not(.active){display:none!important}
@@ -542,8 +565,11 @@
 <!-- ── SIDEBAR ── -->
 <aside class="sidebar">
   <div class="sidebar-brand">
-    <div class="brand-name"><span id="brand-icon">R$</span> <span id="brand-name-text">Soldo</span></div>
-    <div class="brand-sub">gestão financeira pessoal</div>
+    <div>
+      <div class="brand-name"><span id="brand-icon">R$</span> <span id="brand-name-text">Soldo</span></div>
+      <div class="brand-sub">gestão financeira pessoal</div>
+    </div>
+    <button class="sb-close-btn" onclick="toggleSidebar()" title="Fechar menu">✕</button>
   </div>
   <div class="sidebar-month">
     <label>Mês de Referência</label>
@@ -585,6 +611,8 @@
     </div>
   </div>
 </aside>
+<div id="sb-overlay" onclick="toggleSidebar()"></div>
+<button class="ham-btn" id="ham-btn" onclick="toggleSidebar()" title="Menu">☰</button>
 
 <!-- ── BOTTOM-NAV (mobile) ── -->
 <nav class="bottom-nav">
@@ -890,7 +918,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.31';
+const APP_VER='4.3.32';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -3517,6 +3545,7 @@ function goTo(sec){
   else if(sec==='calendario')R.calendario();
   else if(sec==='configuracao')CONFIG.render();
   else R.dashboard();
+  if(window.innerWidth>768&&window.innerWidth<=1100)document.getElementById('app').classList.remove('sb-open');
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -3538,6 +3567,7 @@ function initPicker(){
 
 function abrirMaisNav(){document.getElementById('mais-overlay').classList.add('open')}
 function fecharMaisNav(e){if(!e||e.target===document.getElementById('mais-overlay'))document.getElementById('mais-overlay').classList.remove('open')}
+function toggleSidebar(){document.getElementById('app').classList.toggle('sb-open')}
 
 function mobileMonthNav(delta){
   const[y,m]=ST.month.split('-').map(Number);
