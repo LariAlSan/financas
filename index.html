@@ -890,7 +890,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.27';
+const APP_VER='4.3.28';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -1502,6 +1502,7 @@ const C={
   salario(mo){const s=ST.data.salarios[mo];const rec=(ST.data.receitasRecorrentes||[]).reduce((a,r)=>a+(r.valor||0),0);if(!s)return rec;return(s.base||0)+(s.ticket||0)+(s.extras||[]).reduce((a,e)=>a+(e.valor||0),0)+rec},
   ticketUsado(mo){return(ST.data.despesasVariaveis||[]).filter(d=>d.data?.startsWith(mo)&&d.formaPagamento==='Vale Refeição').reduce((a,d)=>a+(d.valor||0),0)},
   ticketDisponivel(mo,depth=0){if(depth>24)return ST.data.salarios[mo]?.ticket||0;const[y,m]=mo.split('-').map(Number);const prev=m===1?`${y-1}-12`:`${y}-${String(m-1).padStart(2,'0')}`;const ps=ST.data.salarios[prev];if(!ps||(!ps.ticket&&!this.ticketUsado(prev)))return ST.data.salarios[mo]?.ticket||0;const prevDisp=this.ticketDisponivel(prev,depth+1);return Math.max(0,prevDisp-this.ticketUsado(prev))+(ST.data.salarios[mo]?.ticket||0);},
+  salarioDisponivel(mo,depth=0){if(depth>24)return this.salario(mo);const[y,m]=mo.split('-').map(Number);const prev=m===1?`${y-1}-12`:`${y}-${String(m-1).padStart(2,'0')}`;const ps=ST.data.salarios[prev];if(!ps||!ps.base)return this.salario(mo);const prevDisp=this.salarioDisponivel(prev,depth+1);const prevGastos=this.salario(prev)-this.saldo(prev);return Math.max(0,prevDisp-prevGastos)+this.salario(mo);},
   valorFixa(d,mo){
     if(!d.historico?.length)return d.valor||0;
     const ents=d.historico.filter(h=>h.de<=mo).sort((a,b)=>b.de.localeCompare(a.de));
@@ -1784,8 +1785,9 @@ const R={
       <div class="card" style="margin-bottom:14px">
         <div class="sal-wrap">
           <div class="sal-main">
-            <div class="sal-lbl">Salário Base — ${mlabel(mo)}</div>
-            <div class="sal-amt" id="sal-disp">${fmtBRL(s.base)}</div>
+            <div class="sal-lbl">Salário Disponível — ${mlabel(mo)}</div>
+            <div class="sal-amt" id="sal-disp">${fmtBRL(C.salarioDisponivel(mo))}</div>
+            ${(()=>{const prev=C.salarioDisponivel(mo)-C.salario(mo);return prev>0?`<div style="font-size:.72rem;color:var(--textm);margin-top:3px">Recebido: ${fmtBRL(C.salario(mo))} · Saldo anterior: ${fmtBRL(prev)}</div>`:''})()}
             <div id="sal-ea" style="margin-top:7px"><button class="btn btn-g" onclick="editSal()">✏️ Editar</button></div>
             <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
               <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--textm);margin-bottom:4px">🍽️ Ticket Refeição — ${mlabel(mo)}</div>
