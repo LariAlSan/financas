@@ -890,7 +890,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.25';
+const APP_VER='4.3.26';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -2274,6 +2274,7 @@ const R={
           const fixasVinc=ST.data.despesasFixas.filter(d=>d.cartaoId===c.id);
           const varVinc=ST.data.despesasVariaveis.filter(d=>d.cartaoId===c.id&&faturaMonth(d.data,c)===mo);
           const parcVinc=ST.data.parceladas.filter(p=>p.cartaoId===c.id&&C.parcAtiva(p,mo));
+          const allItems=[...gastos.map(g=>({...g,_t:'g',_k:g.data||mo+'-00'})),...fixasVinc.map(d=>({...d,_t:'f',_k:mo+'-'+String(d.vencimento||1).padStart(2,'0')})),...varVinc.map(d=>({...d,_t:'v',_k:d.data||mo+'-00'})),...parcVinc.map(p=>({...p,_t:'p',_k:(p.mesInicio||mo)+'-01'}))].sort((a,b)=>b._k.localeCompare(a._k));
           const totalC=C.totalFatura(c.id,mo);
           const pct=c.limite>0?Math.min(100,(totalC/c.limite)*100):0;
           const barColor=pct>=90?'linear-gradient(90deg,#ef4444,#dc2626)':pct>=70?'linear-gradient(90deg,#f59e0b,#f97316)':'var(--pg)';
@@ -2303,31 +2304,33 @@ const R={
                 <button class="btn btn-p" style="padding:6px 13px;font-size:.76rem" onclick="abrirGastoFatura('${c.id}')">+ Gasto</button>
               </div>
             </div>
-            ${(gastos.length||fixasVinc.length||varVinc.length||parcVinc.length)?`<div style="border-radius:calc(var(--r) - 2px);border:1px solid var(--border);margin-top:10px;overflow:hidden"><table class="tbl tbl-sm" style="table-layout:fixed;width:100%"><thead><tr><th style="width:33%">Descrição</th><th style="width:24%">Categoria</th><th style="white-space:nowrap;width:13%">Data</th><th style="white-space:nowrap;text-align:right;width:30%">Valor</th></tr></thead><tbody>
-              ${gastos.map(g=>{const cat=CATS[g.categoria]||CATS.outros;return`<tr>
-                <td style="font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${g.descricao}</td>
-                <td><span class="badge ${cat.b}" style="font-size:.68rem">${cat.i} ${cat.l}</span></td>
-                <td style="font-size:.82rem;white-space:nowrap;color:var(--text2)">${g.data?g.data.slice(8,10)+'/'+g.data.slice(5,7):'—'}</td>
-                <td style="font-weight:600;font-size:.82rem;white-space:nowrap;text-align:right"><span style="display:flex;align-items:center;justify-content:flex-end;gap:6px">${fmtBRL(g.valor)}<button class="ic del" onclick="delGastoFatura('${c.id}','${g.id}')" style="padding:3px 6px">🗑️</button></span></td>
-              </tr>`}).join('')}
-              ${fixasVinc.map(d=>{const cat=CATS[d.categoria]||CATS.outros;return`<tr style="opacity:.8">
-                <td style="font-size:.82rem"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">🔗 ${d.nome}</span><span class="badge bpd" style="font-size:.6rem">fixa</span></td>
-                <td><span class="badge ${cat.b}" style="font-size:.68rem">${cat.i} ${cat.l}</span></td>
-                <td style="font-size:.82rem;color:var(--text2)">—</td>
-                <td style="font-weight:600;font-size:.82rem;white-space:nowrap;text-align:right">${fmtBRL(C.valorFixa(d,mo))}</td>
-              </tr>`}).join('')}
-              ${varVinc.map(d=>{const cat=CATS[d.categoria]||CATS.outros;return`<tr style="opacity:.8">
-                <td style="font-size:.82rem"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">🔗 ${d.descricao}</span><span class="badge bt" style="font-size:.6rem">variável</span></td>
-                <td><span class="badge ${cat.b}" style="font-size:.68rem">${cat.i} ${cat.l}</span></td>
-                <td style="font-size:.82rem;white-space:nowrap;color:var(--text2)">${d.data?d.data.slice(8,10)+'/'+d.data.slice(5,7):'—'}</td>
-                <td style="font-weight:600;font-size:.82rem;white-space:nowrap;text-align:right">${fmtBRL(d.valor)}</td>
-              </tr>`}).join('')}
-              ${parcVinc.map(p=>{const catP=p.categoria&&CATS[p.categoria];return`<tr style="opacity:.8">
-                <td style="font-size:.82rem"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">🔗 ${p.descricao}</span><span class="badge bbl" style="font-size:.6rem">parcela ${C.nParcela(p,mo)}/${p.numParcelas}</span></td>
-                <td>${catP?`<span class="badge ${catP.b}" style="font-size:.68rem">${catP.i} ${catP.l}</span>`:`<span class="badge bbl" style="font-size:.68rem">🛒 parcelado</span>`}</td>
-                <td style="font-size:.82rem;white-space:nowrap;color:var(--text2)">${p.mesInicio?'01/'+p.mesInicio.slice(5,7):'—'}</td>
-                <td style="font-weight:600;font-size:.82rem;white-space:nowrap;text-align:right">${fmtBRL(p.valorParcela)}</td>
-              </tr>`}).join('')}
+            ${allItems.length?`<div style="border-radius:calc(var(--r) - 2px);border:1px solid var(--border);margin-top:10px;overflow:hidden"><table class="tbl tbl-sm" style="table-layout:fixed;width:100%"><thead><tr><th style="width:33%">Descrição</th><th style="width:24%">Categoria</th><th style="white-space:nowrap;width:13%">Data</th><th style="white-space:nowrap;text-align:right;width:30%">Valor</th></tr></thead><tbody>
+              ${allItems.map(item=>{
+                if(item._t==='g'){const cat=CATS[item.categoria]||CATS.outros;return`<tr>
+                  <td style="font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.descricao}</td>
+                  <td><span class="badge ${cat.b}" style="font-size:.68rem">${cat.i} ${cat.l}</span></td>
+                  <td style="font-size:.82rem;white-space:nowrap;color:var(--text2)">${item.data?item.data.slice(8,10)+'/'+item.data.slice(5,7):'—'}</td>
+                  <td style="font-weight:600;font-size:.82rem;white-space:nowrap;text-align:right"><span style="display:flex;align-items:center;justify-content:flex-end;gap:6px">${fmtBRL(item.valor)}<button class="ic del" onclick="delGastoFatura('${c.id}','${item.id}')" style="padding:3px 6px">🗑️</button></span></td>
+                </tr>`;}
+                if(item._t==='f'){const cat=CATS[item.categoria]||CATS.outros;return`<tr style="opacity:.8">
+                  <td style="font-size:.82rem"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">🔗 ${item.nome}</span><span class="badge bpd" style="font-size:.6rem">fixa</span></td>
+                  <td><span class="badge ${cat.b}" style="font-size:.68rem">${cat.i} ${cat.l}</span></td>
+                  <td style="font-size:.82rem;white-space:nowrap;color:var(--text2)">${item.vencimento?String(item.vencimento).padStart(2,'0')+'/'+mo.slice(5,7):'—'}</td>
+                  <td style="font-weight:600;font-size:.82rem;white-space:nowrap;text-align:right">${fmtBRL(C.valorFixa(item,mo))}</td>
+                </tr>`;}
+                if(item._t==='v'){const cat=CATS[item.categoria]||CATS.outros;return`<tr style="opacity:.8">
+                  <td style="font-size:.82rem"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">🔗 ${item.descricao}</span><span class="badge bt" style="font-size:.6rem">variável</span></td>
+                  <td><span class="badge ${cat.b}" style="font-size:.68rem">${cat.i} ${cat.l}</span></td>
+                  <td style="font-size:.82rem;white-space:nowrap;color:var(--text2)">${item.data?item.data.slice(8,10)+'/'+item.data.slice(5,7):'—'}</td>
+                  <td style="font-weight:600;font-size:.82rem;white-space:nowrap;text-align:right">${fmtBRL(item.valor)}</td>
+                </tr>`;}
+                if(item._t==='p'){const catP=item.categoria&&CATS[item.categoria];return`<tr style="opacity:.8">
+                  <td style="font-size:.82rem"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">🔗 ${item.descricao}</span><span class="badge bbl" style="font-size:.6rem">parcela ${C.nParcela(item,mo)}/${item.numParcelas}</span></td>
+                  <td>${catP?`<span class="badge ${catP.b}" style="font-size:.68rem">${catP.i} ${catP.l}</span>`:`<span class="badge bbl" style="font-size:.68rem">🛒 parcelado</span>`}</td>
+                  <td style="font-size:.82rem;white-space:nowrap;color:var(--text2)">${item.mesInicio?'01/'+item.mesInicio.slice(5,7):'—'}</td>
+                  <td style="font-weight:600;font-size:.82rem;white-space:nowrap;text-align:right">${fmtBRL(item.valorParcela)}</td>
+                </tr>`;}
+              }).join('')}
             </tbody></table></div>`:'<div class="empty" style="font-size:.78rem;padding:8px 0">Nenhum gasto lançado nesta fatura</div>'}
           </div>`;
         }).join('')}
