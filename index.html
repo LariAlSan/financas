@@ -890,7 +890,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.26';
+const APP_VER='4.3.27';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -1501,6 +1501,7 @@ const C={
   addM(ym,n){const[y,m]=ym.split('-').map(Number),d=new Date(y,m-1+n,1);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`},
   salario(mo){const s=ST.data.salarios[mo];const rec=(ST.data.receitasRecorrentes||[]).reduce((a,r)=>a+(r.valor||0),0);if(!s)return rec;return(s.base||0)+(s.ticket||0)+(s.extras||[]).reduce((a,e)=>a+(e.valor||0),0)+rec},
   ticketUsado(mo){return(ST.data.despesasVariaveis||[]).filter(d=>d.data?.startsWith(mo)&&d.formaPagamento==='Vale Refeição').reduce((a,d)=>a+(d.valor||0),0)},
+  ticketDisponivel(mo,depth=0){if(depth>24)return ST.data.salarios[mo]?.ticket||0;const[y,m]=mo.split('-').map(Number);const prev=m===1?`${y-1}-12`:`${y}-${String(m-1).padStart(2,'0')}`;const ps=ST.data.salarios[prev];if(!ps||(!ps.ticket&&!this.ticketUsado(prev)))return ST.data.salarios[mo]?.ticket||0;const prevDisp=this.ticketDisponivel(prev,depth+1);return Math.max(0,prevDisp-this.ticketUsado(prev))+(ST.data.salarios[mo]?.ticket||0);},
   valorFixa(d,mo){
     if(!d.historico?.length)return d.valor||0;
     const ents=d.historico.filter(h=>h.de<=mo).sort((a,b)=>b.de.localeCompare(a.de));
@@ -1788,10 +1789,10 @@ const R={
             <div id="sal-ea" style="margin-top:7px"><button class="btn btn-g" onclick="editSal()">✏️ Editar</button></div>
             <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
               <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--textm);margin-bottom:4px">🍽️ Ticket Refeição — ${mlabel(mo)}</div>
-              <div style="font-size:1.2rem;font-weight:800;color:#e65100">${fmtBRL(s.ticket||0)}</div>
+              <div style="font-size:1.2rem;font-weight:800;color:#e65100">${fmtBRL(C.ticketDisponivel(mo))}</div>
               <div style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
                 <button class="btn btn-g" onclick="editTicket()">✏️ Editar</button>
-                ${(s.ticket||0)>0?`<span style="font-size:.72rem;color:var(--textm)">Usado: ${fmtBRL(C.ticketUsado(mo))} · Saldo: <b style="color:${(s.ticket||0)-C.ticketUsado(mo)>=0?'var(--green)':'var(--red)'}">${fmtBRL((s.ticket||0)-C.ticketUsado(mo))}</b></span>`:''}
+                ${C.ticketDisponivel(mo)>0?`<span style="font-size:.72rem;color:var(--textm)">Usado: ${fmtBRL(C.ticketUsado(mo))} · Saldo: <b style="color:${C.ticketDisponivel(mo)-C.ticketUsado(mo)>=0?'var(--green)':'var(--red)'}">${fmtBRL(C.ticketDisponivel(mo)-C.ticketUsado(mo))}</b></span>`:''}
               </div>
             </div>
           </div>
@@ -2774,8 +2775,8 @@ const MODAL={
         </div>
       </div>`;
     }
-    if(sec==='ticket'){const s=ST.data.salarios[mo]||{};return`<div class="fg">
-      <div class="hint">🍽️ Valor recebido em ${mlabel(mo)}</div>
+    if(sec==='ticket'){const s=ST.data.salarios[mo]||{};const prevSaldo=Math.max(0,C.ticketDisponivel(mo)-(s.ticket||0));return`<div class="fg">
+      <div class="hint">🍽️ Valor recebido em ${mlabel(mo)}${prevSaldo>0?` · Saldo anterior: ${fmtBRL(prevSaldo)}`:''}</div>
       <div class="frow"><label>Valor (R$)</label><input id="tk-val" type="number" step="0.01" min="0" placeholder="0,00" value="${s.ticket||''}"></div>
     </div>`;}
     if(sec==='aporte'){
