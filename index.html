@@ -928,7 +928,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.40';
+const APP_VER='4.3.41';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -1641,6 +1641,7 @@ const R={
     const sal=C.salario(mo),fx=C.fixas(mo),pc=C.parceladas(mo),vr=C.variaveis(mo),fat=C.totalFaturas(mo);
     const pcTotal=ST.data.parceladas.filter(p=>C.parcAtiva(p,mo)).reduce((a,p)=>a+(p.valorParcela||0),0);
     const inv=C.totalAtual(),fluxo=C.saldo(mo),saldo=C.saldoAcumulado(mo);
+    const contasTotal=(ST.data.contas||[]).reduce((a,c)=>a+(c.saldo||0),0);
     const anterior=saldo-fluxo;
     const prev=C.addM(mo,-1);
     const sal_p=C.salario(prev),fx_p=C.fixas(prev),pc_p=C.parceladas(prev),vr_p=C.variaveis(prev),fat_p=C.totalFaturas(prev);
@@ -1709,7 +1710,7 @@ const R={
       <div class="sum-card bal">
         <div class="bal-left">
           <h2>Saldo Disponível</h2>
-          <div class="bal-amt ${saldo>=0?'pos':'neg'}">${fmtBRL(saldo)}</div>
+          <div class="bal-amt ${contasTotal>=0?'pos':'neg'}">${fmtBRL(contasTotal)}</div>
           <div class="bal-sub">${mlabel(mo)}</div>
           <div style="margin-top:11px;padding-top:11px;border-top:1px solid var(--border)">
             <div style="font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--textm)">🔮 Previsão até fim do mês</div>
