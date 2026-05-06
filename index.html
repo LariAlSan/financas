@@ -928,7 +928,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.42';
+const APP_VER='4.3.43';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -1661,13 +1661,13 @@ const R={
       const dH=hoje.getDate();
       ST.data.despesasFixas.filter(d=>!d.pagamentos?.[mo]).forEach(d=>{
         const diff=d.vencimento-dH;
-        if(diff>=0&&diff<=5)alertas.push({t:'warn',m:`⏰ "${d.nome}" vence ${diff===0?'hoje':`em ${diff} dia${diff!==1?'s':''}`} — ${fmtBRL(d.valor)}`});
+        if(diff>=0&&diff<=5)alertas.push({t:'warn',m:`⏰ "${esc(d.nome)}" vence ${diff===0?'hoje':`em ${diff} dia${diff!==1?'s':''}`} — ${fmtBRL(d.valor)}`});
       });
     }
     ST.data.parceladas.filter(p=>C.parcAtiva(p,mo)).forEach(p=>{
       const restantes=p.numParcelas-C.nParcela(p,mo);
-      if(restantes===0)alertas.push({t:'inf',m:`🏁 "${p.descricao}" — última parcela (${C.nParcela(p,mo)}/${p.numParcelas})`});
-      else if(restantes<=2)alertas.push({t:'inf',m:`⏳ "${p.descricao}" — ${restantes} parcela(s) restante(s) (${C.nParcela(p,mo)}/${p.numParcelas})`});
+      if(restantes===0)alertas.push({t:'inf',m:`🏁 "${esc(p.descricao)}" — última parcela (${C.nParcela(p,mo)}/${p.numParcelas})`});
+      else if(restantes<=2)alertas.push({t:'inf',m:`⏳ "${esc(p.descricao)}" — ${restantes} parcela(s) restante(s) (${C.nParcela(p,mo)}/${p.numParcelas})`});
     });
     Object.entries(ST.data.orcamentos||{}).forEach(([cat,lim])=>{
       const g=C.gastoCategoria(cat,mo);
@@ -1793,11 +1793,11 @@ const R={
     document.getElementById('q-lists').innerHTML=`
       <div class="card">
         <div class="q-title">🔴 Não Pagas (${unpaid.length})</div>
-        ${unpaid.length?unpaid.map(d=>`<div class="q-item"><span class="q-name">${d.nome}</span><span class="q-val" style="color:var(--red)">${fmtBRL(d.valor)}</span></div>`).join(''):'<div class="empty">Todas pagas! 🎉</div>'}
+        ${unpaid.length?unpaid.map(d=>`<div class="q-item"><span class="q-name">${esc(d.nome)}</span><span class="q-val" style="color:var(--red)">${fmtBRL(d.valor)}</span></div>`).join(''):'<div class="empty">Todas pagas! 🎉</div>'}
       </div>
       <div class="card">
         <div class="q-title">🛒 Parcelas Ativas (${ativas.length})</div>
-        ${ativas.length?ativas.map(p=>{const n=C.nParcela(p,mo);const catP=p.categoria&&CATS[p.categoria];return`<div class="q-item"><span class="q-name">${p.descricao}${catP?` <span class="badge ${catP.b}" style="font-size:.6rem;margin-left:4px">${catP.i}</span>`:''} <small style="color:var(--textm)">${n}/${p.numParcelas}</small></span><span class="q-val" style="color:var(--gold)">${fmtBRL(p.valorParcela)}</span></div>`}).join(''):'<div class="empty">Nenhuma parcela ativa</div>'}
+        ${ativas.length?ativas.map(p=>{const n=C.nParcela(p,mo);const catP=p.categoria&&CATS[p.categoria];return`<div class="q-item"><span class="q-name">${esc(p.descricao)}${catP?` <span class="badge ${catP.b}" style="font-size:.6rem;margin-left:4px">${catP.i}</span>`:''} <small style="color:var(--textm)">${n}/${p.numParcelas}</small></span><span class="q-val" style="color:var(--gold)">${fmtBRL(p.valorParcela)}</span></div>`}).join(''):'<div class="empty">Nenhuma parcela ativa</div>'}
       </div>
       <div class="card" style="grid-column:1/-1">
         <div class="q-title" style="margin-bottom:8px">📊 Comparativo — ${mlabel(mo)} vs ${mlabel(prev)}</div>
@@ -1902,7 +1902,7 @@ const R={
             const cartaoTag=cartaoNome?`<span class="badge bac" style="margin-left:5px;font-size:.63rem">💳 ${cartaoNome}</span>`:'';
             const valMo=C.valorFixa(d,mo);
             return`<tr>
-              <td style="font-weight:500">${d.nome}${cartaoTag}</td>
+              <td style="font-weight:500">${esc(d.nome)}${cartaoTag}</td>
               <td><span class="badge ${cat.b}">${cat.i} ${cat.l}</span></td>
               <td>${pb}</td>
               <td style="color:var(--text2)">Dia ${d.vencimento}</td>
@@ -1946,7 +1946,7 @@ const R={
             const cartaoTagP=cartaoNomeP?`<span class="badge bac" style="margin-left:5px;font-size:.63rem">💳 ${cartaoNomeP}</span>`:'';
             const catP=p.categoria&&CATS[p.categoria]?`<span class="badge ${CATS[p.categoria].b}">${CATS[p.categoria].i} ${CATS[p.categoria].l}</span>`:'<span style="color:var(--textm)">—</span>';
             return`<tr>
-              <td style="font-weight:500">${p.descricao}${cartaoTagP}</td>
+              <td style="font-weight:500">${esc(p.descricao)}${cartaoTagP}</td>
               <td>${catP}</td>
               <td>${pb}</td>
               <td style="color:var(--gold);font-weight:600">${n} / ${p.numParcelas}${n===p.numParcelas?' <span class="badge bs" style="margin-left:5px;font-size:.63rem">Última ✓</span>':''}</td>
@@ -1964,7 +1964,7 @@ const R={
       ${inativas.length?`<div class="card">
         <div style="font-size:.82rem;font-weight:600;color:var(--textm);margin-bottom:12px">Inativas / Encerradas</div>
         <table class="tbl"><thead><tr><th>Descrição</th><th>Parcelas</th><th>Total</th><th></th></tr></thead><tbody>
-          ${inativas.map(p=>`<tr style="opacity:.55"><td>${p.descricao}</td><td>${p.numParcelas}x</td><td>${fmtBRL(p.valorTotal)}</td>
+          ${inativas.map(p=>`<tr style="opacity:.55"><td>${esc(p.descricao)}</td><td>${p.numParcelas}x</td><td>${fmtBRL(p.valorTotal)}</td>
             <td><div class="acts"><button class="ic" onclick="MODAL.open('parceladas','${p.id}')">✏️</button><button class="ic del" onclick="delParc('${p.id}')">🗑️</button></div></td></tr>`).join('')}
         </tbody></table>
       </div>`:''}`;
@@ -2096,7 +2096,7 @@ const R={
             const cartaoTagV=cartaoNomeV?`<span class="badge bac" style="margin-left:5px;font-size:.63rem">💳 ${cartaoNomeV}</span>`:'';
             return`<tr>
               <td style="color:var(--text2);white-space:nowrap">${df}</td>
-              <td style="font-weight:500">${d.descricao}${cartaoTagV}</td>
+              <td style="font-weight:500">${esc(d.descricao)}${cartaoTagV}</td>
               <td><span class="badge ${cat.b}">${cat.i} ${cat.l}</span></td>
               <td>${pb}</td>
               <td style="font-weight:600;color:${d.cartaoId?'var(--pink)':'var(--blue)'}">${fmtBRL(d.valor)}</td>
@@ -2274,7 +2274,7 @@ const R={
           const invVinc=d.investimentoId?(ST.data.investimentos||[]).find(i=>i.id===d.investimentoId):null;
           return`<div class="dc ${d.status==='conquistado'?'conquistado':''}">
             <div class="dc-top">
-              <div class="dc-name">${d.nome}</div>
+              <div class="dc-name">${esc(d.nome)}</div>
               <div class="dc-acts" style="margin:0;padding:0;border:none">
                 <button class="ic" onclick="MODAL.open('desejos','${d.id}')">✏️</button>
                 <button class="ic del" onclick="delDesejo('${d.id}')">🗑️</button>
@@ -2944,6 +2944,10 @@ const MODAL={
         const i=ST.data.despesasFixas.findIndex(d=>d.id===id);
         if(i!==-1){
           const d=ST.data.despesasFixas[i];
+          const FC_FI=['Pix','Débito','Débito em conta'];
+          if(d.pagamentos?.[mo]&&d.contaId&&FC_FI.includes(d.formaPagamento)){
+            debitarConta(d.contaId,-C.valorFixa(d,mo),mo);
+          }
           if(!d.historico)d.historico=[{valor:d.valor||0,de:'2020-01'}];
           const lastVig=d.historico.filter(h=>h.de<=desde).sort((a,b)=>b.de.localeCompare(a.de))[0];
           if(!lastVig||lastVig.valor!==valor){
@@ -2951,6 +2955,9 @@ const MODAL={
             d.historico.push({valor,de:desde});
           }
           Object.assign(d,{nome,valor,vencimento:venc,categoria:cat,formaPagamento:pag,cartaoId:cartaoId||'',contaId:contaIdFi||''});
+          if(d.pagamentos?.[mo]&&contaIdFi&&FC_FI.includes(pag)){
+            debitarConta(contaIdFi,C.valorFixa(d,mo),mo);
+          }
         }
       } else {
         ST.data.despesasFixas.push({id:uid(),nome,valor,categoria:cat,vencimento:venc,formaPagamento:pag,cartaoId:cartaoId||'',contaId:contaIdFi||'',pagamentos:{},historico:[{valor,de:desde}]});
@@ -3123,12 +3130,28 @@ const MODAL={
       if(!desc||!(val>0)||!dt){toast('Preencha todos os campos (valor positivo)','err');return}
       if(!cid){toast('Cartão não identificado','err');return}
       const cartGasto=(ST.data.cartoes||[]).find(c=>c.id===cid);
-      const moAlvo=id?mo:faturaMonth(dt,cartGasto)||mo;
       if(!ST.data.faturas)ST.data.faturas={};
-      if(!ST.data.faturas[moAlvo])ST.data.faturas[moAlvo]={};
-      if(!ST.data.faturas[moAlvo][cid])ST.data.faturas[moAlvo][cid]={gastos:[],paga:false};
-      if(id){const i=ST.data.faturas[mo][cid].gastos.findIndex(g=>g.id===id);if(i!==-1)Object.assign(ST.data.faturas[mo][cid].gastos[i],{descricao:desc,valor:val,data:dt,categoria:cat})}
-      else ST.data.faturas[moAlvo][cid].gastos.push({id:uid(),descricao:desc,valor:val,data:dt,categoria:cat});
+      if(id){
+        let gastoMo=null,gastoIdx=-1;
+        for(const m of Object.keys(ST.data.faturas)){
+          const idx=(ST.data.faturas[m]?.[cid]?.gastos||[]).findIndex(g=>g.id===id);
+          if(idx!==-1){gastoMo=m;gastoIdx=idx;break;}
+        }
+        const newMo=faturaMonth(dt,cartGasto)||mo;
+        if(!ST.data.faturas[newMo])ST.data.faturas[newMo]={};
+        if(!ST.data.faturas[newMo][cid])ST.data.faturas[newMo][cid]={gastos:[],paga:false};
+        if(gastoMo&&gastoMo!==newMo){
+          const [g]=ST.data.faturas[gastoMo][cid].gastos.splice(gastoIdx,1);
+          ST.data.faturas[newMo][cid].gastos.push({...g,descricao:desc,valor:val,data:dt,categoria:cat});
+        } else if(gastoMo){
+          Object.assign(ST.data.faturas[gastoMo][cid].gastos[gastoIdx],{descricao:desc,valor:val,data:dt,categoria:cat});
+        }
+      } else {
+        const moAlvo=faturaMonth(dt,cartGasto)||mo;
+        if(!ST.data.faturas[moAlvo])ST.data.faturas[moAlvo]={};
+        if(!ST.data.faturas[moAlvo][cid])ST.data.faturas[moAlvo][cid]={gastos:[],paga:false};
+        ST.data.faturas[moAlvo][cid].gastos.push({id:uid(),descricao:desc,valor:val,data:dt,categoria:cat});
+      }
       STORAGE.save();this.close();R.cartoes();R.dashboard();toast(id?'Gasto atualizado!':'Gasto lançado!','ok');
     }
     else if(sec==='contas'){
