@@ -928,7 +928,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.45';
+const APP_VER='4.3.46';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -2691,7 +2691,7 @@ const MODAL={
       const cartaoOpts=`<option value="">— nenhum —</option>`+cartoes.map(c=>`<option value="${c.id}" ${v.cartaoId===c.id?'selected':''}>${c.nome}</option>`).join('');
       const showCartao=v.formaPagamento==='Crédito'?'':'display:none';
       const contaOptsFi=`<option value="">— nenhuma —</option>`+(ST.data.contas||[]).map(c=>`<option value="${c.id}" ${v.contaId===c.id?'selected':''}>${c.nome} (${fmtBRL(c.saldos?.[mo]??c.saldo??0)})</option>`).join('');
-      const showContaFi=(!ST.editId||v.contaId)&&['Pix','Débito','Débito em conta'].includes(v.formaPagamento)?'':'display:none';
+      const showContaFi=['Pix','Débito','Débito em conta'].includes(v.formaPagamento||FORMAS_PAG[0])?'':'display:none';
       const vigDe=v.historico?.filter(h=>h.de<=mo).sort((a,b)=>b.de.localeCompare(a.de))[0]?.de||mo;
       return`<div class="fg">
         <div class="frow"><label>Nome</label><input id="fi-nome" placeholder="Ex: Aluguel" value="${v.nome||''}"></div>
@@ -2702,7 +2702,7 @@ const MODAL={
         <div class="fg fg2">
           <div class="frow"><label>Categoria</label><select id="fi-cat">${catOpts}</select></div>
           <div class="frow"><label>Forma de Pagamento</label>
-            <select id="fi-pag" onchange="const r=document.getElementById('fi-cartao-row');r.style.display=this.value==='Crédito'?'':'none';const rc=document.getElementById('fi-conta-row');rc.style.display=(!ST.editId||rc.querySelector('select').value)&&['Pix','Débito','Débito em conta'].includes(this.value)?'':'none'">${pagOpts}</select>
+            <select id="fi-pag" onchange="const r=document.getElementById('fi-cartao-row');r.style.display=this.value==='Crédito'?'':'none';const rc=document.getElementById('fi-conta-row');rc.style.display=['Pix','Débito','Débito em conta'].includes(this.value)?'':'none'">${pagOpts}</select>
           </div>
         </div>
         <div class="frow" id="fi-cartao-row" style="${showCartao}">
@@ -2727,7 +2727,7 @@ const MODAL={
       const cartaoOpts=`<option value="">— nenhum —</option>`+cartoes.map(c=>`<option value="${c.id}" ${v.cartaoId===c.id?'selected':''}>${c.nome}</option>`).join('');
       const showCartaoP=v.formaPagamento==='Crédito'?'':'display:none';
       const contaOptsPa=`<option value="">— nenhuma —</option>`+(ST.data.contas||[]).map(c=>`<option value="${c.id}" ${v.contaId===c.id?'selected':''}>${c.nome} (${fmtBRL(c.saldos?.[mo]??c.saldo??0)})</option>`).join('');
-      const showContaPa=(!ST.editId||v.contaId)&&['Pix','Débito','Débito em conta'].includes(v.formaPagamento)?'':'display:none';
+      const showContaPa=['Pix','Débito','Débito em conta'].includes(v.formaPagamento||FORMAS_PAG[0])?'':'display:none';
       return`<div class="fg">
         <div class="frow"><label>Descrição</label><input id="pa-desc" placeholder="Ex: Notebook Dell" value="${v.descricao||''}"></div>
         <div class="fg fg2">
@@ -2737,7 +2737,7 @@ const MODAL={
         <div class="fg fg2">
           <div class="frow"><label>Mês de Início</label><input id="pa-ini" type="month" value="${v.mesInicio||mo}"></div>
           <div class="frow"><label>Forma de Pagamento</label>
-            <select id="pa-pag" onchange="const r=document.getElementById('pa-cartao-row');r.style.display=this.value==='Crédito'?'':'none';const rc=document.getElementById('pa-conta-row');rc.style.display=(!ST.editId||rc.querySelector('select').value)&&['Pix','Débito','Débito em conta'].includes(this.value)?'':'none'">${pagOpts}</select>
+            <select id="pa-pag" onchange="const r=document.getElementById('pa-cartao-row');r.style.display=this.value==='Crédito'?'':'none';const rc=document.getElementById('pa-conta-row');rc.style.display=['Pix','Débito','Débito em conta'].includes(this.value)?'':'none'">${pagOpts}</select>
           </div>
         </div>
         <div class="frow" id="pa-cartao-row" style="${showCartaoP}">
@@ -2814,7 +2814,7 @@ const MODAL={
       const cartaoOptsV=`<option value="">— nenhum —</option>`+cartoes.map(c=>`<option value="${c.id}" ${v.cartaoId===c.id?'selected':''}>${c.nome}</option>`).join('');
       const showCartaoV=v.formaPagamento==='Crédito'?'':'display:none';
       const contaOptsVa=`<option value="">— nenhuma —</option>`+(ST.data.contas||[]).map(c=>`<option value="${c.id}" ${v.contaId===c.id?'selected':''}>${c.nome} (${fmtBRL(c.saldos?.[mo]??c.saldo??0)})</option>`).join('');
-      const showContaVa=(!ST.editId||v.contaId)&&['Pix','Débito','Débito em conta'].includes(v.formaPagamento)?'':'display:none';
+      const showContaVa=['Pix','Débito','Débito em conta'].includes(v.formaPagamento||FORMAS_PAG[0])?'':'display:none';
       return`<div class="fg">
         <div class="frow"><label>Descrição</label><input id="va-desc" placeholder="Ex: Supermercado" value="${v.descricao||''}"></div>
         <div class="fg fg2">
@@ -2824,7 +2824,7 @@ const MODAL={
         <div class="fg fg2">
           <div class="frow"><label>Categoria</label><select id="va-cat">${catOpts}</select></div>
           <div class="frow"><label>Forma de Pagamento</label>
-            <select id="va-pag" onchange="const r=document.getElementById('va-cartao-row');r.style.display=this.value==='Crédito'?'':'none';const rc=document.getElementById('va-conta-row');rc.style.display=(!ST.editId||rc.querySelector('select').value)&&['Pix','Débito','Débito em conta'].includes(this.value)?'':'none'">${pagOpts}</select>
+            <select id="va-pag" onchange="const r=document.getElementById('va-cartao-row');r.style.display=this.value==='Crédito'?'':'none';const rc=document.getElementById('va-conta-row');rc.style.display=['Pix','Débito','Débito em conta'].includes(this.value)?'':'none'">${pagOpts}</select>
           </div>
         </div>
         <div class="frow" id="va-cartao-row" style="${showCartaoV}">
