@@ -928,7 +928,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.44';
+const APP_VER='4.3.45';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -1539,7 +1539,12 @@ const C={
   mdiff(a,b){const[ay,am]=a.split('-').map(Number),[by,bm]=b.split('-').map(Number);return(by-ay)*12+(bm-am)},
   addM(ym,n){const[y,m]=ym.split('-').map(Number),d=new Date(y,m-1+n,1);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`},
   salario(mo){const s=ST.data.salarios[mo];const rec=(ST.data.receitasRecorrentes||[]).reduce((a,r)=>a+(r.valor||0),0);if(!s)return rec;return(s.base||0)+(s.ticket||0)+(s.extras||[]).reduce((a,e)=>a+(e.valor||0),0)+rec},
-  ticketUsado(mo){return(ST.data.despesasVariaveis||[]).filter(d=>d.data?.startsWith(mo)&&d.formaPagamento==='Vale Refeição').reduce((a,d)=>a+(d.valor||0),0)},
+  ticketUsado(mo){
+    const startDate=(ST.data.salarios[mo]||{}).ticketEntrada;
+    if(!startDate)return(ST.data.despesasVariaveis||[]).filter(d=>d.data?.startsWith(mo)&&d.formaPagamento==='Vale Refeição').reduce((a,d)=>a+(d.valor||0),0);
+    const nextEntry=Object.values(ST.data.salarios||{}).map(s=>s.ticketEntrada).filter(dt=>dt&&dt>startDate).sort()[0];
+    return(ST.data.despesasVariaveis||[]).filter(d=>d.formaPagamento==='Vale Refeição'&&d.data&&d.data>=startDate&&(!nextEntry||d.data<nextEntry)).reduce((a,d)=>a+(d.valor||0),0);
+  },
   ticketDisponivel(mo){const keys=Object.keys(ST.data.salarios||{}).filter(k=>k<=mo).sort();if(!keys.length)return ST.data.salarios[mo]?.ticket||0;let carry=0,m=keys[0];while(m<mo){carry=Math.max(0,(ST.data.salarios[m]?.ticket||0)+carry-this.ticketUsado(m));m=this.addM(m,1);}return(ST.data.salarios[mo]?.ticket||0)+carry;},
   salarioDisponivel(mo){const keys=Object.keys(ST.data.salarios||{}).filter(k=>k<=mo).sort();if(!keys.length)return this.salario(mo);let carry=0,m=keys[0];while(m<mo){carry=Math.max(0,this.saldo(m)+carry);m=this.addM(m,1);}return this.salario(mo)+carry;},
   salarioUsado(mo){const fx=this.fixas(mo);const pc=this.parceladas(mo);const vr=(ST.data.despesasVariaveis||[]).filter(d=>d.data?.startsWith(mo)&&!d.cartaoId&&d.formaPagamento!=='Vale Refeição').reduce((a,d)=>a+(d.valor||0),0);const fat=(ST.data.cartoes||[]).reduce((a,c)=>a+(ST.data.faturas?.[mo]?.[c.id]?.paga?this.totalFatura(c.id,mo):0),0);return fx+pc+vr+fat;},
@@ -1845,6 +1850,7 @@ const R={
             <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
               <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--textm);margin-bottom:4px">🍽️ Ticket Refeição — ${mlabel(mo)}</div>
               <div style="font-size:1.2rem;font-weight:800;color:#e65100">${fmtBRL(C.ticketDisponivel(mo))}</div>
+              ${(()=>{const te=(s.ticketEntrada||'');const fmtDt=dt=>dt?dt.slice(8,10)+'/'+dt.slice(5,7):'';const nextE=te?Object.values(ST.data.salarios||{}).map(x=>x.ticketEntrada).filter(dt=>dt&&dt>te).sort()[0]:'';return te?`<div style="font-size:.68rem;color:var(--textm);margin-top:2px">📅 ${fmtDt(te)}${nextE?' → '+fmtDt(nextE)+' (excl.)':' → em aberto'}</div>`:''})()}
               <div style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
                 <button class="btn btn-g" onclick="editTicket()">✏️ Editar</button>
                 ${C.ticketDisponivel(mo)>0?`<span style="font-size:.72rem;color:var(--textm)">Usado: ${fmtBRL(C.ticketUsado(mo))} · Saldo: <b style="color:${C.ticketDisponivel(mo)-C.ticketUsado(mo)>=0?'var(--green)':'var(--red)'}">${fmtBRL(C.ticketDisponivel(mo)-C.ticketUsado(mo))}</b></span>`:''}
@@ -2867,10 +2873,19 @@ const MODAL={
         </div>
       </div>`;
     }
-    if(sec==='ticket'){const s=ST.data.salarios[mo]||{};const prevSaldo=Math.max(0,C.ticketDisponivel(mo)-(s.ticket||0));return`<div class="fg">
-      <div class="hint">🍽️ Valor recebido em ${mlabel(mo)}${prevSaldo>0?` · Saldo anterior: ${fmtBRL(prevSaldo)}`:''}</div>
-      <div class="frow"><label>Valor (R$)</label><input id="tk-val" type="number" step="0.01" min="0" placeholder="0,00" value="${s.ticket||''}"></div>
-    </div>`;}
+    if(sec==='ticket'){
+      const s=ST.data.salarios[mo]||{};
+      const prevSaldo=Math.max(0,C.ticketDisponivel(mo)-(s.ticket||0));
+      const nextEntry=Object.values(ST.data.salarios||{}).map(x=>x.ticketEntrada).filter(dt=>dt&&s.ticketEntrada&&dt>s.ticketEntrada).sort()[0];
+      const fmtDt=dt=>dt?dt.slice(8,10)+'/'+dt.slice(5,7):'—';
+      const periodo=s.ticketEntrada?`${fmtDt(s.ticketEntrada)} → ${nextEntry?fmtDt(nextEntry)+' (excl.)':'em aberto'}`:'';
+      return`<div class="fg">
+        <div class="hint">🍽️ Valor recebido em ${mlabel(mo)}${prevSaldo>0?` · Saldo anterior: ${fmtBRL(prevSaldo)}`:''}</div>
+        <div class="frow"><label>Data de entrada</label><input id="tk-dt" type="date" value="${s.ticketEntrada||''}"><small style="color:var(--textm);font-size:.68rem">Gastos com Vale Refeição a partir dessa data contam para este mês</small></div>
+        <div class="frow"><label>Valor (R$)</label><input id="tk-val" type="number" step="0.01" min="0" placeholder="0,00" value="${s.ticket||''}"></div>
+        ${periodo?`<div class="hint" style="margin-top:0">📅 Período atual: ${periodo}</div>`:''}
+      </div>`;
+    }
     if(sec==='aporte'){
       const inv=ST.data.investimentos.find(i=>i.id===ST.editId)||{};
       return`<div class="fg">
@@ -3073,9 +3088,12 @@ const MODAL={
     }
     else if(sec==='ticket'){
       const val=pnum(document.getElementById('tk-val')?.value);
+      const entrada=document.getElementById('tk-dt')?.value||'';
       if(!(val>=0)){toast('Valor inválido','err');return}
       if(!ST.data.salarios[mo])ST.data.salarios[mo]={base:0,extras:[]};
       ST.data.salarios[mo].ticket=val;
+      if(entrada)ST.data.salarios[mo].ticketEntrada=entrada;
+      else delete ST.data.salarios[mo].ticketEntrada;
       STORAGE.save();this.close();R.salario();R.dashboard();toast(`Ticket atualizado: ${fmtBRL(val)}`,'ok');
     }
     else if(sec==='aporte'){
