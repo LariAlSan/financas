@@ -1,4 +1,4 @@
-const CACHE = 'soldo-v2';
+const CACHE = 'soldo-v3';
 const ASSETS = [
   '/financas/icon-192.png',
   '/financas/icon-512.png',

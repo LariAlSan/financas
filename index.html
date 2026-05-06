@@ -8,6 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="/financas/icon-192.png" type="image/png">
   <meta name="theme-color" content="#3d1f2e">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600;1,700;1,800&display=swap');
@@ -361,6 +362,15 @@
     .orc-card{background:#fff;border:1.5px solid var(--border);border-radius:var(--r);padding:16px;box-shadow:var(--shadow)}
     .orc-edit{border:1.5px solid var(--border);border-radius:var(--rx);padding:5px 9px;font-size:.83rem;font-family:var(--font);width:100%;margin-top:8px;outline:none;background:var(--bg-input);color:var(--text)}
     .orc-edit:focus{border-color:var(--border-f)}
+    .orc-acc{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+    .orc-acc.open{display:block}
+    .orc-toggle{display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding:4px 0;cursor:pointer;font-size:.75rem;font-weight:600;color:var(--textm);user-select:none}
+    .orc-toggle .chev{transition:transform .2s;font-style:normal}
+    .orc-toggle.open .chev{transform:rotate(180deg)}
+    .orc-acc-item{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:3px 0;font-size:.74rem;border-bottom:1px dashed var(--border)}
+    .orc-acc-item:last-child{border-bottom:none}
+    .orc-acc-group{font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--textm);margin:8px 0 4px}
+    .orc-acc-group:first-child{margin-top:0}
 
     /* ── CARTÕES ── */
     .cart-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:16px}
@@ -918,7 +928,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.32';
+const APP_VER='4.3.39';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -1629,6 +1639,7 @@ const R={
   dashboard(){
     const mo=ST.month;
     const sal=C.salario(mo),fx=C.fixas(mo),pc=C.parceladas(mo),vr=C.variaveis(mo),fat=C.totalFaturas(mo);
+    const pcTotal=ST.data.parceladas.filter(p=>C.parcAtiva(p,mo)).reduce((a,p)=>a+(p.valorParcela||0),0);
     const inv=C.totalAtual(),fluxo=C.saldo(mo),saldo=C.saldoAcumulado(mo);
     const anterior=saldo-fluxo;
     const prev=C.addM(mo,-1);
@@ -1691,7 +1702,7 @@ const R={
     document.getElementById('sum-cards').innerHTML=`
       <div class="sum-card"><div class="sicon ig">💰</div><div class="slabel">Salário</div><div class="sval" style="color:var(--green)">${fmtBRL(sal)}</div></div>
       <div class="sum-card"><div class="sicon ir">📋</div><div class="slabel">Despesas Fixas</div><div class="sval" style="color:var(--red)">${fmtBRL(fx)}</div></div>
-      <div class="sum-card"><div class="sicon igo">🛒</div><div class="slabel">Parcelas do Mês</div><div class="sval" style="color:var(--gold)">${fmtBRL(pc)}</div></div>
+      <div class="sum-card"><div class="sicon igo">🛒</div><div class="slabel">Parcelas do Mês</div><div class="sval" style="color:var(--gold)">${fmtBRL(pcTotal)}</div></div>
       <div class="sum-card"><div class="sicon ib">🧾</div><div class="slabel">Gastos Variáveis</div><div class="sval" style="color:var(--blue)">${fmtBRL(vr)}</div></div>
       <div class="sum-card"><div class="sicon ip">💳</div><div class="slabel">Faturas</div><div class="sval" style="color:var(--pink)">${fmtBRL(fat)}</div></div>
       <div class="sum-card"><div class="sicon ip">📈</div><div class="slabel">Patrimônio</div><div class="sval" style="color:var(--purple)">${fmtBRL(inv)}</div></div>
@@ -1816,8 +1827,8 @@ const R={
         <div class="sal-wrap">
           <div class="sal-main">
             <div class="sal-lbl">Salário Disponível — ${mlabel(mo)}</div>
-            <div class="sal-amt" id="sal-disp">${fmtBRL(C.salarioDisponivel(mo))}</div>
-            ${(()=>{const prev=C.salarioDisponivel(mo)-C.salario(mo);return prev>0?`<div style="font-size:.72rem;color:var(--textm);margin-top:3px">Recebido: ${fmtBRL(C.salario(mo))} · Saldo anterior: ${fmtBRL(prev)}</div>`:''})()}
+            <div class="sal-amt" id="sal-disp">${fmtBRL(s.base||0)}</div>
+            ${(()=>{const prev=C.salarioDisponivel(mo)-C.salario(mo);return prev>0?`<div style="font-size:.72rem;color:var(--textm);margin-top:3px">Base: ${fmtBRL(s.base||0)} · Saldo anterior: ${fmtBRL(prev)}</div>`:''})()}
             <div id="sal-ea" style="margin-top:7px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
               <button class="btn btn-g" onclick="editSal()">✏️ Editar</button>
               ${C.salarioDisponivel(mo)>0?`<span style="font-size:.72rem;color:var(--textm)">Usado: ${fmtBRL(C.salarioUsado(mo))} · Saldo: <b style="color:${C.salarioDisponivel(mo)-C.salarioUsado(mo)>=0?'var(--green)':'var(--red)'}">${fmtBRL(C.salarioDisponivel(mo)-C.salarioUsado(mo))}</b></span>`:''}
@@ -2388,6 +2399,12 @@ const R={
           const gasto=C.gastoCategoria(k,mo);
           const pct=limite>0?Math.min(100,(gasto/limite)*100):0;
           const cls=pct>=90?'over':pct>=70?'warn':'ok';
+          const excedeu=limite>0&&gasto>limite?gasto-limite:0;
+          const itensV=(ST.data.despesasVariaveis||[]).filter(d=>d.data?.startsWith(mo)&&d.categoria===k).map(d=>`<div class="orc-acc-item"><span>${esc(d.descricao||'—')}<span style="color:var(--textm);margin-left:4px;font-size:.68rem">${(d.data?.slice(8,10)||'')}/${(d.data?.slice(5,7)||'')}</span></span><b>${fmtBRL(d.valor)}</b></div>`);
+          const itensP=(ST.data.parceladas||[]).filter(p=>C.parcAtiva(p,mo)&&p.categoria===k).map(p=>`<div class="orc-acc-item"><span>${esc(p.descricao||'—')}<span style="color:var(--textm);margin-left:4px;font-size:.68rem">${C.nParcela(p,mo)}/${p.numParcelas}x</span></span><b>${fmtBRL(p.valorParcela)}</b></div>`);
+          const itensC=[];(ST.data.cartoes||[]).forEach(c=>{(ST.data.faturas[mo]?.[c.id]?.gastos||[]).filter(g=>g.categoria===k).forEach(g=>itensC.push(`<div class="orc-acc-item"><span>${esc(g.descricao||'—')}<span style="color:var(--textm);margin-left:4px;font-size:.68rem">💳 ${esc(c.nome)}</span></span><b>${fmtBRL(g.valor)}</b></div>`));});
+          const total=itensV.length+itensP.length+itensC.length;
+          const accHtml=total===0?'':`<div class="orc-toggle" id="orc-tog-${k}" onclick="toggleOrcAcc('${k}')"><span>${total} despesa${total!==1?'s':''}</span><i class="chev">▼</i></div><div class="orc-acc" id="orc-acc-${k}">${itensV.length?`<div class="orc-acc-group">🧾 Variáveis</div>${itensV.join('')}`:''} ${itensP.length?`<div class="orc-acc-group">🛒 Parceladas</div>${itensP.join('')}`:''} ${itensC.length?`<div class="orc-acc-group">💳 Cartão</div>${itensC.join('')}`:''}</div>`;
           return`<div class="orc-card">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
               <span style="font-size:1.15rem">${cat.i}</span>
@@ -2395,9 +2412,10 @@ const R={
             </div>
             <div style="font-size:.76rem;color:var(--textm)">Gasto: <b style="color:var(--text)">${fmtBRL(gasto)}</b>${limite?` de ${fmtBRL(limite)}`:' (sem limite)'}</div>
             ${limite?`<div class="orc-prog"><div class="orc-bar ${cls}" style="width:${pct}%"></div></div>
-            <div style="font-size:.72rem;color:${cls==='over'?'var(--red)':cls==='warn'?'#e65100':'var(--textm)'}">${pct.toFixed(0)}% do limite${pct>=100?' — Limite ultrapassado ⚠️':pct>=70?' — Quase no limite':''}</div>`:'<div style="height:6px"></div>'}
+            <div style="font-size:.72rem;color:${cls==='over'?'var(--red)':cls==='warn'?'#e65100':'var(--textm)'}">${pct.toFixed(0)}% do limite${excedeu?` — Excedeu ${fmtBRL(excedeu)} ⚠️`:pct>=70?' — Quase no limite':''}</div>`:'<div style="height:6px"></div>'}
             <input class="orc-edit" type="number" step="0.01" placeholder="Definir limite (R$)" value="${limite||''}"
               onblur="setOrcamento('${k}',this.value)" onkeydown="if(event.key==='Enter')this.blur()">
+            ${accHtml}
           </div>`;
         }).join('')}
       </div>`;
@@ -2532,7 +2550,7 @@ const CHART={
   },
   render(){
     const mo=ST.month;
-    const CC={'moradia':'#0ea5e9','alimentacao':'#eab308','saude':'#22c55e','transporte':'#3b82f6','lazer':'#a855f7','beleza':'#ec4899','moda':'#9c27a0','outros':'#94a3b8'};
+    const CC={'moradia':'#0ea5e9','alimentacao':'#eab308','saude':'#22c55e','transporte':'#3b82f6','carro':'#f97316','celular':'#06b6d4','lazer':'#a855f7','streaming':'#84cc16','beleza':'#ec4899','moda':'#f43f5e','outros':'#94a3b8'};
     const IC={'Renda Fixa':'#0ea5e9','Ações':'#a855f7','FII':'#f59e0b','Cripto':'#ec4899','Poupança':'#22c55e','Outros':'#94a3b8'};
     const legOpts={labels:{color:'#1e293b',font:{size:11}}};
     const ttBRL={callbacks:{label:c=>` ${fmtBRL(c.raw)}`}};
@@ -2576,7 +2594,7 @@ const CHART={
     const mo=ST.month;
     const year=mo.split('-')[0];
     const months=[];for(let m=1;m<=12;m++)months.push(`${year}-${String(m).padStart(2,'0')}`);
-    const CC={'moradia':'#0ea5e9','alimentacao':'#eab308','saude':'#22c55e','transporte':'#3b82f6','lazer':'#a855f7','beleza':'#ec4899','moda':'#9c27a0','outros':'#94a3b8'};
+    const CC={'moradia':'#0ea5e9','alimentacao':'#eab308','saude':'#22c55e','transporte':'#3b82f6','carro':'#f97316','celular':'#06b6d4','lazer':'#a855f7','streaming':'#84cc16','beleza':'#ec4899','moda':'#f43f5e','outros':'#94a3b8'};
     const legOpts={labels:{color:'#1e293b',font:{size:11}}};
     const el=document.getElementById('rel-anual-content');
     if(!el)return;
@@ -2649,6 +2667,8 @@ const MODAL={
       const cartoes=ST.data.cartoes||[];
       const cartaoOpts=`<option value="">— nenhum —</option>`+cartoes.map(c=>`<option value="${c.id}" ${v.cartaoId===c.id?'selected':''}>${c.nome}</option>`).join('');
       const showCartao=v.formaPagamento==='Crédito'?'':'display:none';
+      const contaOptsFi=`<option value="">— nenhuma —</option>`+(ST.data.contas||[]).map(c=>`<option value="${c.id}" ${v.contaId===c.id?'selected':''}>${c.nome} (${fmtBRL(c.saldo||0)})</option>`).join('');
+      const showContaFi=(!ST.editId||v.contaId)&&['Pix','Débito','Débito em conta'].includes(v.formaPagamento)?'':'display:none';
       const vigDe=v.historico?.filter(h=>h.de<=mo).sort((a,b)=>b.de.localeCompare(a.de))[0]?.de||mo;
       return`<div class="fg">
         <div class="frow"><label>Nome</label><input id="fi-nome" placeholder="Ex: Aluguel" value="${v.nome||''}"></div>
@@ -2659,13 +2679,18 @@ const MODAL={
         <div class="fg fg2">
           <div class="frow"><label>Categoria</label><select id="fi-cat">${catOpts}</select></div>
           <div class="frow"><label>Forma de Pagamento</label>
-            <select id="fi-pag" onchange="const r=document.getElementById('fi-cartao-row');r.style.display=this.value==='Crédito'?'':'none'">${pagOpts}</select>
+            <select id="fi-pag" onchange="const r=document.getElementById('fi-cartao-row');r.style.display=this.value==='Crédito'?'':'none';const rc=document.getElementById('fi-conta-row');rc.style.display=(!ST.editId||rc.querySelector('select').value)&&['Pix','Débito','Débito em conta'].includes(this.value)?'':'none'">${pagOpts}</select>
           </div>
         </div>
         <div class="frow" id="fi-cartao-row" style="${showCartao}">
           <label>Cartão vinculado</label>
           <select id="fi-cartao">${cartaoOpts}</select>
           <small style="color:var(--textm);font-size:.68rem">Despesa aparecerá na fatura do cartão selecionado</small>
+        </div>
+        <div class="frow" id="fi-conta-row" style="${showContaFi}">
+          <label>Conta bancária</label>
+          <select id="fi-conta">${contaOptsFi}</select>
+          <small style="color:var(--textm);font-size:.68rem">Saldo debitado ao marcar como paga</small>
         </div>
         <div class="frow">
           <label>Vigente a partir de</label>
@@ -2678,6 +2703,8 @@ const MODAL={
       const cartoes=ST.data.cartoes||[];
       const cartaoOpts=`<option value="">— nenhum —</option>`+cartoes.map(c=>`<option value="${c.id}" ${v.cartaoId===c.id?'selected':''}>${c.nome}</option>`).join('');
       const showCartaoP=v.formaPagamento==='Crédito'?'':'display:none';
+      const contaOptsPa=`<option value="">— nenhuma —</option>`+(ST.data.contas||[]).map(c=>`<option value="${c.id}" ${v.contaId===c.id?'selected':''}>${c.nome} (${fmtBRL(c.saldo||0)})</option>`).join('');
+      const showContaPa=(!ST.editId||v.contaId)&&['Pix','Débito','Débito em conta'].includes(v.formaPagamento)?'':'display:none';
       return`<div class="fg">
         <div class="frow"><label>Descrição</label><input id="pa-desc" placeholder="Ex: Notebook Dell" value="${v.descricao||''}"></div>
         <div class="fg fg2">
@@ -2687,13 +2714,18 @@ const MODAL={
         <div class="fg fg2">
           <div class="frow"><label>Mês de Início</label><input id="pa-ini" type="month" value="${v.mesInicio||mo}"></div>
           <div class="frow"><label>Forma de Pagamento</label>
-            <select id="pa-pag" onchange="const r=document.getElementById('pa-cartao-row');r.style.display=this.value==='Crédito'?'':'none'">${pagOpts}</select>
+            <select id="pa-pag" onchange="const r=document.getElementById('pa-cartao-row');r.style.display=this.value==='Crédito'?'':'none';const rc=document.getElementById('pa-conta-row');rc.style.display=(!ST.editId||rc.querySelector('select').value)&&['Pix','Débito','Débito em conta'].includes(this.value)?'':'none'">${pagOpts}</select>
           </div>
         </div>
         <div class="frow" id="pa-cartao-row" style="${showCartaoP}">
           <label>Cartão vinculado</label>
           <select id="pa-cartao">${cartaoOpts}</select>
           <small style="color:var(--textm);font-size:.68rem">Parcelas aparecerão na fatura do cartão selecionado</small>
+        </div>
+        <div class="frow" id="pa-conta-row" style="${showContaPa}">
+          <label>Conta bancária</label>
+          <select id="pa-conta">${contaOptsPa}</select>
+          <small style="color:var(--textm);font-size:.68rem">Referência de qual conta é debitada mensalmente</small>
         </div>
         <div class="frow"><label>Categoria</label><select id="pa-cat"><option value="">— sem categoria —</option>${catOpts}</select></div>
         <div class="hint">💡 Valor da parcela = Total ÷ Nº Parcelas (calculado automaticamente)</div>
@@ -2758,6 +2790,8 @@ const MODAL={
       const cartoes=ST.data.cartoes||[];
       const cartaoOptsV=`<option value="">— nenhum —</option>`+cartoes.map(c=>`<option value="${c.id}" ${v.cartaoId===c.id?'selected':''}>${c.nome}</option>`).join('');
       const showCartaoV=v.formaPagamento==='Crédito'?'':'display:none';
+      const contaOptsVa=`<option value="">— nenhuma —</option>`+(ST.data.contas||[]).map(c=>`<option value="${c.id}" ${v.contaId===c.id?'selected':''}>${c.nome} (${fmtBRL(c.saldo||0)})</option>`).join('');
+      const showContaVa=(!ST.editId||v.contaId)&&['Pix','Débito','Débito em conta'].includes(v.formaPagamento)?'':'display:none';
       return`<div class="fg">
         <div class="frow"><label>Descrição</label><input id="va-desc" placeholder="Ex: Supermercado" value="${v.descricao||''}"></div>
         <div class="fg fg2">
@@ -2767,13 +2801,18 @@ const MODAL={
         <div class="fg fg2">
           <div class="frow"><label>Categoria</label><select id="va-cat">${catOpts}</select></div>
           <div class="frow"><label>Forma de Pagamento</label>
-            <select id="va-pag" onchange="const r=document.getElementById('va-cartao-row');r.style.display=this.value==='Crédito'?'':'none'">${pagOpts}</select>
+            <select id="va-pag" onchange="const r=document.getElementById('va-cartao-row');r.style.display=this.value==='Crédito'?'':'none';const rc=document.getElementById('va-conta-row');rc.style.display=(!ST.editId||rc.querySelector('select').value)&&['Pix','Débito','Débito em conta'].includes(this.value)?'':'none'">${pagOpts}</select>
           </div>
         </div>
         <div class="frow" id="va-cartao-row" style="${showCartaoV}">
           <label>Cartão vinculado</label>
           <select id="va-cartao">${cartaoOptsV}</select>
           <small style="color:var(--textm);font-size:.68rem">Despesa aparecerá na fatura do cartão selecionado</small>
+        </div>
+        <div class="frow" id="va-conta-row" style="${showContaVa}">
+          <label>Conta bancária</label>
+          <select id="va-conta">${contaOptsVa}</select>
+          <small style="color:var(--textm);font-size:.68rem">Saldo debitado imediatamente ao salvar</small>
         </div>
       </div>`;
     }
@@ -2897,6 +2936,7 @@ const MODAL={
       const cat=document.getElementById('fi-cat')?.value;
       const pag=document.getElementById('fi-pag')?.value;
       const cartaoId=pag==='Crédito'?(document.getElementById('fi-cartao')?.value||''):'';
+      const contaIdFi=['Pix','Débito','Débito em conta'].includes(pag)?(document.getElementById('fi-conta')?.value||''):'';
       const desde=document.getElementById('fi-desde')?.value||mo;
       if(!nome||!(valor>0)){toast('Preencha nome e valor (positivo)','err');return}
       if(id){
@@ -2909,10 +2949,10 @@ const MODAL={
             d.historico=d.historico.filter(h=>h.de<desde);
             d.historico.push({valor,de:desde});
           }
-          Object.assign(d,{nome,valor,vencimento:venc,categoria:cat,formaPagamento:pag,cartaoId:cartaoId||''});
+          Object.assign(d,{nome,valor,vencimento:venc,categoria:cat,formaPagamento:pag,cartaoId:cartaoId||'',contaId:contaIdFi||''});
         }
       } else {
-        ST.data.despesasFixas.push({id:uid(),nome,valor,categoria:cat,vencimento:venc,formaPagamento:pag,cartaoId:cartaoId||'',pagamentos:{},historico:[{valor,de:desde}]});
+        ST.data.despesasFixas.push({id:uid(),nome,valor,categoria:cat,vencimento:venc,formaPagamento:pag,cartaoId:cartaoId||'',contaId:contaIdFi||'',pagamentos:{},historico:[{valor,de:desde}]});
       }
       STORAGE.save();this.close();R.fixas();R.dashboard();toast(id?'Despesa atualizada!':'Despesa adicionada!','ok');
     }
@@ -2923,12 +2963,13 @@ const MODAL={
       const ini=document.getElementById('pa-ini')?.value;
       const pag=document.getElementById('pa-pag')?.value;
       const cartaoId=pag==='Crédito'?(document.getElementById('pa-cartao')?.value||''):'';
+      const contaIdPa=['Pix','Débito','Débito em conta'].includes(pag)?(document.getElementById('pa-conta')?.value||''):'';
       const cat=document.getElementById('pa-cat')?.value||'';
       if(!desc||!(tot>0)||!ini){toast('Preencha todos os campos (valor positivo)','err');return}
       if(!(np>=1)){toast('Número de parcelas deve ser pelo menos 1','err');return}
       const vp=parseFloat((tot/np).toFixed(2));
-      if(id){const i=ST.data.parceladas.findIndex(p=>p.id===id);if(i!==-1)Object.assign(ST.data.parceladas[i],{descricao:desc,valorTotal:tot,numParcelas:np,mesInicio:ini,valorParcela:vp,formaPagamento:pag,cartaoId:cartaoId||'',categoria:cat})}
-      else ST.data.parceladas.push({id:uid(),descricao:desc,valorTotal:tot,numParcelas:np,mesInicio:ini,valorParcela:vp,formaPagamento:pag,cartaoId:cartaoId||'',categoria:cat});
+      if(id){const i=ST.data.parceladas.findIndex(p=>p.id===id);if(i!==-1)Object.assign(ST.data.parceladas[i],{descricao:desc,valorTotal:tot,numParcelas:np,mesInicio:ini,valorParcela:vp,formaPagamento:pag,cartaoId:cartaoId||'',contaId:contaIdPa||'',categoria:cat})}
+      else ST.data.parceladas.push({id:uid(),descricao:desc,valorTotal:tot,numParcelas:np,mesInicio:ini,valorParcela:vp,formaPagamento:pag,cartaoId:cartaoId||'',contaId:contaIdPa||'',categoria:cat});
       STORAGE.save();this.close();R.parceladas();R.dashboard();toast(id?'Parcela atualizada!':'Parcela adicionada!','ok');
     }
     else if(sec==='investimentos'){
@@ -2960,10 +3001,21 @@ const MODAL={
       const cat=document.getElementById('va-cat')?.value;
       const pag=document.getElementById('va-pag')?.value;
       const cartaoId=pag==='Crédito'?(document.getElementById('va-cartao')?.value||''):'';
+      const contaIdVa=['Pix','Débito','Débito em conta'].includes(pag)?(document.getElementById('va-conta')?.value||''):'';
       if(!desc||!(val>0)||!dt){toast('Preencha todos os campos (valor positivo)','err');return}
       if(new Date(dt+'T00:00:00')>new Date())toast('⚠️ Data no futuro — verifique se está correto','warn');
-      if(id){const i=ST.data.despesasVariaveis.findIndex(d=>d.id===id);if(i!==-1)Object.assign(ST.data.despesasVariaveis[i],{descricao:desc,valor:val,data:dt,categoria:cat,formaPagamento:pag,cartaoId:cartaoId||''})}
-      else ST.data.despesasVariaveis.push({id:uid(),descricao:desc,valor:val,data:dt,categoria:cat,formaPagamento:pag,cartaoId:cartaoId||''});
+      const FC_VA=['Pix','Débito','Débito em conta'];
+      if(id){
+        const i=ST.data.despesasVariaveis.findIndex(d=>d.id===id);
+        if(i!==-1){
+          const old=ST.data.despesasVariaveis[i];
+          if(old.contaId&&FC_VA.includes(old.formaPagamento))debitarConta(old.contaId,-(old.valor||0));
+          Object.assign(ST.data.despesasVariaveis[i],{descricao:desc,valor:val,data:dt,categoria:cat,formaPagamento:pag,cartaoId:cartaoId||'',contaId:contaIdVa||''});
+        }
+      } else {
+        ST.data.despesasVariaveis.push({id:uid(),descricao:desc,valor:val,data:dt,categoria:cat,formaPagamento:pag,cartaoId:cartaoId||'',contaId:contaIdVa||''});
+      }
+      if(contaIdVa)debitarConta(contaIdVa,val);
       STORAGE.save();this.close();R.variaveis();R.dashboard();toast(id?'Despesa atualizada!':'Despesa adicionada!','ok');
     }
     else if(sec==='combustivel'){
@@ -3098,9 +3150,15 @@ function togPago(id){
   if(!d)return;
   if(!d.pagamentos)d.pagamentos={};
   d.pagamentos[mo]=!d.pagamentos[mo];
+  if(d.contaId&&['Pix','Débito','Débito em conta'].includes(d.formaPagamento)){
+    const val=C.valorFixa(d,mo);
+    debitarConta(d.contaId,d.pagamentos[mo]?val:-val);
+  }
   STORAGE.save();R.fixas();R.dashboard();
 }
 function delFixa(id){if(!confirm('Remover esta despesa fixa?'))return;ST.data.despesasFixas=ST.data.despesasFixas.filter(d=>d.id!==id);STORAGE.save();R.fixas();R.dashboard();toast('Removida','inf')}
+function debitarConta(contaId,valor){if(!contaId||!valor)return;const c=(ST.data.contas||[]).find(x=>x.id===contaId);if(!c)return;c.saldo=(c.saldo||0)-valor;}
+function toggleOrcAcc(key){const body=document.getElementById('orc-acc-'+key);const btn=document.getElementById('orc-tog-'+key);if(!body||!btn)return;const open=body.classList.toggle('open');btn.classList.toggle('open',open);btn.querySelector('.chev').textContent=open?'▲':'▼';}
 function delParc(id){if(!confirm('Remover esta parcela?'))return;ST.data.parceladas=ST.data.parceladas.filter(p=>p.id!==id);STORAGE.save();R.parceladas();R.dashboard();toast('Removida','inf')}
 function delInv(id){if(!confirm('Remover este investimento?'))return;(ST.data.desejos||[]).forEach(d=>{if(d.investimentoId===id)d.investimentoId=null;});ST.data.investimentos=ST.data.investimentos.filter(i=>i.id!==id);STORAGE.save();R.investimentos();R.dashboard();toast('Removido','inf')}
 function delConta(id){if(!confirm('Remover esta conta?'))return;ST.data.contas=(ST.data.contas||[]).filter(c=>c.id!==id);STORAGE.save();R.dashboard();toast('Conta removida','inf')}
