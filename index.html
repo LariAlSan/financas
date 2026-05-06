@@ -928,7 +928,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.43';
+const APP_VER='4.3.44';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -1580,8 +1580,16 @@ const C={
   },
   totalFatura(cid,mo){
     const gastos=(ST.data.faturas[mo]?.[cid]?.gastos||[]).reduce((a,g)=>a+(g.valor||0),0);
-    const fixasLink=ST.data.despesasFixas.filter(d=>d.cartaoId===cid).reduce((a,d)=>a+this.valorFixa(d,mo),0);
     const cart=(ST.data.cartoes||[]).find(c=>c.id===cid);
+    const dFech=diaFechamentoEfetivo(cart,mo);
+    const prevMo=this.addM(mo,-1);
+    const dFechPrev=diaFechamentoEfetivo(cart,prevMo);
+    const fixasLink=ST.data.despesasFixas.filter(d=>d.cartaoId===cid).reduce((a,d)=>{
+      const v=d.vencimento||1;
+      if(!dFech||v<=dFech)return a+this.valorFixa(d,mo);
+      if(v>dFechPrev)return a+this.valorFixa(d,prevMo);
+      return a;
+    },0);
     const varLink=ST.data.despesasVariaveis.filter(d=>d.cartaoId===cid&&faturaMonth(d.data,cart)===mo).reduce((a,d)=>a+(d.valor||0),0);
     const parcLink=ST.data.parceladas.filter(p=>p.cartaoId===cid&&this.parcAtiva(p,mo)).reduce((a,p)=>a+(p.valorParcela||0),0);
     return gastos+fixasLink+varLink+parcLink;
@@ -2319,10 +2327,18 @@ const R={
         ${cartoes.map(c=>{
           const fat=ST.data.faturas[mo]?.[c.id]||{gastos:[],paga:false};
           const gastos=fat.gastos||[];
-          const fixasVinc=ST.data.despesasFixas.filter(d=>d.cartaoId===c.id);
+          const dFechC=diaFechamentoEfetivo(c,mo);
+          const prevMoC=C.addM(mo,-1);
+          const dFechPrevC=diaFechamentoEfetivo(c,prevMoC);
+          const fixasVinc=ST.data.despesasFixas.filter(d=>{
+            if(d.cartaoId!==c.id)return false;
+            const v=d.vencimento||1;
+            if(!dFechC)return true;
+            return v<=dFechC||v>dFechPrevC;
+          });
           const varVinc=ST.data.despesasVariaveis.filter(d=>d.cartaoId===c.id&&faturaMonth(d.data,c)===mo);
           const parcVinc=ST.data.parceladas.filter(p=>p.cartaoId===c.id&&C.parcAtiva(p,mo));
-          const allItems=[...gastos.map(g=>({...g,_t:'g',_k:g.data||mo+'-00'})),...fixasVinc.map(d=>({...d,_t:'f',_k:mo+'-'+String(d.vencimento||1).padStart(2,'0')})),...varVinc.map(d=>({...d,_t:'v',_k:d.data||mo+'-00'})),...parcVinc.map(p=>({...p,_t:'p',_k:(p.mesInicio||mo)+'-01'}))].sort((a,b)=>b._k.localeCompare(a._k));
+          const allItems=[...gastos.map(g=>({...g,_t:'g',_k:g.data||mo+'-00'})),...fixasVinc.map(d=>{const v=d.vencimento||1;const fMo=(!dFechC||v<=dFechC)?mo:prevMoC;return{...d,_t:'f',_k:fMo+'-'+String(v).padStart(2,'0')}}),...varVinc.map(d=>({...d,_t:'v',_k:d.data||mo+'-00'})),...parcVinc.map(p=>({...p,_t:'p',_k:(p.mesInicio||mo)+'-01'}))].sort((a,b)=>b._k.localeCompare(a._k));
           const totalC=C.totalFatura(c.id,mo);
           const pct=c.limite>0?Math.min(100,(totalC/c.limite)*100):0;
           const barColor=pct>=90?'linear-gradient(90deg,#ef4444,#dc2626)':pct>=70?'linear-gradient(90deg,#f59e0b,#f97316)':'var(--pg)';
