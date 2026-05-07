@@ -300,10 +300,16 @@
       #content{margin-left:0;margin-top:0;margin-bottom:68px}
       .charts-grid,.charts-grid.g3{grid-template-columns:1fr}
       .fg.fg2,.fg.fg3{grid-template-columns:1fr}
-      .sum-card.bal{flex-direction:column;align-items:flex-start}
+      .sum-card.bal{flex-direction:column;align-items:flex-start;padding:16px}
       .bal-right{text-align:left;margin-top:6px}
+      .bal-amt{font-size:1.7rem}
       .q-grid{grid-template-columns:1fr}
       .inv-sum{grid-template-columns:1fr 1fr}
+      /* Densidade */
+      .card,.sum-card{padding:14px}
+      .sec-header{margin-bottom:14px}
+      .sec-title{font-size:1.2rem}
+      .frow label{font-size:.875rem}
       /* Tables scroll */
       .tbl,.comp-table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
       .card{overflow-x:auto}
@@ -930,7 +936,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.51';
+const APP_VER='4.3.52';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
