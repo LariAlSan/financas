@@ -928,7 +928,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.48';
+const APP_VER='4.3.49';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -1269,6 +1269,8 @@ const GDRIVE={
 
   async _doSave(data){
     if(!this._ok())return;
+    const _vazio=!Object.keys(data.salarios||{}).length&&!(data.despesasFixas||[]).length&&!(data.despesasVariaveis||[]).length;
+    if(_vazio){console.warn('GDRIVE: _doSave bloqueado — dados vazios não sobrescrevem backup');return;}
     try{
       const id=await this._getOrCreateFile();
       if(!id){toast('Falha ao salvar no Drive','err');return;}
@@ -1314,8 +1316,9 @@ const GDRIVE={
 
   async syncNow(){
     if(!this._ok()){toast('Reconecte o Google Drive primeiro','err');return;}
-    toast('Sincronizando...','ok');
-    await this._doSave(ST.data);
+    const localVazio=!Object.keys(ST.data.salarios||{}).length&&!(ST.data.despesasFixas||[]).length&&!(ST.data.despesasVariaveis||[]).length;
+    toast(localVazio?'Buscando backup no Drive...':'Sincronizando...','ok');
+    if(!localVazio)await this._doSave(ST.data);
     await this._doLoad();
   },
 
