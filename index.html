@@ -293,8 +293,10 @@
     .cc-title{font-family:var(--font-h);font-size:.88rem;font-weight:700;color:var(--text2);margin-bottom:14px}
     /* RESPONSIVE */
     @media(max-width:768px){
+      html{font-size:16px}
       .sidebar{display:none}
       .bottom-nav{display:flex}
+      .bottom-nav-item{font-size:.72rem}
       #content{margin-left:0;margin-top:0;margin-bottom:68px}
       .charts-grid,.charts-grid.g3{grid-template-columns:1fr}
       .fg.fg2,.fg.fg3{grid-template-columns:1fr}
@@ -928,7 +930,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.50';
+const APP_VER='4.3.51';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
