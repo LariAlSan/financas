@@ -928,7 +928,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.49';
+const APP_VER='4.3.50';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -2698,7 +2698,6 @@ const MODAL={
       const showCartao=v.formaPagamento==='Crédito'?'':'display:none';
       const contaOptsFi=`<option value="">— nenhuma —</option>`+(ST.data.contas||[]).map(c=>`<option value="${c.id}" ${v.contaId===c.id?'selected':''}>${c.nome} (${fmtBRL(c.saldos?.[mo]??c.saldo??0)})</option>`).join('');
       const showContaFi=['Pix','Débito','Débito em conta'].includes(v.formaPagamento||FORMAS_PAG[0])?'':'display:none';
-      const semContasFi=!(ST.data.contas||[]).length;
       const vigDe=v.historico?.filter(h=>h.de<=mo).sort((a,b)=>b.de.localeCompare(a.de))[0]?.de||mo;
       return`<div class="fg">
         <div class="frow"><label>Nome</label><input id="fi-nome" placeholder="Ex: Aluguel" value="${v.nome||''}"></div>
@@ -2718,9 +2717,9 @@ const MODAL={
           <small style="color:var(--textm);font-size:.68rem">Despesa aparecerá na fatura do cartão selecionado</small>
         </div>
         <div class="frow" id="fi-conta-row" style="${showContaFi}">
-          <label>Conta bancária <span style="color:#e11d48">*</span></label>
+          <label>Conta bancária</label>
           <select id="fi-conta">${contaOptsFi}</select>
-          <small style="color:${semContasFi?'#e11d48':'var(--textm)'};font-size:.68rem">${semContasFi?'Nenhuma conta cadastrada — adicione no Dashboard primeiro':'Saldo debitado ao marcar como paga'}</small>
+          <small style="color:var(--textm);font-size:.68rem">Saldo debitado ao marcar como paga</small>
         </div>
         <div class="frow">
           <label>Vigente a partir de</label>
@@ -2735,7 +2734,6 @@ const MODAL={
       const showCartaoP=v.formaPagamento==='Crédito'?'':'display:none';
       const contaOptsPa=`<option value="">— nenhuma —</option>`+(ST.data.contas||[]).map(c=>`<option value="${c.id}" ${v.contaId===c.id?'selected':''}>${c.nome} (${fmtBRL(c.saldos?.[mo]??c.saldo??0)})</option>`).join('');
       const showContaPa=['Pix','Débito','Débito em conta'].includes(v.formaPagamento||FORMAS_PAG[0])?'':'display:none';
-      const semContasPa=!(ST.data.contas||[]).length;
       return`<div class="fg">
         <div class="frow"><label>Descrição</label><input id="pa-desc" placeholder="Ex: Notebook Dell" value="${v.descricao||''}"></div>
         <div class="fg fg2">
@@ -2754,9 +2752,9 @@ const MODAL={
           <small style="color:var(--textm);font-size:.68rem">Parcelas aparecerão na fatura do cartão selecionado</small>
         </div>
         <div class="frow" id="pa-conta-row" style="${showContaPa}">
-          <label>Conta bancária <span style="color:#e11d48">*</span></label>
+          <label>Conta bancária</label>
           <select id="pa-conta">${contaOptsPa}</select>
-          <small style="color:${semContasPa?'#e11d48':'var(--textm)'};font-size:.68rem">${semContasPa?'Nenhuma conta cadastrada — adicione no Dashboard primeiro':'Referência de qual conta é debitada mensalmente'}</small>
+          <small style="color:var(--textm);font-size:.68rem">Referência de qual conta é debitada mensalmente</small>
         </div>
         <div class="frow"><label>Categoria</label><select id="pa-cat"><option value="">— sem categoria —</option>${catOpts}</select></div>
         <div class="hint">💡 Valor da parcela = Total ÷ Nº Parcelas (calculado automaticamente)</div>
@@ -2823,7 +2821,6 @@ const MODAL={
       const showCartaoV=v.formaPagamento==='Crédito'?'':'display:none';
       const contaOptsVa=`<option value="">— nenhuma —</option>`+(ST.data.contas||[]).map(c=>`<option value="${c.id}" ${v.contaId===c.id?'selected':''}>${c.nome} (${fmtBRL(c.saldos?.[mo]??c.saldo??0)})</option>`).join('');
       const showContaVa=['Pix','Débito','Débito em conta'].includes(v.formaPagamento||FORMAS_PAG[0])?'':'display:none';
-      const semContasVa=!(ST.data.contas||[]).length;
       return`<div class="fg">
         <div class="frow"><label>Descrição</label><input id="va-desc" placeholder="Ex: Supermercado" value="${v.descricao||''}"></div>
         <div class="fg fg2">
@@ -2842,9 +2839,9 @@ const MODAL={
           <small style="color:var(--textm);font-size:.68rem">Despesa aparecerá na fatura do cartão selecionado</small>
         </div>
         <div class="frow" id="va-conta-row" style="${showContaVa}">
-          <label>Conta bancária <span style="color:#e11d48">*</span></label>
+          <label>Conta bancária</label>
           <select id="va-conta">${contaOptsVa}</select>
-          <small style="color:${semContasVa?'#e11d48':'var(--textm)'};font-size:.68rem">${semContasVa?'Nenhuma conta cadastrada — adicione no Dashboard primeiro':'Saldo debitado imediatamente ao salvar'}</small>
+          <small style="color:var(--textm);font-size:.68rem">Saldo debitado imediatamente ao salvar</small>
         </div>
       </div>`;
     }
@@ -2980,10 +2977,6 @@ const MODAL={
       const contaIdFi=['Pix','Débito','Débito em conta'].includes(pag)?(document.getElementById('fi-conta')?.value||''):'';
       const desde=document.getElementById('fi-desde')?.value||mo;
       if(!nome||!(valor>0)){toast('Preencha nome e valor (positivo)','err');return}
-      if(['Pix','Débito','Débito em conta'].includes(pag)){
-        if(!(ST.data.contas||[]).length){toast('Adicione uma conta bancária no Dashboard antes de usar Pix/Débito','err');return}
-        if(!contaIdFi){toast('Selecione a conta bancária para este pagamento','err');return}
-      }
       if(id){
         const i=ST.data.despesasFixas.findIndex(d=>d.id===id);
         if(i!==-1){
@@ -3019,10 +3012,6 @@ const MODAL={
       const cat=document.getElementById('pa-cat')?.value||'';
       if(!desc||!(tot>0)||!ini){toast('Preencha todos os campos (valor positivo)','err');return}
       if(!(np>=1)){toast('Número de parcelas deve ser pelo menos 1','err');return}
-      if(['Pix','Débito','Débito em conta'].includes(pag)){
-        if(!(ST.data.contas||[]).length){toast('Adicione uma conta bancária no Dashboard antes de usar Pix/Débito','err');return}
-        if(!contaIdPa){toast('Selecione a conta bancária para este pagamento','err');return}
-      }
       const vp=parseFloat((tot/np).toFixed(2));
       if(id){const i=ST.data.parceladas.findIndex(p=>p.id===id);if(i!==-1)Object.assign(ST.data.parceladas[i],{descricao:desc,valorTotal:tot,numParcelas:np,mesInicio:ini,valorParcela:vp,formaPagamento:pag,cartaoId:cartaoId||'',contaId:contaIdPa||'',categoria:cat})}
       else ST.data.parceladas.push({id:uid(),descricao:desc,valorTotal:tot,numParcelas:np,mesInicio:ini,valorParcela:vp,formaPagamento:pag,cartaoId:cartaoId||'',contaId:contaIdPa||'',categoria:cat});
@@ -3059,10 +3048,6 @@ const MODAL={
       const cartaoId=pag==='Crédito'?(document.getElementById('va-cartao')?.value||''):'';
       const contaIdVa=['Pix','Débito','Débito em conta'].includes(pag)?(document.getElementById('va-conta')?.value||''):'';
       if(!desc||!(val>0)||!dt){toast('Preencha todos os campos (valor positivo)','err');return}
-      if(['Pix','Débito','Débito em conta'].includes(pag)){
-        if(!(ST.data.contas||[]).length){toast('Adicione uma conta bancária no Dashboard antes de usar Pix/Débito','err');return}
-        if(!contaIdVa){toast('Selecione a conta bancária para este pagamento','err');return}
-      }
       if(new Date(dt+'T00:00:00')>new Date())toast('⚠️ Data no futuro — verifique se está correto','warn');
       const FC_VA=['Pix','Débito','Débito em conta'];
       if(id){
