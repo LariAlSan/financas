@@ -1,4 +1,4 @@
-const CACHE = 'soldo-v3';
+const CACHE = 'soldo-v4';
 const ASSETS = [
   '/financas/icon-192.png',
   '/financas/icon-512.png',
@@ -25,7 +25,8 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const url = e.request.url;
-  const isHTML = url.includes('/financas/') && !url.includes('.');
+  const pathname = new URL(url).pathname;
+  const isHTML = pathname === '/financas/' || pathname === '/financas/index.html';
 
   if (isHTML || url.endsWith('index.html')) {
     // Network-first para index.html: sempre busca versão nova, cache só como fallback offline
