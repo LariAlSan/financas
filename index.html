@@ -936,7 +936,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.57';
+const APP_VER='4.3.58';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -2904,8 +2904,10 @@ const MODAL={
       const periodo=s.ticketEntrada?`${fmtDt(s.ticketEntrada)} → ${nextEntry?fmtDt(nextEntry)+' (excl.)':'em aberto'}`:'';
       return`<div class="fg">
         <div class="hint">🍽️ Valor recebido em ${mlabel(mo)}${prevSaldo>0?` · Saldo anterior: ${fmtBRL(prevSaldo)}`:''}</div>
-        <div class="frow"><label>Data de entrada</label><input id="tk-dt" type="date" value="${s.ticketEntrada||''}"><small style="color:var(--textm);font-size:.68rem">Gastos com Vale Refeição a partir dessa data contam para este mês</small></div>
-        <div class="frow"><label>Valor (R$)</label><input id="tk-val" type="number" step="0.01" min="0" placeholder="0,00" value="${s.ticket||''}"></div>
+        <div class="fg fg2">
+          <div class="frow"><label>Data de entrada</label><input id="tk-dt" type="date" value="${s.ticketEntrada||''}"><small style="color:var(--textm);font-size:.68rem">Gastos com Vale Refeição a partir dessa data contam para este mês</small></div>
+          <div class="frow"><label>Valor (R$)</label><input id="tk-val" type="number" step="0.01" min="0" placeholder="0,00" value="${s.ticket||''}"></div>
+        </div>
         ${periodo?`<div class="hint" style="margin-top:0">📅 Período atual: ${periodo}</div>`:''}
       </div>`;
     }
@@ -2931,8 +2933,10 @@ const MODAL={
     if(sec==='cartao'){
       const bandeiras=['Visa','Mastercard','Elo','Amex','Outros'];
       return`<div class="fg">
-        <div class="frow"><label>Nome do Cartão</label><input id="ca-nome" placeholder="Ex: Nubank, Inter, XP" value="${v.nome||''}"></div>
-        <div class="frow"><label>Bandeira</label><select id="ca-band">${bandeiras.map(b=>`<option ${v.bandeira===b?'selected':''}>${b}</option>`).join('')}</select></div>
+        <div class="fg fg2">
+          <div class="frow"><label>Nome do Cartão</label><input id="ca-nome" placeholder="Ex: Nubank, Inter, XP" value="${v.nome||''}"></div>
+          <div class="frow"><label>Bandeira</label><select id="ca-band">${bandeiras.map(b=>`<option ${v.bandeira===b?'selected':''}>${b}</option>`).join('')}</select></div>
+        </div>
         <div class="fg fg2">
           <div class="frow"><label>Limite (R$)</label><input id="ca-lim" type="number" step="0.01" placeholder="0,00" value="${v.limite||''}"></div>
           <div class="frow"><label>Dia de Fechamento</label><input id="ca-fech" type="number" min="1" max="31" placeholder="1–31" value="${v.diaFechamento||''}"></div>
