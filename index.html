@@ -936,7 +936,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.56';
+const APP_VER='4.3.57';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -2748,18 +2748,14 @@ const MODAL={
       const showContaPa=['Pix','Débito','Débito em conta'].includes(v.formaPagamento||FORMAS_PAG[0])?'':'display:none';
       return`<div class="fg">
         <div class="frow"><label>Descrição</label><input id="pa-desc" placeholder="Ex: Notebook Dell" value="${v.descricao||''}"></div>
-        <div>
-          <input type="hidden" id="pa-modo" value="total">
-          <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
-            <span style="font-size:.75rem;color:var(--textm)">Informar:</span>
-            <button type="button" id="pa-btn-tot" onclick="paToggleModo('total')" style="font-size:.75rem;padding:3px 10px;border-radius:12px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer">Valor total</button>
-            <button type="button" id="pa-btn-vp" onclick="paToggleModo('parcela')" style="font-size:.75rem;padding:3px 10px;border-radius:12px;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer">Valor da parcela</button>
+        <input type="hidden" id="pa-modo" value="total">
+        <div class="fg fg2">
+          <div class="frow">
+            <label><span id="pa-modo-lbl">Valor Total (R$)</span><a href="#" id="pa-modo-link" onclick="event.preventDefault();paToggleModo(document.getElementById('pa-modo').value==='total'?'parcela':'total')" style="font-size:.7rem;margin-left:8px;color:var(--accent);text-decoration:underline dotted">ou por parcela</a></label>
+            <input id="pa-tot" type="number" step="0.01" placeholder="0,00" value="${v.valorTotal||''}" oninput="paCalcAuto()">
+            <small id="pa-calc-hint" style="color:var(--textm);font-size:.68rem">${v.valorTotal&&v.numParcelas?'💡 Parcela: '+fmtBRL(parseFloat((v.valorTotal/v.numParcelas).toFixed(2))):''}</small>
           </div>
-          <div class="fg fg3">
-            <div class="frow"><label>Valor Total (R$)</label><input id="pa-tot" type="number" step="0.01" placeholder="0,00" value="${v.valorTotal||''}" oninput="paCalcAuto()"></div>
-            <div class="frow"><label>Valor da Parcela (R$)</label><input id="pa-vp" type="number" step="0.01" placeholder="0,00" value="${v.valorTotal&&v.numParcelas?parseFloat((v.valorTotal/v.numParcelas).toFixed(2)):''}" readonly style="background:var(--bg2);color:var(--textm)" oninput="paCalcAuto()"></div>
-            <div class="frow"><label>Nº Parcelas</label><input id="pa-np" type="number" min="1" placeholder="Ex: 12" value="${v.numParcelas||''}" oninput="paCalcAuto()"></div>
-          </div>
+          <div class="frow"><label>Nº Parcelas</label><input id="pa-np" type="number" min="1" placeholder="Ex: 12" value="${v.numParcelas||''}" oninput="paCalcAuto()"></div>
         </div>
         <div class="fg fg2">
           <div class="frow"><label>Mês de Início</label><input id="pa-ini" type="month" value="${v.mesInicio||mo}"></div>
@@ -3027,14 +3023,10 @@ const MODAL={
       const desc=document.getElementById('pa-desc')?.value.trim();
       const modo=document.getElementById('pa-modo')?.value||'total';
       const np=parseInt(document.getElementById('pa-np')?.value)||0;
+      const rawVal=pnum(document.getElementById('pa-tot')?.value);
       let tot,vp;
-      if(modo==='total'){
-        tot=pnum(document.getElementById('pa-tot')?.value);
-        vp=parseFloat((tot/np).toFixed(2));
-      }else{
-        vp=pnum(document.getElementById('pa-vp')?.value);
-        tot=parseFloat((vp*np).toFixed(2));
-      }
+      if(modo==='total'){tot=rawVal;vp=parseFloat((tot/np).toFixed(2));}
+      else{vp=rawVal;tot=parseFloat((vp*np).toFixed(2));}
       const ini=document.getElementById('pa-ini')?.value;
       const pag=document.getElementById('pa-pag')?.value;
       const cartaoId=pag==='Crédito'?(document.getElementById('pa-cartao')?.value||''):'';
@@ -3298,36 +3290,28 @@ function toggleAutoCalcField(){
 function paToggleModo(modo){
   const isTot=modo==='total';
   document.getElementById('pa-modo').value=modo;
-  const btnTot=document.getElementById('pa-btn-tot');
-  const btnVp=document.getElementById('pa-btn-vp');
-  const inpTot=document.getElementById('pa-tot');
-  const inpVp=document.getElementById('pa-vp');
-  if(!btnTot||!inpTot)return;
-  btnTot.style.background=isTot?'var(--accent)':'transparent';
-  btnTot.style.color=isTot?'#fff':'var(--accent)';
-  btnVp.style.background=isTot?'transparent':'var(--accent)';
-  btnVp.style.color=isTot?'var(--accent)':'#fff';
-  inpTot.readOnly=!isTot;
-  inpTot.style.background=isTot?'':'var(--bg2)';
-  inpTot.style.color=isTot?'':'var(--textm)';
-  inpVp.readOnly=isTot;
-  inpVp.style.background=isTot?'var(--bg2)':'';
-  inpVp.style.color=isTot?'var(--textm)':'';
-  const hint=document.getElementById('pa-hint');
-  if(hint)hint.textContent=isTot
+  const lbl=document.getElementById('pa-modo-lbl');
+  const link=document.getElementById('pa-modo-link');
+  if(lbl)lbl.textContent=isTot?'Valor Total (R$)':'Valor da Parcela (R$)';
+  if(link)link.textContent=isTot?'ou por parcela':'ou valor total';
+  document.getElementById('pa-tot').value='';
+  const ch=document.getElementById('pa-calc-hint');
+  if(ch)ch.textContent='';
+  const ph=document.getElementById('pa-hint');
+  if(ph)ph.textContent=isTot
     ?'💡 Informe o valor total — valor da parcela calculado automaticamente'
     :'💡 Informe o valor da parcela — valor total calculado automaticamente';
-  paCalcAuto();
 }
 function paCalcAuto(){
   const modo=document.getElementById('pa-modo')?.value||'total';
+  const val=parseFloat(document.getElementById('pa-tot')?.value)||0;
   const np=parseFloat(document.getElementById('pa-np')?.value)||0;
+  const hint=document.getElementById('pa-calc-hint');
+  if(!hint)return;
   if(modo==='total'){
-    const tot=parseFloat(document.getElementById('pa-tot')?.value)||0;
-    document.getElementById('pa-vp').value=(tot>0&&np>=1)?parseFloat((tot/np).toFixed(2)):'';
+    hint.textContent=val>0&&np>=1?'💡 Parcela: '+fmtBRL(parseFloat((val/np).toFixed(2))):'';
   }else{
-    const vp=parseFloat(document.getElementById('pa-vp')?.value)||0;
-    document.getElementById('pa-tot').value=(vp>0&&np>=1)?parseFloat((vp*np).toFixed(2)):'';
+    hint.textContent=val>0&&np>=1?'💡 Total: '+fmtBRL(parseFloat((val*np).toFixed(2))):'';
   }
 }
 function editCDI(){
