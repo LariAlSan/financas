@@ -260,6 +260,9 @@
     .frow input[type=number]{-moz-appearance:textfield}
     .frow input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
     .hint{background:var(--bg-surface);border-radius:var(--rx);padding:10px 12px;font-size:.78rem;color:var(--text2);border:1px solid var(--border)}
+    .cat-grid{display:flex;flex-wrap:wrap;gap:6px;padding:4px 0}
+    .cat-chip{display:inline-flex;align-items:center;gap:3px;padding:5px 10px;border-radius:20px;font-size:.73rem;border:1.5px solid var(--border);background:var(--bg-surface);cursor:pointer;transition:background .15s,color .15s,border-color .15s;user-select:none;line-height:1.2}
+    .cat-chip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 
     /* ── MODAL ── */
     #overlay{display:none;position:fixed;inset:0;background:rgba(59,10,31,.55);
@@ -902,17 +905,28 @@ const MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
 const GDRIVE_CLIENT_ID='644762904112-65kfgliosm28n8j1m9862ejpn7j1lttn.apps.googleusercontent.com';
 
 const CATS={
-  moradia:    {l:'Moradia',    b:'bm',  i:'🏠'},
-  alimentacao:{l:'Alimentação',b:'ba',  i:'🍽️'},
-  saude:      {l:'Saúde',      b:'bs',  i:'🏥'},
-  transporte: {l:'Transporte', b:'bt',  i:'🚗'},
-  carro:      {l:'Carro',      b:'bcar',i:'🚙'},
-  celular:    {l:'Celular',    b:'bcel',i:'📱'},
-  lazer:      {l:'Lazer',      b:'bl',  i:'🎮'},
-  streaming:  {l:'Streaming',  b:'bstr',i:'📺'},
-  beleza:     {l:'Beleza',     b:'bbl', i:'💅'},
-  moda:       {l:'Moda',       b:'bmod',i:'👗'},
-  outros:     {l:'Outros',     b:'bo',  i:'📌'},
+  moradia:    {l:'Moradia',    b:'bm',   i:'🏠'},
+  alimentacao:{l:'Alimentação',b:'ba',   i:'🍽️'},
+  mercado:    {l:'Mercado',    b:'bmer', i:'🛒'},
+  saude:      {l:'Saúde',      b:'bs',   i:'🏥'},
+  transporte: {l:'Transporte', b:'bt',   i:'🚗'},
+  carro:      {l:'Carro',      b:'bcar', i:'🚙'},
+  celular:    {l:'Celular',    b:'bcel', i:'📱'},
+  lazer:      {l:'Lazer',      b:'bl',   i:'🎮'},
+  streaming:  {l:'Streaming',  b:'bstr', i:'📺'},
+  livro:      {l:'Livro',      b:'blv',  i:'📚'},
+  dizimo:     {l:'Dízimo',     b:'bdz',  i:'✝️'},
+  cabelo:     {l:'Cabelo',     b:'bcab', i:'💇'},
+  unha:       {l:'Unha',       b:'bun',  i:'💅'},
+  pele:       {l:'Pele',       b:'bpel', i:'🧴'},
+  corpo:      {l:'Corpo',      b:'bcor', i:'🧖'},
+  roupa:      {l:'Roupa',      b:'brou', i:'👗'},
+  sapato:     {l:'Sapato',     b:'bsap', i:'👟'},
+  bolsa:      {l:'Bolsa',      b:'bbol', i:'👜'},
+  acessorio:  {l:'Acessório',  b:'bac',  i:'💍'},
+  outros:     {l:'Outros',     b:'bo',   i:'📌'},
+  beleza:     {l:'Beleza',     b:'bbl',  i:'💅', legacy:true},
+  moda:       {l:'Moda',       b:'bmod', i:'👗', legacy:true},
 };
 
 const CATS_DESEJO={
@@ -936,7 +950,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.58';
+const APP_VER='4.3.59';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -991,6 +1005,11 @@ function pnum(v){const n=parseFloat(String(v).replace(',','.'));return isNaN(n)?
 function fmtBRL(v){return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0)}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function fmtPct(v){const n=v||0;return`${n>=0?'+':''}${n.toFixed(2).replace('.',',')}%`}
+function catArr(ent){return Array.isArray(ent.categorias)?ent.categorias:(ent.categoria?[ent.categoria]:[]);}
+function catDisplay(ent){const a=catArr(ent);return a.length?a.map(k=>CATS[k]?.i||'').join('')+' '+(CATS[a[0]]?.l||a[0]):'—';}
+function catBadge(ent){const a=catArr(ent);if(!a.length)return`<span class="badge bo">${CATS.outros.i} ${CATS.outros.l}</span>`;return`<span class="badge ${CATS[a[0]]?.b||'bo'}">${a.map(k=>CATS[k]?.i||'').join('')} ${CATS[a[0]]?.l||a[0]}</span>`;}
+function catChips(groupId,selected=[]){return'<div class="cat-grid" id="'+groupId+'">'+Object.entries(CATS).filter(([,c])=>!c.legacy).map(([k,c])=>'<span class="cat-chip'+(selected.includes(k)?' active':'')+'" data-k="'+k+'" onclick="this.classList.toggle(\'active\')">'+ c.i+' '+c.l+'</span>').join('')+'</div>';}
+function getCatVals(groupId){return[...document.querySelectorAll('#'+groupId+' .cat-chip.active')].map(e=>e.dataset.k);}
 function diaFechamentoEfetivo(card,mo){return card?.fechamentosEspeciais?.[mo]??card?.diaFechamento??0}
 function faturaMonth(dataStr,card){if(!dataStr)return'';const mo=dataStr.slice(0,7);const dFech=diaFechamentoEfetivo(card,mo);if(!dFech)return mo;const d=parseInt(dataStr.slice(8,10));if(d>dFech){const[y,m]=mo.split('-').map(Number);const next=new Date(y,m,1);return`${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,'0')}`}return mo}
 function renderExcFech(){const el=document.getElementById('ca-exc-lista');if(!el)return;const entries=Object.entries(ST._excFech||{}).sort(([a],[b])=>a.localeCompare(b));el.innerHTML=entries.length?entries.map(([mes,dia])=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="font-size:.82rem;flex:1">${mlabel(mes)}: dia ${dia}</span><button type="button" class="ic del" onclick="delExcFech('${mes}')">🗑️</button></div>`).join(''):`<div style="font-size:.78rem;color:var(--textm)">Nenhuma exceção</div>`}
@@ -1129,10 +1148,10 @@ const STORAGE={
     const rows=[['Tipo','Data','Descrição','Categoria','Forma Pagamento','Valor (R$)']];
     const catL=k=>(CATS[k]?.l||k);
     ST.data.despesasFixas.forEach(d=>{
-      rows.push(['Fixa',`${mo}-${String(d.vencimento||1).padStart(2,'0')}`,d.nome,catL(d.categoria),d.formaPagamento||'',String(d.valor||0).replace('.',',')]);
+      rows.push(['Fixa',`${mo}-${String(d.vencimento||1).padStart(2,'0')}`,d.nome,catArr(d).map(catL).join('+'),d.formaPagamento||'',String(d.valor||0).replace('.',',')]);
     });
     ST.data.despesasVariaveis.filter(d=>d.data?.startsWith(mo)).forEach(d=>{
-      rows.push(['Variável',d.data,d.descricao,catL(d.categoria),d.formaPagamento||'',String(d.valor||0).replace('.',',')]);
+      rows.push(['Variável',d.data,d.descricao,catArr(d).map(catL).join('+'),d.formaPagamento||'',String(d.valor||0).replace('.',',')]);
     });
     ST.data.parceladas.filter(p=>C.parcAtiva(p,mo)).forEach(p=>{
       const n=C.nParcela(p,mo);
@@ -1140,7 +1159,7 @@ const STORAGE={
     });
     (ST.data.cartoes||[]).forEach(c=>{
       (ST.data.faturas[mo]?.[c.id]?.gastos||[]).forEach(g=>{
-        rows.push([`Fatura ${c.nome}`,g.data,g.descricao,catL(g.categoria),'Crédito',String(g.valor||0).replace('.',',')]);
+        rows.push([`Fatura ${c.nome}`,g.data,g.descricao,catArr(g).map(catL).join('+'),'Crédito',String(g.valor||0).replace('.',',')]);
       });
     });
     (ST.data.receitasRecorrentes||[]).forEach(r=>{
@@ -1615,9 +1634,10 @@ const C={
   },
   totalFaturas(mo){return(ST.data.cartoes||[]).reduce((a,c)=>a+this.totalFatura(c.id,mo),0)},
   gastoCategoria(cat,mo){
-    const v=(ST.data.despesasVariaveis||[]).filter(d=>d.data?.startsWith(mo)&&d.categoria===cat).reduce((a,d)=>a+(d.valor||0),0);
-    const f=(ST.data.cartoes||[]).reduce((a,c)=>a+(ST.data.faturas[mo]?.[c.id]?.gastos||[]).filter(g=>g.categoria===cat).reduce((s,g)=>s+(g.valor||0),0),0);
-    const p=(ST.data.parceladas||[]).filter(d=>this.parcAtiva(d,mo)&&d.categoria===cat).reduce((a,d)=>a+(d.valorParcela||0),0);
+    const has=e=>catArr(e).includes(cat);
+    const v=(ST.data.despesasVariaveis||[]).filter(d=>d.data?.startsWith(mo)&&has(d)).reduce((a,d)=>a+(d.valor||0),0);
+    const f=(ST.data.cartoes||[]).reduce((a,c)=>a+(ST.data.faturas[mo]?.[c.id]?.gastos||[]).filter(g=>has(g)).reduce((s,g)=>s+(g.valor||0),0),0);
+    const p=(ST.data.parceladas||[]).filter(d=>this.parcAtiva(d,mo)&&has(d)).reduce((a,d)=>a+(d.valorParcela||0),0);
     return v+f+p;
   },
   saldo(mo){return this.salario(mo)-this.fixas(mo)-this.parceladas(mo)-this.variaveis(mo)-this.totalFaturas(mo)},
@@ -1824,7 +1844,7 @@ const R={
       </div>
       <div class="card">
         <div class="q-title">🛒 Parcelas Ativas (${ativas.length})</div>
-        ${ativas.length?ativas.map(p=>{const n=C.nParcela(p,mo);const catP=p.categoria&&CATS[p.categoria];return`<div class="q-item"><span class="q-name">${esc(p.descricao)}${catP?` <span class="badge ${catP.b}" style="font-size:.6rem;margin-left:4px">${catP.i}</span>`:''} <small style="color:var(--textm)">${n}/${p.numParcelas}</small></span><span class="q-val" style="color:var(--gold)">${fmtBRL(p.valorParcela)}</span></div>`}).join(''):'<div class="empty">Nenhuma parcela ativa</div>'}
+        ${ativas.length?ativas.map(p=>{const n=C.nParcela(p,mo);const icons=catArr(p).map(k=>CATS[k]?.i||'').join('');return`<div class="q-item"><span class="q-name">${esc(p.descricao)}${icons?` <span style="font-size:.7rem;margin-left:4px">${icons}</span>`:''} <small style="color:var(--textm)">${n}/${p.numParcelas}</small></span><span class="q-val" style="color:var(--gold)">${fmtBRL(p.valorParcela)}</span></div>`}).join(''):'<div class="empty">Nenhuma parcela ativa</div>'}
       </div>
       <div class="card" style="grid-column:1/-1">
         <div class="q-title" style="margin-bottom:8px">📊 Comparativo — ${mlabel(mo)} vs ${mlabel(prev)}</div>
@@ -1906,7 +1926,7 @@ const R={
     const mo=ST.month;
     const f=ST.filter;
     const all=ST.data.despesasFixas;
-    const show=f==='all'?all:all.filter(d=>d.categoria===f);
+    const show=f==='all'?all:all.filter(d=>catArr(d).includes(f));
     const total=C.fixas(mo);
     const viaCartao=all.filter(d=>d.cartaoId).reduce((a,d)=>a+C.valorFixa(d,mo),0);
     const pagas=all.filter(d=>!d.cartaoId&&d.pagamentos?.[mo]).reduce((a,d)=>a+C.valorFixa(d,mo),0);
@@ -1918,20 +1938,19 @@ const R={
       </div>
       <div class="pills">
         <div class="pill ${f==='all'?'on':''}" onclick="setF('all')">Todas</div>
-        ${Object.entries(CATS).map(([k,v])=>`<div class="pill ${f===k?'on':''}" onclick="setF('${k}')">${v.i} ${v.l}</div>`).join('')}
+        ${Object.entries(CATS).filter(([,v])=>!v.legacy).map(([k,v])=>`<div class="pill ${f===k?'on':''}" onclick="setF('${k}')">${v.i} ${v.l}</div>`).join('')}
       </div>
       <div class="card">
         ${show.length?`<table class="tbl"><thead><tr><th>Nome</th><th>Categoria</th><th>Pagamento</th><th>Vencimento</th><th>Valor</th><th>Status</th><th></th></tr></thead><tbody>
           ${show.map(d=>{
             const pago=!!d.pagamentos?.[mo];
-            const cat=CATS[d.categoria]||CATS.outros;
             const cartaoNome=d.cartaoId?(ST.data.cartoes||[]).find(c=>c.id===d.cartaoId)?.nome:'';
             const pb=d.formaPagamento?`<span class="badge ${PAGBADGE[d.formaPagamento]||'bo'}">${d.formaPagamento}</span>`:'<span style="color:var(--textm)">—</span>';
             const cartaoTag=cartaoNome?`<span class="badge bac" style="margin-left:5px;font-size:.63rem">💳 ${cartaoNome}</span>`:'';
             const valMo=C.valorFixa(d,mo);
             return`<tr>
               <td style="font-weight:500">${esc(d.nome)}${cartaoTag}</td>
-              <td><span class="badge ${cat.b}">${cat.i} ${cat.l}</span></td>
+              <td>${catBadge(d)}</td>
               <td>${pb}</td>
               <td style="color:var(--text2)">Dia ${d.vencimento}</td>
               <td style="font-weight:600;color:${d.cartaoId?'var(--pink)':'var(--red)'}">${fmtBRL(valMo)}</td>
@@ -1972,7 +1991,7 @@ const R={
             const pb=p.formaPagamento?`<span class="badge ${PAGBADGE[p.formaPagamento]||'bo'}">${p.formaPagamento}</span>`:'<span style="color:var(--textm)">—</span>';
             const cartaoNomeP=p.cartaoId?(ST.data.cartoes||[]).find(c=>c.id===p.cartaoId)?.nome:'';
             const cartaoTagP=cartaoNomeP?`<span class="badge bac" style="margin-left:5px;font-size:.63rem">💳 ${cartaoNomeP}</span>`:'';
-            const catP=p.categoria&&CATS[p.categoria]?`<span class="badge ${CATS[p.categoria].b}">${CATS[p.categoria].i} ${CATS[p.categoria].l}</span>`:'<span style="color:var(--textm)">—</span>';
+            const catP=catArr(p).length?catBadge(p):'<span style="color:var(--textm)">—</span>';
             return`<tr>
               <td style="font-weight:500">${esc(p.descricao)}${cartaoTagP}</td>
               <td>${catP}</td>
@@ -2088,7 +2107,7 @@ const R={
     const viaTicket=items.filter(d=>d.formaPagamento==='Vale Refeição').reduce((a,d)=>a+(d.valor||0),0);
     const ticketRecebido=ST.data.salarios[mo]?.ticket||0;
     const byCat={};
-    items.forEach(d=>{byCat[d.categoria]=(byCat[d.categoria]||0)+d.valor});
+    items.forEach(d=>{catArr(d).forEach(k=>{byCat[k]=(byCat[k]||0)+d.valor});});
     document.getElementById('var-content').innerHTML=`
       <div class="var-top">
         <div class="card" style="flex:1;min-width:150px;padding:13px">
@@ -2117,7 +2136,6 @@ const R={
         <div style="margin-bottom:12px"><input id="var-search" type="search" placeholder="🔍 Buscar descrição…" style="width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid var(--border);border-radius:var(--rs);background:var(--bg-input,var(--bg-surface));color:var(--text);font-size:.85rem" oninput="ST.varSearch=this.value;R.variaveis()" value="${ST.varSearch||''}"></div>
         ${items.length?`<table class="tbl"><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Pagamento</th><th>Valor</th><th></th></tr></thead><tbody>
           ${items.map(d=>{
-            const cat=CATS[d.categoria]||CATS.outros;
             const df=d.data?d.data.split('-').reverse().join('/'):'';
             const pb=d.formaPagamento?`<span class="badge ${PAGBADGE[d.formaPagamento]||'bo'}">${d.formaPagamento}</span>`:'<span style="color:var(--textm)">—</span>';
             const cartaoNomeV=d.cartaoId?(ST.data.cartoes||[]).find(c=>c.id===d.cartaoId)?.nome:'';
@@ -2125,7 +2143,7 @@ const R={
             return`<tr>
               <td style="color:var(--text2);white-space:nowrap">${df}</td>
               <td style="font-weight:500">${esc(d.descricao)}${cartaoTagV}</td>
-              <td><span class="badge ${cat.b}">${cat.i} ${cat.l}</span></td>
+              <td>${catBadge(d)}</td>
               <td>${pb}</td>
               <td style="font-weight:600;color:${d.cartaoId?'var(--pink)':'var(--blue)'}">${fmtBRL(d.valor)}</td>
               <td><div class="acts"><button class="ic" onclick="MODAL.open('variaveis','${d.id}')">✏️</button><button class="ic del" onclick="delVar('${d.id}')">🗑️</button></div></td>
@@ -2237,7 +2255,7 @@ const R={
       ['💳 Faturas',fmtBRL(fat),'color:#c9607e'],
       ['✅ Saldo',fmtBRL(saldo),saldo>=0?'color:#4d8f6e;font-weight:800':'color:#b85462;font-weight:800'],
     ];
-    const varByCat={};ST.data.despesasVariaveis.filter(d=>d.data?.startsWith(mo)).forEach(d=>{varByCat[d.categoria]=(varByCat[d.categoria]||0)+d.valor});
+    const varByCat={};ST.data.despesasVariaveis.filter(d=>d.data?.startsWith(mo)).forEach(d=>{catArr(d).forEach(k=>{varByCat[k]=(varByCat[k]||0)+d.valor});});
     const catRows=Object.entries(varByCat).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<tr><td>${CATS[k]?.i||''} ${CATS[k]?.l||k}</td><td style="text-align:right">${fmtBRL(v)}</td></tr>`).join('');
     const fixRows=ST.data.despesasFixas.map(d=>`<tr><td>${d.nome}</td><td style="text-align:right">${fmtBRL(d.valor)}</td><td style="text-align:center;color:${d.pagamentos?.[mo]?'#4d8f6e':'#b85462'}">${d.pagamentos?.[mo]?'✅':'❌'}</td></tr>`).join('');
     const html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
@@ -2394,27 +2412,27 @@ const R={
             </div>
             ${allItems.length?`<div style="border-radius:calc(var(--r) - 2px);border:1px solid var(--border);margin-top:10px;overflow:hidden"><table class="tbl tbl-sm" style="table-layout:fixed;width:100%"><thead><tr><th style="width:33%">Descrição</th><th style="width:24%">Categoria</th><th style="white-space:nowrap;width:13%">Data</th><th style="white-space:nowrap;text-align:right;width:30%">Valor</th></tr></thead><tbody>
               ${allItems.map(item=>{
-                if(item._t==='g'){const cat=CATS[item.categoria]||CATS.outros;return`<tr>
+                if(item._t==='g'){return`<tr>
                   <td style="font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(item.descricao)}</td>
-                  <td><span class="badge ${cat.b}" style="font-size:.68rem">${cat.i} ${cat.l}</span></td>
+                  <td style="font-size:.68rem">${catDisplay(item)}</td>
                   <td style="font-size:.82rem;white-space:nowrap;color:var(--text2)">${item.data?item.data.slice(8,10)+'/'+item.data.slice(5,7):'—'}</td>
                   <td style="font-weight:600;font-size:.82rem;white-space:nowrap;text-align:right"><span style="display:flex;align-items:center;justify-content:flex-end;gap:6px">${fmtBRL(item.valor)}<button class="ic del" onclick="delGastoFatura('${c.id}','${item.id}')" style="padding:3px 6px">🗑️</button></span></td>
                 </tr>`;}
-                if(item._t==='f'){const cat=CATS[item.categoria]||CATS.outros;return`<tr style="opacity:.8">
+                if(item._t==='f'){return`<tr style="opacity:.8">
                   <td style="font-size:.82rem"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">🔗 ${esc(item.nome)}</span><span class="badge bpd" style="font-size:.6rem">fixa</span></td>
-                  <td><span class="badge ${cat.b}" style="font-size:.68rem">${cat.i} ${cat.l}</span></td>
+                  <td style="font-size:.68rem">${catDisplay(item)}</td>
                   <td style="font-size:.82rem;white-space:nowrap;color:var(--text2)">${item.vencimento?String(item.vencimento).padStart(2,'0')+'/'+mo.slice(5,7):'—'}</td>
                   <td style="font-weight:600;font-size:.82rem;white-space:nowrap;text-align:right">${fmtBRL(C.valorFixa(item,mo))}</td>
                 </tr>`;}
-                if(item._t==='v'){const cat=CATS[item.categoria]||CATS.outros;return`<tr style="opacity:.8">
+                if(item._t==='v'){return`<tr style="opacity:.8">
                   <td style="font-size:.82rem"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">🔗 ${esc(item.descricao)}</span><span class="badge bt" style="font-size:.6rem">variável</span></td>
-                  <td><span class="badge ${cat.b}" style="font-size:.68rem">${cat.i} ${cat.l}</span></td>
+                  <td style="font-size:.68rem">${catDisplay(item)}</td>
                   <td style="font-size:.82rem;white-space:nowrap;color:var(--text2)">${item.data?item.data.slice(8,10)+'/'+item.data.slice(5,7):'—'}</td>
                   <td style="font-weight:600;font-size:.82rem;white-space:nowrap;text-align:right">${fmtBRL(item.valor)}</td>
                 </tr>`;}
-                if(item._t==='p'){const catP=item.categoria&&CATS[item.categoria];return`<tr style="opacity:.8">
+                if(item._t==='p'){return`<tr style="opacity:.8">
                   <td style="font-size:.82rem"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">🔗 ${esc(item.descricao)}</span><span class="badge bbl" style="font-size:.6rem">parcela ${C.nParcela(item,mo)}/${item.numParcelas}</span></td>
-                  <td>${catP?`<span class="badge ${catP.b}" style="font-size:.68rem">${catP.i} ${catP.l}</span>`:`<span class="badge bbl" style="font-size:.68rem">🛒 parcelado</span>`}</td>
+                  <td style="font-size:.68rem">${catArr(item).length?catDisplay(item):'<span class="badge bbl">🛒 parcelado</span>'}</td>
                   <td style="font-size:.82rem;white-space:nowrap;color:var(--text2)">${item.mesInicio?'01/'+item.mesInicio.slice(5,7):'—'}</td>
                   <td style="font-weight:600;font-size:.82rem;white-space:nowrap;text-align:right">${fmtBRL(item.valorParcela)}</td>
                 </tr>`;}
@@ -2441,9 +2459,9 @@ const R={
           const pct=limite>0?Math.min(100,(gasto/limite)*100):0;
           const cls=pct>=90?'over':pct>=70?'warn':'ok';
           const excedeu=limite>0&&gasto>limite?gasto-limite:0;
-          const itensV=(ST.data.despesasVariaveis||[]).filter(d=>d.data?.startsWith(mo)&&d.categoria===k).map(d=>`<div class="orc-acc-item"><span>${esc(d.descricao||'—')}<span style="color:var(--textm);margin-left:4px;font-size:.68rem">${(d.data?.slice(8,10)||'')}/${(d.data?.slice(5,7)||'')}</span></span><b>${fmtBRL(d.valor)}</b></div>`);
-          const itensP=(ST.data.parceladas||[]).filter(p=>C.parcAtiva(p,mo)&&p.categoria===k).map(p=>`<div class="orc-acc-item"><span>${esc(p.descricao||'—')}<span style="color:var(--textm);margin-left:4px;font-size:.68rem">${C.nParcela(p,mo)}/${p.numParcelas}x</span></span><b>${fmtBRL(p.valorParcela)}</b></div>`);
-          const itensC=[];(ST.data.cartoes||[]).forEach(c=>{(ST.data.faturas[mo]?.[c.id]?.gastos||[]).filter(g=>g.categoria===k).forEach(g=>itensC.push(`<div class="orc-acc-item"><span>${esc(g.descricao||'—')}<span style="color:var(--textm);margin-left:4px;font-size:.68rem">💳 ${esc(c.nome)}</span></span><b>${fmtBRL(g.valor)}</b></div>`));});
+          const itensV=(ST.data.despesasVariaveis||[]).filter(d=>d.data?.startsWith(mo)&&catArr(d).includes(k)).map(d=>`<div class="orc-acc-item"><span>${esc(d.descricao||'—')}<span style="color:var(--textm);margin-left:4px;font-size:.68rem">${(d.data?.slice(8,10)||'')}/${(d.data?.slice(5,7)||'')}</span></span><b>${fmtBRL(d.valor)}</b></div>`);
+          const itensP=(ST.data.parceladas||[]).filter(p=>C.parcAtiva(p,mo)&&catArr(p).includes(k)).map(p=>`<div class="orc-acc-item"><span>${esc(p.descricao||'—')}<span style="color:var(--textm);margin-left:4px;font-size:.68rem">${C.nParcela(p,mo)}/${p.numParcelas}x</span></span><b>${fmtBRL(p.valorParcela)}</b></div>`);
+          const itensC=[];(ST.data.cartoes||[]).forEach(c=>{(ST.data.faturas[mo]?.[c.id]?.gastos||[]).filter(g=>catArr(g).includes(k)).forEach(g=>itensC.push(`<div class="orc-acc-item"><span>${esc(g.descricao||'—')}<span style="color:var(--textm);margin-left:4px;font-size:.68rem">💳 ${esc(c.nome)}</span></span><b>${fmtBRL(g.valor)}</b></div>`));});
           const total=itensV.length+itensP.length+itensC.length;
           const accHtml=total===0?'':`<div class="orc-toggle" id="orc-tog-${k}" onclick="toggleOrcAcc('${k}')"><span>${total} despesa${total!==1?'s':''}</span><i class="chev">▼</i></div><div class="orc-acc" id="orc-acc-${k}">${itensV.length?`<div class="orc-acc-group">🧾 Variáveis</div>${itensV.join('')}`:''} ${itensP.length?`<div class="orc-acc-group">🛒 Parceladas</div>${itensP.join('')}`:''} ${itensC.length?`<div class="orc-acc-group">💳 Cartão</div>${itensC.join('')}`:''}</div>`;
           return`<div class="orc-card">
@@ -2504,7 +2522,7 @@ const R={
       if(!dayItems[d])dayItems[d]=[];
       dayItems[d].push({label,val,icon});
     };
-    (ST.data.despesasVariaveis||[]).forEach(d=>addDay(d.data,d.descricao,d.valor,CATS[d.categoria]?.i||'🧾'));
+    (ST.data.despesasVariaveis||[]).forEach(d=>addDay(d.data,d.descricao,d.valor,CATS[catArr(d)[0]]?.i||'🧾'));
     (ST.data.combustivel||[]).forEach(d=>addDay(d.data,`Combustível ${d.posto||''}`.trim(),d.valorTotal||0,'⛽'));
     (ST.data.cartoes||[]).forEach(c=>{
       (ST.data.faturas[mo]?.[c.id]?.gastos||[]).forEach(g=>addDay(g.data,g.descricao,g.valor,'💳'));
@@ -2591,20 +2609,20 @@ const CHART={
   },
   render(){
     const mo=ST.month;
-    const CC={'moradia':'#0ea5e9','alimentacao':'#eab308','saude':'#22c55e','transporte':'#3b82f6','carro':'#f97316','celular':'#06b6d4','lazer':'#a855f7','streaming':'#84cc16','beleza':'#ec4899','moda':'#f43f5e','outros':'#94a3b8'};
+    const CC={'moradia':'#0ea5e9','alimentacao':'#eab308','mercado':'#f59e0b','saude':'#22c55e','transporte':'#3b82f6','carro':'#f97316','celular':'#06b6d4','lazer':'#a855f7','streaming':'#84cc16','livro':'#8b5cf6','dizimo':'#64748b','cabelo':'#ec4899','unha':'#f43f5e','pele':'#fb7185','corpo':'#e879f9','roupa':'#d946ef','sapato':'#c084fc','bolsa':'#a78bfa','acessorio':'#818cf8','outros':'#94a3b8','beleza':'#ec4899','moda':'#f43f5e'};
     const IC={'Renda Fixa':'#0ea5e9','Ações':'#a855f7','FII':'#f59e0b','Cripto':'#ec4899','Poupança':'#22c55e','Outros':'#94a3b8'};
     const legOpts={labels:{color:'#1e293b',font:{size:11}}};
     const ttBRL={callbacks:{label:c=>` ${fmtBRL(c.raw)}`}};
 
     // 1. Fixas donut
-    const bCatF={};ST.data.despesasFixas.forEach(d=>{bCatF[d.categoria]=(bCatF[d.categoria]||0)+d.valor});
+    const bCatF={};ST.data.despesasFixas.forEach(d=>{catArr(d).forEach(k=>{bCatF[k]=(bCatF[k]||0)+d.valor});});
     this.mk('ch-fixas',{type:'doughnut',data:{
       labels:Object.keys(bCatF).map(k=>CATS[k]?.l||k),
       datasets:[{data:Object.values(bCatF),backgroundColor:Object.keys(bCatF).map(k=>CC[k]||'#94a3b8'),borderWidth:2,borderColor:'#fff'}]
     },options:{responsive:true,plugins:{legend:legOpts,tooltip:ttBRL}}});
 
     // 2. Variáveis donut
-    const bCatV={};ST.data.despesasVariaveis.filter(d=>d.data?.startsWith(mo)).forEach(d=>{bCatV[d.categoria]=(bCatV[d.categoria]||0)+d.valor});
+    const bCatV={};ST.data.despesasVariaveis.filter(d=>d.data?.startsWith(mo)).forEach(d=>{catArr(d).forEach(k=>{bCatV[k]=(bCatV[k]||0)+d.valor});});
     this.mk('ch-vars',{type:'doughnut',data:{
       labels:Object.keys(bCatV).map(k=>CATS[k]?.l||k),
       datasets:[{data:Object.values(bCatV),backgroundColor:Object.keys(bCatV).map(k=>CC[k]||'#94a3b8'),borderWidth:2,borderColor:'#fff'}]
@@ -2635,7 +2653,7 @@ const CHART={
     const mo=ST.month;
     const year=mo.split('-')[0];
     const months=[];for(let m=1;m<=12;m++)months.push(`${year}-${String(m).padStart(2,'0')}`);
-    const CC={'moradia':'#0ea5e9','alimentacao':'#eab308','saude':'#22c55e','transporte':'#3b82f6','carro':'#f97316','celular':'#06b6d4','lazer':'#a855f7','streaming':'#84cc16','beleza':'#ec4899','moda':'#f43f5e','outros':'#94a3b8'};
+    const CC={'moradia':'#0ea5e9','alimentacao':'#eab308','mercado':'#f59e0b','saude':'#22c55e','transporte':'#3b82f6','carro':'#f97316','celular':'#06b6d4','lazer':'#a855f7','streaming':'#84cc16','livro':'#8b5cf6','dizimo':'#64748b','cabelo':'#ec4899','unha':'#f43f5e','pele':'#fb7185','corpo':'#e879f9','roupa':'#d946ef','sapato':'#c084fc','bolsa':'#a78bfa','acessorio':'#818cf8','outros':'#94a3b8','beleza':'#ec4899','moda':'#f43f5e'};
     const legOpts={labels:{color:'#1e293b',font:{size:11}}};
     const el=document.getElementById('rel-anual-content');
     if(!el)return;
@@ -2644,7 +2662,7 @@ const CHART={
     const totDesp=months.map(m=>C.fixas(m)+C.parceladas(m)+C.variaveis(m)+C.totalFaturas(m));
     const totSaldo=months.map(m=>C.saldo(m));
     const bCatAnual={};
-    months.forEach(m=>{ST.data.despesasVariaveis.filter(d=>d.data?.startsWith(m)).forEach(d=>{bCatAnual[d.categoria]=(bCatAnual[d.categoria]||0)+d.valor})});
+    months.forEach(m=>{ST.data.despesasVariaveis.filter(d=>d.data?.startsWith(m)).forEach(d=>{catArr(d).forEach(k=>{bCatAnual[k]=(bCatAnual[k]||0)+d.valor});});});
     const totalRec=totRec.reduce((a,v)=>a+v,0);
     const totalDesp=totDesp.reduce((a,v)=>a+v,0);
     const totalSaldo=totSaldo.reduce((a,v)=>a+v,0);
@@ -2702,7 +2720,7 @@ const MODAL={
   close(){document.getElementById('overlay').classList.remove('open');ST.editId=null;ST.editSec=null},
   form(sec,v={}){
     const mo=ST.month;
-    const catOpts=Object.entries(CATS).map(([k,c])=>`<option value="${k}" ${v.categoria===k?'selected':''}>${c.i} ${c.l}</option>`).join('');
+    const selCats=catArr(v);
     const pagOpts=FORMAS_PAG.map(f=>`<option ${v.formaPagamento===f?'selected':''}>${f}</option>`).join('');
     if(sec==='fixas'){
       const cartoes=ST.data.cartoes||[];
@@ -2718,7 +2736,7 @@ const MODAL={
           <div class="frow"><label>Dia de Vencimento</label><input id="fi-venc" type="number" min="1" max="31" placeholder="1–31" value="${v.vencimento||''}"><small style="color:var(--textm);font-size:.68rem">Meses curtos usarão o último dia disponível</small></div>
         </div>
         <div class="fg fg2">
-          <div class="frow"><label>Categoria</label><select id="fi-cat">${catOpts}</select></div>
+          <div class="frow"><label>Categorias</label>${catChips('fi-cats',selCats)}</div>
           <div class="frow"><label>Forma de Pagamento</label>
             <select id="fi-pag" onchange="const r=document.getElementById('fi-cartao-row');r.style.display=this.value==='Crédito'?'':'none';const rc=document.getElementById('fi-conta-row');rc.style.display=['Pix','Débito','Débito em conta'].includes(this.value)?'':'none'">${pagOpts}</select>
           </div>
@@ -2773,7 +2791,7 @@ const MODAL={
           <select id="pa-conta">${contaOptsPa}</select>
           <small style="color:var(--textm);font-size:.68rem">Referência de qual conta é debitada mensalmente</small>
         </div>
-        <div class="frow"><label>Categoria</label><select id="pa-cat"><option value="">— sem categoria —</option>${catOpts}</select></div>
+        <div class="frow"><label>Categorias</label>${catChips('pa-cats',selCats)}</div>
         <div class="hint" id="pa-hint">💡 Informe o valor total — valor da parcela calculado automaticamente</div>
       </div>`;
     }
@@ -2845,7 +2863,7 @@ const MODAL={
           <div class="frow"><label>Data</label><input id="va-dt" type="date" value="${v.data||new Date().toISOString().slice(0,10)}"></div>
         </div>
         <div class="fg fg2">
-          <div class="frow"><label>Categoria</label><select id="va-cat">${catOpts}</select></div>
+          <div class="frow"><label>Categorias</label>${catChips('va-cats',selCats)}</div>
           <div class="frow"><label>Forma de Pagamento</label>
             <select id="va-pag" onchange="const r=document.getElementById('va-cartao-row');r.style.display=this.value==='Crédito'?'':'none';const rc=document.getElementById('va-conta-row');rc.style.display=['Pix','Débito','Débito em conta'].includes(this.value)?'':'none'">${pagOpts}</select>
           </div>
@@ -2956,7 +2974,7 @@ const MODAL={
         <div class="frow"><label>Valor (R$)</label><input id="gf-val" type="number" step="0.01" placeholder="0,00" value="${v.valor||''}"></div>
         <div class="frow"><label>Data</label><input id="gf-dt" type="date" value="${v.data||new Date().toISOString().slice(0,10)}"></div>
       </div>
-      <div class="frow"><label>Categoria</label><select id="gf-cat">${catOpts}</select></div>
+      <div class="frow"><label>Categorias</label>${catChips('gf-cats',selCats)}</div>
     </div>`;
     if(sec==='desejos'){
       const prOpts=Object.entries(PRIORIDADES).map(([k,p])=>`<option value="${k}" ${v.prioridade===k?'selected':''}>${p.l}</option>`).join('');
@@ -2993,7 +3011,7 @@ const MODAL={
       const nome=document.getElementById('fi-nome')?.value.trim();
       const valor=pnum(document.getElementById('fi-val')?.value);
       const venc=parseInt(document.getElementById('fi-venc')?.value)||1;
-      const cat=document.getElementById('fi-cat')?.value;
+      const categorias=getCatVals('fi-cats');
       const pag=document.getElementById('fi-pag')?.value;
       const cartaoId=pag==='Crédito'?(document.getElementById('fi-cartao')?.value||''):'';
       const contaIdFi=['Pix','Débito','Débito em conta'].includes(pag)?(document.getElementById('fi-conta')?.value||''):'';
@@ -3013,13 +3031,13 @@ const MODAL={
             d.historico=d.historico.filter(h=>h.de<desde);
             d.historico.push({valor,de:desde});
           }
-          Object.assign(d,{nome,valor,vencimento:venc,categoria:cat,formaPagamento:pag,cartaoId:cartaoId||'',contaId:contaIdFi||''});
+          Object.assign(d,{nome,valor,vencimento:venc,categorias,formaPagamento:pag,cartaoId:cartaoId||'',contaId:contaIdFi||''});
           if(d.pagamentos?.[mo]&&contaIdFi&&FC_FI.includes(pag)){
             debitarConta(contaIdFi,C.valorFixa(d,mo),mo);
           }
         }
       } else {
-        ST.data.despesasFixas.push({id:uid(),nome,valor,categoria:cat,vencimento:venc,formaPagamento:pag,cartaoId:cartaoId||'',contaId:contaIdFi||'',pagamentos:{},historico:[{valor,de:desde}]});
+        ST.data.despesasFixas.push({id:uid(),nome,valor,categorias,vencimento:venc,formaPagamento:pag,cartaoId:cartaoId||'',contaId:contaIdFi||'',pagamentos:{},historico:[{valor,de:desde}]});
       }
       STORAGE.save();this.close();R.fixas();R.dashboard();toast(id?'Despesa atualizada!':'Despesa adicionada!','ok');
     }
@@ -3035,11 +3053,11 @@ const MODAL={
       const pag=document.getElementById('pa-pag')?.value;
       const cartaoId=pag==='Crédito'?(document.getElementById('pa-cartao')?.value||''):'';
       const contaIdPa=['Pix','Débito','Débito em conta'].includes(pag)?(document.getElementById('pa-conta')?.value||''):'';
-      const cat=document.getElementById('pa-cat')?.value||'';
+      const categorias=getCatVals('pa-cats');
       if(!desc||!(tot>0)||!ini){toast('Preencha todos os campos (valor positivo)','err');return}
       if(!(np>=1)){toast('Número de parcelas deve ser pelo menos 1','err');return}
-      if(id){const i=ST.data.parceladas.findIndex(p=>p.id===id);if(i!==-1)Object.assign(ST.data.parceladas[i],{descricao:desc,valorTotal:tot,numParcelas:np,mesInicio:ini,valorParcela:vp,formaPagamento:pag,cartaoId:cartaoId||'',contaId:contaIdPa||'',categoria:cat})}
-      else ST.data.parceladas.push({id:uid(),descricao:desc,valorTotal:tot,numParcelas:np,mesInicio:ini,valorParcela:vp,formaPagamento:pag,cartaoId:cartaoId||'',contaId:contaIdPa||'',categoria:cat});
+      if(id){const i=ST.data.parceladas.findIndex(p=>p.id===id);if(i!==-1)Object.assign(ST.data.parceladas[i],{descricao:desc,valorTotal:tot,numParcelas:np,mesInicio:ini,valorParcela:vp,formaPagamento:pag,cartaoId:cartaoId||'',contaId:contaIdPa||'',categorias})}
+      else ST.data.parceladas.push({id:uid(),descricao:desc,valorTotal:tot,numParcelas:np,mesInicio:ini,valorParcela:vp,formaPagamento:pag,cartaoId:cartaoId||'',contaId:contaIdPa||'',categorias});
       STORAGE.save();this.close();R.parceladas();R.dashboard();toast(id?'Parcela atualizada!':'Parcela adicionada!','ok');
     }
     else if(sec==='investimentos'){
@@ -3068,7 +3086,7 @@ const MODAL={
       const desc=document.getElementById('va-desc')?.value.trim();
       const val=pnum(document.getElementById('va-val')?.value);
       const dt=document.getElementById('va-dt')?.value;
-      const cat=document.getElementById('va-cat')?.value;
+      const categorias=getCatVals('va-cats');
       const pag=document.getElementById('va-pag')?.value;
       const cartaoId=pag==='Crédito'?(document.getElementById('va-cartao')?.value||''):'';
       const contaIdVa=['Pix','Débito','Débito em conta'].includes(pag)?(document.getElementById('va-conta')?.value||''):'';
@@ -3080,10 +3098,10 @@ const MODAL={
         if(i!==-1){
           const old=ST.data.despesasVariaveis[i];
           if(old.contaId&&FC_VA.includes(old.formaPagamento))debitarConta(old.contaId,-(old.valor||0),old.data?.slice(0,7)||mo);
-          Object.assign(ST.data.despesasVariaveis[i],{descricao:desc,valor:val,data:dt,categoria:cat,formaPagamento:pag,cartaoId:cartaoId||'',contaId:contaIdVa||''});
+          Object.assign(ST.data.despesasVariaveis[i],{descricao:desc,valor:val,data:dt,categorias,formaPagamento:pag,cartaoId:cartaoId||'',contaId:contaIdVa||''});
         }
       } else {
-        ST.data.despesasVariaveis.push({id:uid(),descricao:desc,valor:val,data:dt,categoria:cat,formaPagamento:pag,cartaoId:cartaoId||'',contaId:contaIdVa||''});
+        ST.data.despesasVariaveis.push({id:uid(),descricao:desc,valor:val,data:dt,categorias,formaPagamento:pag,cartaoId:cartaoId||'',contaId:contaIdVa||''});
       }
       if(contaIdVa)debitarConta(contaIdVa,val,dt.slice(0,7)||mo);
       STORAGE.save();this.close();R.variaveis();R.dashboard();toast(id?'Despesa atualizada!':'Despesa adicionada!','ok');
@@ -3190,7 +3208,7 @@ const MODAL={
       const desc=document.getElementById('gf-desc')?.value.trim();
       const val=pnum(document.getElementById('gf-val')?.value);
       const dt=document.getElementById('gf-dt')?.value;
-      const cat=document.getElementById('gf-cat')?.value;
+      const categorias=getCatVals('gf-cats');
       const cid=ST.cartaoAtivo;
       if(!desc||!(val>0)||!dt){toast('Preencha todos os campos (valor positivo)','err');return}
       if(!cid){toast('Cartão não identificado','err');return}
@@ -3207,15 +3225,15 @@ const MODAL={
         if(!ST.data.faturas[newMo][cid])ST.data.faturas[newMo][cid]={gastos:[],paga:false};
         if(gastoMo&&gastoMo!==newMo){
           const [g]=ST.data.faturas[gastoMo][cid].gastos.splice(gastoIdx,1);
-          ST.data.faturas[newMo][cid].gastos.push({...g,descricao:desc,valor:val,data:dt,categoria:cat});
+          ST.data.faturas[newMo][cid].gastos.push({...g,descricao:desc,valor:val,data:dt,categorias});
         } else if(gastoMo){
-          Object.assign(ST.data.faturas[gastoMo][cid].gastos[gastoIdx],{descricao:desc,valor:val,data:dt,categoria:cat});
+          Object.assign(ST.data.faturas[gastoMo][cid].gastos[gastoIdx],{descricao:desc,valor:val,data:dt,categorias});
         }
       } else {
         const moAlvo=faturaMonth(dt,cartGasto)||mo;
         if(!ST.data.faturas[moAlvo])ST.data.faturas[moAlvo]={};
         if(!ST.data.faturas[moAlvo][cid])ST.data.faturas[moAlvo][cid]={gastos:[],paga:false};
-        ST.data.faturas[moAlvo][cid].gastos.push({id:uid(),descricao:desc,valor:val,data:dt,categoria:cat});
+        ST.data.faturas[moAlvo][cid].gastos.push({id:uid(),descricao:desc,valor:val,data:dt,categorias});
       }
       STORAGE.save();this.close();R.cartoes();R.dashboard();toast(id?'Gasto atualizado!':'Gasto lançado!','ok');
     }
@@ -3596,12 +3614,16 @@ const IMPORT={
 
   autoCategoria(desc){
     const d=(desc||'').toLowerCase();
-    if(/supermercado|mercado|extra|carrefour|atacadao|padaria|açougue|hortifruti|ifood|rappi|delivery|restaurante|lanchonete|pizza|burger|mcdonald|subway|hamburger|sushi|acai/.test(d))return'alimentacao';
+    if(/supermercado|atacadao|carrefour|extra|hortifruti|açougue|sacolao|hortifr|atacad/.test(d))return'mercado';
+    if(/padaria|ifood|rappi|delivery|restaurante|lanchonete|pizza|burger|mcdonald|subway|hamburger|sushi|acai|alimentacao|alimentação/.test(d))return'alimentacao';
+    if(/livraria|saraiva|cultura livro|fnac|amazon livro|submarino livro/.test(d))return'livro';
+    if(/dizimo|dízimo|oferta igrej|oferta crista|igreja|paroquia|paróquia/.test(d))return'dizimo';
     if(/farmácia|farmacia|drogaria|hospital|clínica|clinica|médico|medico|dentista|plano.saude|unimed|hapvida|amil|bradesco.saude/.test(d))return'saude';
     if(/uber|99pop|taxi|posto|gasolina|combustível|combustivel|estacionamento|metrô|metro|ônibus|onibus|pedágio|pedagio|shell|petrobras|ipiranga/.test(d))return'transporte';
     if(/aluguel|condomínio|condominio|iptu|light|cemig|enel|sabesp|copasa|gas ceg|internet|net banda|claro res|vivo fib|tim fib/.test(d))return'moradia';
     if(/cinema|netflix|spotify|amazon prime|disney|hbo|paramount|apple tv|show|teatro|viagem|hotel|airbnb|booking|decolar|latam|gol air/.test(d))return'lazer';
-    if(/salão|salao|cabelereiro|manicure|estetica|estética|beleza|perfume|maquiagem|sephora|boticario|natura/.test(d))return'beleza';
+    if(/salão|salao|cabelereiro|manicure|estetica|estética|sephora|boticario|natura|perfume|maquiagem/.test(d))return'cabelo';
+    if(/zara|renner|riachuelo|c&a|marisa|shein|hm|h&m|roupas|roupa/.test(d))return'roupa';
     return'outros';
   },
 
@@ -3627,7 +3649,7 @@ const IMPORT={
             <thead><tr><th><input type="checkbox" checked onchange="IMPORT.toggleAll(this.checked)"></th><th>Data</th><th>Descrição</th><th>Valor</th><th>Categoria</th></tr></thead>
             <tbody id="imp-tbl-body">
               ${txns.map((t,i)=>{
-                const catOpts=Object.entries(CATS).map(([k,c])=>`<option value="${k}" ${t.categoria===k?'selected':''}>${c.i} ${c.l}</option>`).join('');
+                const catOpts=Object.entries(CATS).filter(([,c])=>!c.legacy).map(([k,c])=>`<option value="${k}" ${t.categoria===k?'selected':''}>${c.i} ${c.l}</option>`).join('');
                 const df=t.data?t.data.split('-').reverse().join('/'):'';
                 return`<tr id="imp-row-${i}">
                   <td><input type="checkbox" checked onchange="IMPORT.toggleRow(${i},this.checked)"></td>
@@ -3688,12 +3710,12 @@ const IMPORT={
         :(ST.data.faturas?.[mo]?.[dest]?.gastos||[]).some(g=>g.data===t.data&&g.valor===t.valor&&g.descricao===t.descricao);
       if(isDup){duplas++;return}
       if(dest==='variavel'){
-        ST.data.despesasVariaveis.push({id:uid(),descricao:t.descricao,valor:t.valor,data:t.data,categoria:t.categoria,formaPagamento:''});
+        ST.data.despesasVariaveis.push({id:uid(),descricao:t.descricao,valor:t.valor,data:t.data,categorias:t.categoria?[t.categoria]:[],formaPagamento:''});
       } else {
         if(!ST.data.faturas)ST.data.faturas={};
         if(!ST.data.faturas[mo])ST.data.faturas[mo]={};
         if(!ST.data.faturas[mo][dest])ST.data.faturas[mo][dest]={gastos:[],paga:false};
-        ST.data.faturas[mo][dest].gastos.push({id:uid(),descricao:t.descricao,valor:t.valor,data:t.data,categoria:t.categoria});
+        ST.data.faturas[mo][dest].gastos.push({id:uid(),descricao:t.descricao,valor:t.valor,data:t.data,categorias:t.categoria?[t.categoria]:[],});
       }
       inseridos++;
     });
