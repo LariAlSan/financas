@@ -936,7 +936,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.55';
+const APP_VER='4.3.56';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -2362,7 +2362,8 @@ const R={
           const totalC=C.totalFatura(c.id,mo);
           const pct=c.limite>0?Math.min(100,(totalC/c.limite)*100):0;
           const barColor=pct>=90?'linear-gradient(90deg,#ef4444,#dc2626)':pct>=70?'linear-gradient(90deg,#f59e0b,#f97316)':'var(--pg)';
-          const disp=c.limite-totalC;
+          const futureParc=(ST.data.parceladas||[]).filter(p=>p.cartaoId===c.id&&C.parcAtiva(p,mo)).reduce((sum,p)=>sum+Math.max(0,p.numParcelas-C.nParcela(p,mo))*(p.valorParcela||0),0);
+          const disp=c.limite-totalC-futureParc;
           const dispPct=c.limite>0?disp/c.limite:1;
           const dispColor=dispPct>0.3?'var(--green)':dispPct>0.1?'#f59e0b':'var(--red)';
           return`<div class="cart-card">
