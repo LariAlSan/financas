@@ -954,7 +954,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.61';
+const APP_VER='4.3.62';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -1773,7 +1773,7 @@ const R={
           ${anterior!==0?`<div class="bal-row" style="font-weight:600">+ ${mlabel(prev)} <b style="color:var(--green)">${fmtBRL(anterior)}</b></div>`:''}
           <div class="bal-row">Salário <b style="color:var(--green)">${fmtBRL(sal)}</b></div>
           <div class="bal-row">− Fixas <b style="color:var(--red)">${fmtBRL(fx)}</b></div>
-          <div class="bal-row">− Parcelas <b style="color:var(--gold)">${fmtBRL(pc)}</b></div>
+          ${pc>0?`<div class="bal-row">− Parcelas <b style="color:var(--gold)">${fmtBRL(pc)}</b></div>`:pcTotal>0?`<div class="bal-row" style="opacity:.55;font-size:.75rem">↑ Parcelas (${fmtBRL(pcTotal)}) incluídas em Faturas</div>`:''}
           <div class="bal-row">− Variáveis <b style="color:var(--blue)">${fmtBRL(vr)}</b></div>
           <div class="bal-row">− Faturas <b style="color:var(--pink)">${fmtBRL(fat)}</b></div>
         </div>
