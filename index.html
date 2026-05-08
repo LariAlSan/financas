@@ -936,7 +936,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.53';
+const APP_VER='4.3.54';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -2362,6 +2362,9 @@ const R={
           const totalC=C.totalFatura(c.id,mo);
           const pct=c.limite>0?Math.min(100,(totalC/c.limite)*100):0;
           const barColor=pct>=90?'linear-gradient(90deg,#ef4444,#dc2626)':pct>=70?'linear-gradient(90deg,#f59e0b,#f97316)':'var(--pg)';
+          const disp=c.limite-totalC;
+          const dispPct=c.limite>0?disp/c.limite:1;
+          const dispColor=dispPct>0.3?'var(--green)':dispPct>0.1?'#f59e0b':'var(--red)';
           return`<div class="cart-card">
             <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px">
               <div>
@@ -2373,7 +2376,7 @@ const R={
                 <button class="ic del" onclick="delCartao('${c.id}')">🗑️</button>
               </div>
             </div>
-            ${c.limite?`<div style="font-size:.74rem;color:var(--textm)">Limite: ${fmtBRL(c.limite)} · Fechamento: dia ${diaFechamentoEfetivo(c,mo)||'—'} · Vencimento: dia ${c.diaVencimento}</div>
+            ${c.limite?`<div style="font-size:.74rem;color:var(--textm)">Limite: ${fmtBRL(c.limite)} · Disponível: <span style="color:${dispColor};font-weight:600">${fmtBRL(Math.max(0,disp))}</span> · Fechamento: dia ${diaFechamentoEfetivo(c,mo)||'—'} · Vencimento: dia ${c.diaVencimento}</div>
             <div style="display:flex;align-items:center;gap:8px;margin:7px 0 3px">
               <div class="prog-w" style="flex:1;height:8px"><div class="prog-b" style="width:${pct}%;background:${barColor}"></div></div>
               <span style="font-size:.72rem;color:var(--textm);white-space:nowrap">${pct.toFixed(0)}%</span>
@@ -2744,16 +2747,18 @@ const MODAL={
       const showContaPa=['Pix','Débito','Débito em conta'].includes(v.formaPagamento||FORMAS_PAG[0])?'':'display:none';
       return`<div class="fg">
         <div class="frow"><label>Descrição</label><input id="pa-desc" placeholder="Ex: Notebook Dell" value="${v.descricao||''}"></div>
-        <input type="hidden" id="pa-modo" value="total">
-        <div style="display:flex;gap:6px;align-items:center;margin-bottom:2px">
-          <span style="font-size:.75rem;color:var(--textm)">Informar:</span>
-          <button type="button" id="pa-btn-tot" onclick="paToggleModo('total')" style="font-size:.75rem;padding:3px 10px;border-radius:12px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer">Valor total</button>
-          <button type="button" id="pa-btn-vp" onclick="paToggleModo('parcela')" style="font-size:.75rem;padding:3px 10px;border-radius:12px;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer">Valor da parcela</button>
-        </div>
-        <div class="fg fg3">
-          <div class="frow"><label>Valor Total (R$)</label><input id="pa-tot" type="number" step="0.01" placeholder="0,00" value="${v.valorTotal||''}" oninput="paCalcAuto()"></div>
-          <div class="frow"><label>Valor da Parcela (R$)</label><input id="pa-vp" type="number" step="0.01" placeholder="0,00" value="${v.valorTotal&&v.numParcelas?parseFloat((v.valorTotal/v.numParcelas).toFixed(2)):''}" readonly style="background:var(--bg2);color:var(--textm)" oninput="paCalcAuto()"></div>
-          <div class="frow"><label>Nº Parcelas</label><input id="pa-np" type="number" min="1" placeholder="Ex: 12" value="${v.numParcelas||''}" oninput="paCalcAuto()"></div>
+        <div>
+          <input type="hidden" id="pa-modo" value="total">
+          <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
+            <span style="font-size:.75rem;color:var(--textm)">Informar:</span>
+            <button type="button" id="pa-btn-tot" onclick="paToggleModo('total')" style="font-size:.75rem;padding:3px 10px;border-radius:12px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer">Valor total</button>
+            <button type="button" id="pa-btn-vp" onclick="paToggleModo('parcela')" style="font-size:.75rem;padding:3px 10px;border-radius:12px;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer">Valor da parcela</button>
+          </div>
+          <div class="fg fg3">
+            <div class="frow"><label>Valor Total (R$)</label><input id="pa-tot" type="number" step="0.01" placeholder="0,00" value="${v.valorTotal||''}" oninput="paCalcAuto()"></div>
+            <div class="frow"><label>Valor da Parcela (R$)</label><input id="pa-vp" type="number" step="0.01" placeholder="0,00" value="${v.valorTotal&&v.numParcelas?parseFloat((v.valorTotal/v.numParcelas).toFixed(2)):''}" readonly style="background:var(--bg2);color:var(--textm)" oninput="paCalcAuto()"></div>
+            <div class="frow"><label>Nº Parcelas</label><input id="pa-np" type="number" min="1" placeholder="Ex: 12" value="${v.numParcelas||''}" oninput="paCalcAuto()"></div>
+          </div>
         </div>
         <div class="fg fg2">
           <div class="frow"><label>Mês de Início</label><input id="pa-ini" type="month" value="${v.mesInicio||mo}"></div>
