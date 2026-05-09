@@ -311,8 +311,8 @@
       .bal-amt{font-size:1.7rem}
       .q-grid{grid-template-columns:1fr}
       .inv-sum{grid-template-columns:1fr 1fr}
-      .desejo-grid{grid-template-columns:1fr 1fr}
-      .orc-grid{grid-template-columns:1fr 1fr}
+      .desejo-grid{grid-template-columns:1fr}
+      .orc-grid{grid-template-columns:1fr}
       .cart-grid{grid-template-columns:1fr}
       /* Densidade */
       .card,.sum-card{padding:14px}
@@ -322,6 +322,9 @@
       /* Tables scroll */
       .tbl,.comp-table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
       .card{overflow-x:auto}
+      /* Tabelas: fonte e linhas maiores */
+      .tbl th{font-size:.82rem;padding:11px 10px}
+      .tbl td{font-size:.93rem;padding:13px 10px}
       .tbl-comb th:nth-child(3),.tbl-comb td:nth-child(3),
       .tbl-comb th:nth-child(4),.tbl-comb td:nth-child(4),
       .tbl-comb th:nth-child(7),.tbl-comb td:nth-child(7),
@@ -330,6 +333,18 @@
       #s-parceladas .tbl th:nth-child(3),#s-parceladas .tbl td:nth-child(3),
       #s-parceladas .tbl th:nth-child(5),#s-parceladas .tbl td:nth-child(5),
       #s-parceladas .tbl th:nth-child(7),#s-parceladas .tbl td:nth-child(7){display:none}
+      /* Stat boxes: grade 2×2 + fonte maior */
+      .stat3 .card{flex:1 1 calc(50% - 7px);min-width:0}
+      .stat3 .card .lbl{font-size:.78rem}
+      .stat3 .card .val{font-size:1.4rem}
+      /* Notas: preenche a tela */
+      .nota-textarea{min-height:calc(100vh - 210px);font-size:1rem}
+      /* Configuração: maior */
+      .cfg-card{padding:24px}
+      .cfg-card-title{font-size:1.15rem}
+      .cfg-theme-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
+      .cfg-icon-chip{font-size:1.3rem;padding:10px 14px}
+      .cfg-input{width:100%;max-width:100%;font-size:1rem}
       /* Touch targets */
       .btn{min-height:44px;padding:10px 20px}
       .frow input,.frow select,.frow textarea{min-height:44px;font-size:16px}
@@ -350,7 +365,6 @@
       .sum-grid{grid-template-columns:1fr 1fr}
       .stat3{flex-direction:column}
       .cart-grid{grid-template-columns:1fr}
-      .desejo-grid{grid-template-columns:1fr}
       .sal-inline{flex-wrap:wrap}
       .sal-inline input{width:100%;max-width:170px}
       .inv-sum{grid-template-columns:1fr}
@@ -954,7 +968,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.66';
+const APP_VER='4.3.67';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
