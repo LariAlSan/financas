@@ -755,7 +755,7 @@
   <!-- INVESTIMENTOS -->
   <section id="s-investimentos" class="section">
     <div class="sec-header">
-      <div><div class="sec-title">📈 Investimentos</div><div class="sec-sub">Patrimônio geral &nbsp;·&nbsp; CDI: <span id="inv-cdi-lbl">—</span>% a.a. <button class="ic" style="font-size:.7rem;padding:2px 5px" onclick="editCDI()">✏️</button></div></div>
+      <div><div class="sec-title">📈 Investimentos</div><div class="sec-sub">Patrimônio geral &nbsp;·&nbsp; CDI: <span id="inv-cdi-lbl">—</span>% a.a. <button class="ic" style="font-size:.7rem;padding:2px 5px" onclick="editCDI()">✏️</button> &nbsp;·&nbsp; TR: <span id="inv-tr-lbl">—</span>% a.m. <button class="ic" style="font-size:.7rem;padding:2px 5px" onclick="editTR()">✏️</button> &nbsp;·&nbsp; IPCA: <span id="inv-ipca-lbl">—</span>% a.a. <button class="ic" style="font-size:.7rem;padding:2px 5px" onclick="editIPCA()">✏️</button></div></div>
       <button class="btn btn-p" onclick="MODAL.open('investimentos')">+ Adicionar</button>
     </div>
     <div id="inv-content"></div>
@@ -960,21 +960,21 @@ const CATS_DESEJO={
 const PRIORIDADES={alta:{l:'Alta',b:'bpr-alta'},media:{l:'Média',b:'bpr-media'},baixa:{l:'Baixa',b:'bpr-baixa'}};
 const STATUS_DESEJO={sonhando:{l:'Sonhando',b:'bst-s',i:'✨'},economizando:{l:'Economizando',b:'bst-e',i:'🐷'},conquistado:{l:'Conquistado! 🎉',b:'bst-c',i:'🏆'}};
 
-const TIPOSINV=['Renda Fixa','Ações','FII','Cripto','Poupança','Outros'];
-const INVB={'Renda Fixa':'brf','Ações':'bac','FII':'bfi','Cripto':'bcr','Poupança':'bpo','Outros':'bo'};
-const INDEXADORES=['CDI','IPCA+','SELIC','Prefixado','LCI/LCA','Outros'];
-const INDB={'CDI':'brf','IPCA+':'bs','SELIC':'bpo','Prefixado':'bt','LCI/LCA':'bpg','Outros':'bo'};
+const TIPOSINV=['Renda Fixa','Ações','FII','Cripto','Poupança','FGTS','Outros'];
+const INVB={'Renda Fixa':'brf','Ações':'bac','FII':'bfi','Cripto':'bcr','Poupança':'bpo','FGTS':'bvr','Outros':'bo'};
+const INDEXADORES=['CDI','IPCA+','SELIC','Prefixado','LCI/LCA','TR+3%','Outros'];
+const INDB={'CDI':'brf','IPCA+':'bs','SELIC':'bpo','Prefixado':'bt','LCI/LCA':'bpg','TR+3%':'bm','Outros':'bo'};
 const LIQUIDEZ_OPTS=['Diária','No vencimento','D+30','D+60','D+90','Sem vencimento'];
 const LIQB={Diária:'bpo','No vencimento':'brf','D+30':'bt','D+60':'bfi','D+90':'bpd','Sem vencimento':'bo'};
-const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
+const AUTO_CALC_IDX=['CDI','SELIC','Prefixado','TR+3%'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.75';
+const APP_VER='4.3.76';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
-  config:{taxaCDI:13.75,brandName:'Soldo',brandIcon:'R$',theme:'rosa'},
+  config:{taxaCDI:13.75,taxaTR:0.17,taxaIPCA:5.53,brandName:'Soldo',brandIcon:'R$',theme:'rosa'},
   salarios:{},
   despesasFixas:[],
   parceladas:[],
@@ -1627,13 +1627,21 @@ const C={
   totalInv(){return ST.data.investimentos.reduce((a,i)=>a+(i.valorInvestido||0),0)},
   totalAtual(){return ST.data.investimentos.reduce((a,i)=>{const v=C.valorCalc(i);return a+(v!==null?v:(i.valorAtual||0))},0)},
   valorCalc(inv){
-    if(!inv.autoCalc||!inv.dataAplicacao||!inv.percentual)return null;
+    if(!inv.autoCalc||!inv.dataAplicacao)return null;
+    if(!inv.percentual&&inv.indexador!=='TR+3%')return null;
     const cdi=(ST.data.config?.taxaCDI)||13.75;
     const dias=Math.max(0,Math.floor((Date.now()-new Date(inv.dataAplicacao))/(864e5)));
     if(dias===0)return inv.valorInvestido;
     let taxaAnual;
     if(inv.indexador==='CDI'||inv.indexador==='SELIC')taxaAnual=cdi*(inv.percentual/100)/100;
     else if(inv.indexador==='Prefixado')taxaAnual=inv.percentual/100;
+    else if(inv.indexador==='TR+3%'){
+      const tr=(ST.data.config?.taxaTR)??0.17;
+      const ipca=(ST.data.config?.taxaIPCA)??5.53;
+      const trAnual=Math.pow(1+tr/100,12)-1;
+      const base=trAnual+0.03+(inv.percentual||0)/100;
+      taxaAnual=Math.max(base,ipca/100);
+    }
     else return null;
     return inv.valorInvestido*Math.pow(1+taxaAnual,dias/365);
   },
@@ -2052,6 +2060,10 @@ const R={
     const invs=ST.data.investimentos;
     const el=document.getElementById('inv-cdi-lbl');
     if(el)el.textContent=((ST.data.config?.taxaCDI)||13.75).toFixed(2).replace('.',',');
+    const elTR=document.getElementById('inv-tr-lbl');
+    if(elTR)elTR.textContent=((ST.data.config?.taxaTR)??0.17).toFixed(2).replace('.',',');
+    const elIPCA=document.getElementById('inv-ipca-lbl');
+    if(elIPCA)elIPCA.textContent=((ST.data.config?.taxaIPCA)??5.53).toFixed(2).replace('.',',');
     const ti=C.totalInv(),ta=C.totalAtual(),tl=C.totalLiquido();
     const ret=ti>0?((ta-ti)/ti)*100:0;
     const tiposExistentes=[...new Set(invs.map(i=>i.tipo).filter(Boolean))];
@@ -3335,7 +3347,7 @@ function toggleAutoCalcField(){
   const pctLbl=document.getElementById('in-pct-lbl');
   if(pctRow)pctRow.style.display=idx?'':'none';
   if(autoRow)autoRow.style.display=canAuto?'':'none';
-  if(pctLbl)pctLbl.textContent=idx==='Prefixado'?'Taxa a.a. (%)':'% do índice';
+  if(pctLbl)pctLbl.textContent=idx==='Prefixado'?'Taxa a.a. (%)':idx==='TR+3%'?'Distrib. lucros a.a. (%) — opcional':'% do índice';
   if(atInput)atInput.disabled=canAuto&&auto;
   if(dtRow)dtRow.style.display=canAuto&&auto?'none':'';
 }
@@ -3376,6 +3388,28 @@ function editCDI(){
   ST.data.config.taxaCDI=n;
   STORAGE.save();R.investimentos();
   toast(`CDI atualizado para ${n.toFixed(2).replace('.',',')}% a.a.`,'ok');
+}
+function editTR(){
+  const atual=((ST.data.config?.taxaTR)??0.17).toFixed(2).replace('.',',');
+  const v=prompt('TR mensal atual (% ao mês):\nExemplo: 0,17',atual);
+  if(v===null)return;
+  const n=parseFloat(v.replace(',','.'));
+  if(isNaN(n)||n<0||n>5){toast('TR inválida','err');return}
+  if(!ST.data.config)ST.data.config={};
+  ST.data.config.taxaTR=n;
+  STORAGE.save();R.investimentos();
+  toast(`TR atualizada para ${n.toFixed(2).replace('.',',')}% a.m.`,'ok');
+}
+function editIPCA(){
+  const atual=((ST.data.config?.taxaIPCA)??5.53).toFixed(2).replace('.',',');
+  const v=prompt('IPCA anual (% ao ano):\nExemplo: 5,53',atual);
+  if(v===null)return;
+  const n=parseFloat(v.replace(',','.'));
+  if(isNaN(n)||n<0||n>100){toast('IPCA inválido','err');return}
+  if(!ST.data.config)ST.data.config={};
+  ST.data.config.taxaIPCA=n;
+  STORAGE.save();R.investimentos();
+  toast(`IPCA atualizado para ${n.toFixed(2).replace('.',',')}% a.a.`,'ok');
 }
 function editTicket(){MODAL.open('ticket')}
 function delVar(id){if(!confirm('Remover esta despesa?'))return;ST.data.despesasVariaveis=ST.data.despesasVariaveis.filter(d=>d.id!==id);STORAGE.save();R.variaveis();R.dashboard();toast('Removida','inf')}
