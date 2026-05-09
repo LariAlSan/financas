@@ -970,7 +970,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.74';
+const APP_VER='4.3.75';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -1248,7 +1248,7 @@ const GDRIVE={
       }
     });
     window.addEventListener('online',()=>{if(this._ok())this._syncSilent();});
-    setInterval(()=>{if(this._ok())this._syncSilent();},10*1000);
+    setInterval(()=>{if(this._ok())this._syncSilent();},1000);
   },
 
   _initTC(){
@@ -1313,7 +1313,7 @@ const GDRIVE={
   autoSave(){
     if(!this._ok())return;
     clearTimeout(this._timer);
-    this._timer=setTimeout(()=>this._doSave(ST.data),5000);
+    this._timer=setTimeout(()=>this._doSave(ST.data),1000);
   },
 
   async _doSave(data){
