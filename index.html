@@ -298,7 +298,7 @@
     .cc.full{grid-column:1/-1}
     .cc-title{font-family:var(--font-h);font-size:.88rem;font-weight:700;color:var(--text2);margin-bottom:14px}
     /* RESPONSIVE */
-    @media(max-width:768px){
+    @media(max-width:1100px){
       html{font-size:16px}
       .sidebar{display:none}
       .bottom-nav{display:flex}
@@ -311,6 +311,9 @@
       .bal-amt{font-size:1.7rem}
       .q-grid{grid-template-columns:1fr}
       .inv-sum{grid-template-columns:1fr 1fr}
+      .desejo-grid{grid-template-columns:1fr 1fr}
+      .orc-grid{grid-template-columns:1fr 1fr}
+      .cart-grid{grid-template-columns:1fr}
       /* Densidade */
       .card,.sum-card{padding:14px}
       .sec-header{margin-bottom:14px}
@@ -323,6 +326,10 @@
       .tbl-comb th:nth-child(4),.tbl-comb td:nth-child(4),
       .tbl-comb th:nth-child(7),.tbl-comb td:nth-child(7),
       .tbl-comb th:nth-child(9),.tbl-comb td:nth-child(9){display:none}
+      /* Parceladas: oculta Pagamento (3), Progresso (5), Total (7) */
+      #s-parceladas .tbl th:nth-child(3),#s-parceladas .tbl td:nth-child(3),
+      #s-parceladas .tbl th:nth-child(5),#s-parceladas .tbl td:nth-child(5),
+      #s-parceladas .tbl th:nth-child(7),#s-parceladas .tbl td:nth-child(7){display:none}
       /* Touch targets */
       .btn{min-height:44px;padding:10px 20px}
       .frow input,.frow select,.frow textarea{min-height:44px;font-size:16px}
@@ -343,6 +350,7 @@
       .sum-grid{grid-template-columns:1fr 1fr}
       .stat3{flex-direction:column}
       .cart-grid{grid-template-columns:1fr}
+      .desejo-grid{grid-template-columns:1fr}
       .sal-inline{flex-wrap:wrap}
       .sal-inline input{width:100%;max-width:170px}
       .inv-sum{grid-template-columns:1fr}
@@ -350,7 +358,7 @@
       .tbl-comb th:nth-child(8),.tbl-comb td:nth-child(8){display:none}
     }
 
-    /* ── SIDEBAR RETRÁTIL (tablet 769px–1100px) ── */
+    /* ── SIDEBAR RETRÁTIL (desktop intermediário >1100px sem sidebar fixa — não usado atualmente) ── */
     #sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:99;cursor:pointer}
     .ham-btn{position:fixed;top:14px;left:14px;z-index:101;
       display:none;align-items:center;justify-content:center;
@@ -359,14 +367,6 @@
       color:var(--text2);font-size:1.15rem;cursor:pointer;
       box-shadow:var(--shadow);transition:.15s;line-height:1}
     .ham-btn:hover{background:var(--bg-surface)}
-    @media(min-width:769px) and (max-width:1100px){
-      .sidebar{transform:translateX(-100%)}
-      #content{margin-left:0}
-      .ham-btn{display:flex}
-      .sb-close-btn{display:flex}
-      #app.sb-open .sidebar{transform:translateX(0)}
-      #app.sb-open #sb-overlay{display:block}
-    }
 
     /* ── ORÇAMENTO ── */
     .orc-prog{height:8px;border-radius:20px;overflow:hidden;background:var(--bg-surface);margin:7px 0 4px}
@@ -954,7 +954,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.65';
+const APP_VER='4.3.66';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -3746,7 +3746,7 @@ function goTo(sec){
   else if(sec==='calendario')R.calendario();
   else if(sec==='configuracao')CONFIG.render();
   else R.dashboard();
-  if(window.innerWidth>768&&window.innerWidth<=1100)document.getElementById('app').classList.remove('sb-open');
+  if(window.innerWidth>1100)document.getElementById('app').classList.remove('sb-open');
 }
 
 /* ═══════════════════════════════════════════════════════════
