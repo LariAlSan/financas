@@ -970,7 +970,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.70';
+const APP_VER='4.3.71';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -1081,7 +1081,7 @@ const STORAGE={
     try{await this._idbSet('data','main',ST.data)}catch{localStorage.setItem(this.K,JSON.stringify(ST.data))}
     this._updLabel(true);
     this._syncToFile();
-    GDRIVE.autoSave(ST.data);
+    GDRIVE.autoSave();
   },
   _updLabel(saved=false){
     const el=document.getElementById('sb-upd');
@@ -1247,6 +1247,7 @@ const GDRIVE={
         else if(this._email&&this._tc)try{this._tc.requestAccessToken({prompt:''});}catch{}
       }
     });
+    window.addEventListener('online',()=>{if(this._ok())this._syncSilent();});
     setInterval(()=>{if(this._ok())this._syncSilent();},3*60*1000);
   },
 
@@ -1305,14 +1306,14 @@ const GDRIVE={
       this._fileId=c.id;
       toast('Arquivo criado no Google Drive ✓','ok');
     }
-    await STORAGE._idbSet('sync','gdrive',{email:this._email,fileId:this._fileId}).catch(()=>{});
+    await STORAGE._idbSet('sync','gdrive',{email:this._email,fileId:this._fileId,token:this._tok,tokenExp:this._tokExp}).catch(()=>{});
     return this._fileId;
   },
 
-  autoSave(data){
+  autoSave(){
     if(!this._ok())return;
     clearTimeout(this._timer);
-    this._timer=setTimeout(()=>this._doSave(data),5000);
+    this._timer=setTimeout(()=>this._doSave(ST.data),5000);
   },
 
   async _doSave(data){
@@ -1348,9 +1349,12 @@ const GDRIVE={
         applyTheme(ST.data.config?.theme||'rosa');applyBrand();
         R.all();
         toast('Dados sincronizados do Google Drive!','ok');
+        return true;
       }
+      return false;
     }catch(e){console.error('GDRIVE _doLoad:',e);}
     finally{this._loading=false;}
+    return false;
   },
 
   async syncNow(){
@@ -1366,9 +1370,11 @@ const GDRIVE={
     if(!this._ok()||this._syncing)return;
     this._syncing=true;
     try{
-      await this._doLoad();
-      const localVazio=!Object.keys(ST.data.salarios||{}).length&&!(ST.data.despesasFixas||[]).length&&!(ST.data.despesasVariaveis||[]).length;
-      if(!localVazio)await this._doSave(ST.data);
+      const loadedFromDrive=await this._doLoad();
+      if(!loadedFromDrive){
+        const localVazio=!Object.keys(ST.data.salarios||{}).length&&!(ST.data.despesasFixas||[]).length&&!(ST.data.despesasVariaveis||[]).length;
+        if(!localVazio)await this._doSave(ST.data);
+      }
     }finally{this._syncing=false;}
   },
 
