@@ -970,7 +970,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.71';
+const APP_VER='4.3.72';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -1329,13 +1329,14 @@ const GDRIVE={
   },
 
   async _doLoad(){
-    if(!this._ok()||this._loading)return;
+    if(!this._ok()||this._loading)return false;
     this._loading=true;
     try{
+      if(this._timer!==null){clearTimeout(this._timer);this._timer=null;await this._doSave(ST.data);}
       const id=await this._getOrCreateFile();
-      if(!id)return;
+      if(!id)return false;
       const resp=await fetch(`https://www.googleapis.com/drive/v3/files/${id}?alt=media`,{headers:{Authorization:`Bearer ${this._tok}`}});
-      if(!resp.ok){const e=await resp.json();console.error('GDRIVE load error:',e);return;}
+      if(!resp.ok){const e=await resp.json();console.error('GDRIVE load error:',e);return false;}
       const driveData=await resp.json();
       const dt=new Date(driveData.meta?.lastUpdated||0);
       const lt=new Date(ST.data.meta?.lastUpdated||0);
