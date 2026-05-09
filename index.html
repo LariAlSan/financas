@@ -954,7 +954,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.63';
+const APP_VER='4.3.64';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -1312,7 +1312,8 @@ const GDRIVE={
   },
 
   async _doLoad(){
-    if(!this._ok())return;
+    if(!this._ok()||this._loading)return;
+    this._loading=true;
     try{
       const id=await this._getOrCreateFile();
       if(!id)return;
@@ -1322,15 +1323,6 @@ const GDRIVE={
       const dt=new Date(driveData.meta?.lastUpdated||0);
       const lt=new Date(ST.data.meta?.lastUpdated||0);
       if(dt>lt){
-        const localVazio=!Object.keys(ST.data.salarios||{}).length&&!(ST.data.despesasFixas||[]).length&&!(ST.data.despesasVariaveis||[]).length;
-        if(!localVazio){
-          const dtStr=new Date(driveData.meta?.lastUpdated).toLocaleString('pt-BR');
-          if(!await this._confirmSync(`O Google Drive tem dados mais recentes (salvo em ${dtStr}).<br>Deseja substituir os dados locais?`)){
-            this._doSave(ST.data);
-            toast('Dados locais mantidos e enviados ao Drive','ok');
-            return;
-          }
-        }
         const _merged3={...JSON.parse(JSON.stringify(DEF)),...driveData};
         if(!_merged3.config?.theme)_merged3.config={...(_merged3.config||{}),theme:ST.data.config?.theme||'rosa'};
         if(!_merged3.config?.brandName)_merged3.config.brandName=ST.data.config?.brandName||'Soldo';
@@ -1340,10 +1332,9 @@ const GDRIVE={
         applyTheme(ST.data.config?.theme||'rosa');applyBrand();
         R.all();
         toast('Dados sincronizados do Google Drive!','ok');
-      }else{
-        toast('Drive: dados já atualizados','ok');
       }
     }catch(e){console.error('GDRIVE _doLoad:',e);}
+    finally{this._loading=false;}
   },
 
   async syncNow(){
@@ -1352,27 +1343,6 @@ const GDRIVE={
     toast(localVazio?'Buscando backup no Drive...':'Sincronizando...','ok');
     if(!localVazio)await this._doSave(ST.data);
     await this._doLoad();
-  },
-
-  _confirmSync(msg){
-    return new Promise(resolve=>{
-      const ov=document.createElement('div');
-      ov.style='position:fixed;inset:0;background:rgba(59,10,31,.55);backdrop-filter:blur(6px);z-index:2100;display:flex;align-items:center;justify-content:center;padding:20px';
-      ov.innerHTML=`<div style="background:#fff;border-radius:var(--r);box-shadow:0 24px 64px rgba(233,30,99,.2);width:100%;max-width:400px;animation:su .2s ease">
-        <div style="padding:20px 20px 14px;border-bottom:1.5px solid var(--border);background:linear-gradient(135deg,#fdf5f8,#fff)">
-          <div style="font-family:var(--font-h);font-size:1rem;font-weight:800;color:var(--text)">☁️ Conflito de dados</div>
-        </div>
-        <div style="padding:20px;font-size:.9rem;color:var(--text2);line-height:1.5">${msg}</div>
-        <div style="padding:14px 20px;border-top:1.5px solid var(--border);display:flex;justify-content:flex-end;gap:8px">
-          <button id="_csLocal" class="btn btn-g">Manter meus dados</button>
-          <button id="_csDrive" class="btn btn-p">Usar dados do Drive</button>
-        </div>
-      </div>`;
-      document.body.appendChild(ov);
-      const cleanup=r=>{document.body.removeChild(ov);resolve(r);};
-      ov.querySelector('#_csDrive').onclick=()=>cleanup(true);
-      ov.querySelector('#_csLocal').onclick=()=>cleanup(false);
-    });
   },
 
   _updStatus(){
