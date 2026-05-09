@@ -90,6 +90,7 @@
       padding:6px 8px;border-radius:var(--rx);cursor:pointer;color:var(--textm);
       font-size:.6rem;font-weight:600;transition:.18s;min-width:44px;user-select:none}
     .bottom-nav-item span:first-child{font-size:1.3rem;line-height:1}
+    .bottom-nav-item span:last-child{font-size:.75rem;line-height:1.2}
     .bottom-nav-item.active{color:var(--pink)}
     .mais-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300;align-items:flex-end}
     .mais-overlay.open{display:flex}
@@ -968,7 +969,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.67';
+const APP_VER='4.3.68';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -3861,7 +3862,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
         sw.onstatechange=()=>{
           if(sw.state==='installed'&&navigator.serviceWorker.controller){
             const bar=document.createElement('div');
-            bar.style='position:fixed;bottom:70px;left:50%;transform:translateX(-50%);z-index:9999;background:var(--text);color:#fff;padding:10px 20px;border-radius:var(--r);font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:12px;box-shadow:0 4px 20px rgba(0,0,0,.25)';
+            bar.style='position:fixed;bottom:calc(64px + 16px);left:50%;transform:translateX(-50%);z-index:9999;background:var(--text);color:#fff;padding:10px 20px;border-radius:var(--r);font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:12px;box-shadow:0 4px 20px rgba(0,0,0,.25)';
             bar.innerHTML='🔄 Nova versão disponível <button onclick="location.reload()" style="background:var(--pink);color:#fff;border:none;border-radius:var(--rx);padding:4px 12px;cursor:pointer;font-weight:700">Atualizar</button>';
             document.body.appendChild(bar);
           }
