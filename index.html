@@ -978,7 +978,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado','TR+3%'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.86';
+const APP_VER='4.3.87';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -1230,7 +1230,7 @@ const STORAGE={
    GOOGLE DRIVE SYNC
 ═══════════════════════════════════════════════════════════ */
 const GDRIVE={
-  _tok:null,_tokExp:0,_email:null,_fileId:null,_tc:null,_timer:null,_dirty:false,
+  _tok:null,_tokExp:0,_email:null,_fileId:null,_tc:null,_timer:null,_dirty:false,_pollInterval:null,_refreshTimer:null,
 
   async init(){
     if(!GDRIVE_CLIENT_ID||GDRIVE_CLIENT_ID==='SEU_CLIENT_ID_AQUI')return;
@@ -1257,7 +1257,7 @@ const GDRIVE={
       }
     });
     window.addEventListener('online',()=>{if(this._ok())this._syncSilent();});
-    setInterval(()=>{if(this._ok())this._syncSilent();},1000);
+    this._pollInterval=setInterval(()=>{if(this._ok())this._syncSilent();},60000);
   },
 
   _initTC(){
@@ -1268,7 +1268,7 @@ const GDRIVE={
       callback:async resp=>{
         if(resp.error){console.error('GDRIVE token error:',resp.error);this._updStatus();return;}
         this._tok=resp.access_token;this._tokExp=Date.now()+(resp.expires_in-60)*1000;
-        setTimeout(()=>{if(this._tc)try{this._tc.requestAccessToken({prompt:''});}catch{};},(resp.expires_in-120)*1000);
+        clearTimeout(this._refreshTimer);this._refreshTimer=setTimeout(()=>{if(this._tc)try{this._tc.requestAccessToken({prompt:''});}catch{};},(resp.expires_in-120)*1000);
         if(!this._email){
           try{const u=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:`Bearer ${this._tok}`}}).then(r=>r.json());this._email=u.email;}
           catch(e){console.error('GDRIVE userinfo:',e);}
@@ -1288,7 +1288,7 @@ const GDRIVE={
   },
 
   async disconnect(){
-    clearTimeout(this._timer);
+    clearTimeout(this._timer);clearTimeout(this._refreshTimer);clearInterval(this._pollInterval);
     if(this._tok)try{google.accounts.oauth2.revoke(this._tok);}catch{}
     this._tok=null;this._tokExp=0;this._email=null;this._fileId=null;
     await STORAGE._idbSet('sync','gdrive',null).catch(()=>{});
@@ -1300,7 +1300,7 @@ const GDRIVE={
 
   async _getOrCreateFile(){
     if(this._fileId)return this._fileId;
-    const searchResp=await fetch("https://www.googleapis.com/drive/v3/files?q=name%3D'soldo_sync.json'%20and%20trashed%3Dfalse&fields=files(id)",{headers:{Authorization:`Bearer ${this._tok}`}});
+    const searchResp=await fetch("https://www.googleapis.com/drive/v3/files?q=name%3D'soldo_sync.json'%20and%20trashed%3Dfalse&orderBy=modifiedTime+desc&fields=files(id)",{headers:{Authorization:`Bearer ${this._tok}`}});
     const r=await searchResp.json();
     if(r.error){console.error('GDRIVE search error:',r.error);return null;}
     if(r.files?.length){
@@ -1364,7 +1364,7 @@ const GDRIVE={
         this._dirty=false;
         return true;
       }
-      if(this._dirty){
+      if(this._dirty||lt>dt){
         const _vazio=!Object.keys(ST.data.salarios||{}).length&&!(ST.data.despesasFixas||[]).length&&!(ST.data.despesasVariaveis||[]).length;
         if(!_vazio)await this._doSave(ST.data);
       }
@@ -1639,7 +1639,7 @@ const C={
   totalAtual(){return ST.data.investimentos.reduce((a,i)=>{const v=C.valorCalc(i);return a+(v!==null?v:(i.valorAtual||0))},0)},
   valorCalc(inv){
     if(!inv.autoCalc||!inv.dataAplicacao)return null;
-    if(!inv.percentual&&inv.indexador!=='TR+3%')return null;
+    if((inv.percentual==null||inv.percentual==='')&&inv.indexador!=='TR+3%')return null;
     const cdi=(ST.data.config?.taxaCDI)||13.75;
     const dias=Math.max(0,Math.floor((Date.now()-new Date(inv.dataAplicacao))/(864e5)));
     if(dias===0)return inv.valorInvestido;
@@ -1691,10 +1691,10 @@ const C={
   },
   saldo(mo){return this.salario(mo)-this.fixas(mo)-this.parceladas(mo)-this.variaveis(mo)-this.totalFaturas(mo)},
   saldoAcumulado(mo){
-    const keys=Object.keys(ST.data.salarios||{}).filter(k=>k<=mo).sort();
+    const keys=Object.keys(ST.data.salarios||{}).filter(k=>k<=mo&&/^\d{4}-\d{2}$/.test(k)).sort();
     if(!keys.length)return this.saldo(mo);
-    let acc=0,m=keys[0];
-    while(m<=mo){acc+=this.saldo(m);m=this.addM(m,1);}
+    let acc=0,m=keys[0],iter=0;
+    while(m<=mo&&iter<120){acc+=this.saldo(m);m=this.addM(m,1);iter++;}
     return acc;
   },
   rent(inv){const va=C.valorCalc(inv)??inv.valorAtual??inv.valorInvestido;return inv.valorInvestido?((va-inv.valorInvestido)/inv.valorInvestido)*100:0},
@@ -1719,19 +1719,20 @@ let _relCats=[];
 const R={
   all(){
     const id=document.querySelector('.section.active')?.id?.replace('s-','')||'dashboard';
-    this.dashboard();
-    if(id==='salario')this.salario();
-    else if(id==='fixas')this.fixas();
-    else if(id==='parceladas')this.parceladas();
-    else if(id==='investimentos')this.investimentos();
-    else if(id==='variaveis')this.variaveis();
-    else if(id==='combustivel')this.combustivel();
-    else if(id==='relatorio')this.relatorio();
-    else if(id==='desejos')this.desejos();
-    else if(id==='cartoes')this.cartoes();
-    else if(id==='orcamento')this.orcamento();
-    else if(id==='notas')this.notas();
-    else if(id==='calendario')this.calendario();
+    const _t=(fn)=>{try{fn();}catch(e){console.error('R.all section error:',e);}};
+    _t(()=>this.dashboard());
+    if(id==='salario')_t(()=>this.salario());
+    else if(id==='fixas')_t(()=>this.fixas());
+    else if(id==='parceladas')_t(()=>this.parceladas());
+    else if(id==='investimentos')_t(()=>this.investimentos());
+    else if(id==='variaveis')_t(()=>this.variaveis());
+    else if(id==='combustivel')_t(()=>this.combustivel());
+    else if(id==='relatorio')_t(()=>this.relatorio());
+    else if(id==='desejos')_t(()=>this.desejos());
+    else if(id==='cartoes')_t(()=>this.cartoes());
+    else if(id==='orcamento')_t(()=>this.orcamento());
+    else if(id==='notas')_t(()=>this.notas());
+    else if(id==='calendario')_t(()=>this.calendario());
   },
 
   dashboard(){
@@ -2935,7 +2936,7 @@ const MODAL={
           <div class="frow"><label>Valor Investido (R$)</label><input id="in-inv" type="number" step="0.01" placeholder="0,00" value="${v.valorInvestido||''}"></div>
           <div class="frow" id="in-at-row">
             <label>Valor Atual (R$)</label>
-            <input id="in-at" type="number" step="0.01" placeholder="0,00" value="${v.valorAtual||''}">
+            <input id="in-at" type="number" step="0.01" min="0" placeholder="0,00" value="${v.valorAtual||''}">
           </div>
         </div>
         <div class="fg fg2">
