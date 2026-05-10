@@ -978,7 +978,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado','TR+3%'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.85';
+const APP_VER='4.3.86';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -1230,7 +1230,7 @@ const STORAGE={
    GOOGLE DRIVE SYNC
 ═══════════════════════════════════════════════════════════ */
 const GDRIVE={
-  _tok:null,_tokExp:0,_email:null,_fileId:null,_tc:null,_timer:null,
+  _tok:null,_tokExp:0,_email:null,_fileId:null,_tc:null,_timer:null,_dirty:false,
 
   async init(){
     if(!GDRIVE_CLIENT_ID||GDRIVE_CLIENT_ID==='SEU_CLIENT_ID_AQUI')return;
@@ -1320,6 +1320,7 @@ const GDRIVE={
   },
 
   autoSave(){
+    this._dirty=true;
     if(!this._ok())return;
     clearTimeout(this._timer);
     this._timer=setTimeout(()=>this._doSave(ST.data),1000);
@@ -1334,6 +1335,7 @@ const GDRIVE={
       if(!id){toast('Falha ao salvar no Drive','err');return;}
       const r=await fetch(`https://www.googleapis.com/upload/drive/v3/files/${id}?uploadType=media`,{method:'PATCH',headers:{Authorization:`Bearer ${this._tok}`,'Content-Type':'application/json'},body:JSON.stringify(data,null,2)});
       if(!r.ok){const e=await r.json();console.error('GDRIVE save error:',e);toast('Falha ao salvar no Drive','err');}
+      else{this._dirty=false;}
     }catch(e){console.error('GDRIVE _doSave:',e);}
   },
 
@@ -1359,7 +1361,12 @@ const GDRIVE={
         applyTheme(ST.data.config?.theme||'rosa');applyBrand();
         R.all();
         toast('Dados sincronizados do Google Drive!','ok');
+        this._dirty=false;
         return true;
+      }
+      if(this._dirty){
+        const _vazio=!Object.keys(ST.data.salarios||{}).length&&!(ST.data.despesasFixas||[]).length&&!(ST.data.despesasVariaveis||[]).length;
+        if(!_vazio)await this._doSave(ST.data);
       }
       return false;
     }catch(e){console.error('GDRIVE _doLoad:',e);}
@@ -1370,22 +1377,16 @@ const GDRIVE={
   async syncNow(){
     if(!this._ok()){toast('Reconecte o Google Drive primeiro','err');return;}
     toast('Sincronizando...','ok');
+    this._dirty=true;
     await this._doLoad();
-    const localVazio=!Object.keys(ST.data.salarios||{}).length&&!(ST.data.despesasFixas||[]).length&&!(ST.data.despesasVariaveis||[]).length;
-    if(!localVazio)await this._doSave(ST.data);
     toast('Drive sincronizado ✓','ok');
   },
 
   async _syncSilent(){
     if(!this._ok()||this._syncing)return;
     this._syncing=true;
-    try{
-      const loadedFromDrive=await this._doLoad();
-      if(!loadedFromDrive){
-        const localVazio=!Object.keys(ST.data.salarios||{}).length&&!(ST.data.despesasFixas||[]).length&&!(ST.data.despesasVariaveis||[]).length;
-        if(!localVazio)await this._doSave(ST.data);
-      }
-    }finally{this._syncing=false;}
+    try{await this._doLoad();}
+    finally{this._syncing=false;}
   },
 
   _updStatus(){
