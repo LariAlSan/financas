@@ -99,6 +99,9 @@
     .mais-header{display:flex;align-items:center;justify-content:space-between;padding:0 4px 10px}
     .mais-title{font-size:.9rem;font-weight:700;color:var(--text)}
     .mais-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--textm);padding:4px 8px}
+    .mais-sheet .nav-item{color:var(--text)}
+    .mais-sheet .nav-item:hover{color:var(--text);background:rgba(0,0,0,.05)}
+    .mais-sheet .nav-item.active{color:var(--pink)}
 
     /* ── MAIN ── */
     #content{flex:1;margin-left:var(--sw);min-height:100vh}
@@ -970,7 +973,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado','TR+3%'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.80';
+const APP_VER='4.3.81';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
