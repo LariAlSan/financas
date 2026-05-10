@@ -970,7 +970,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado','TR+3%'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.77';
+const APP_VER='4.3.78';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -1595,6 +1595,7 @@ const CONFIG={
   }
 };
 
+function djInvIds(d){return d.investimentoIds?.length?d.investimentoIds:(d.investimentoId?[d.investimentoId]:[]);}
 /* ═══════════════════════════════════════════════════════════
    CALC
 ═══════════════════════════════════════════════════════════ */
@@ -1688,10 +1689,11 @@ const C={
   },
   rent(inv){const va=C.valorCalc(inv)??inv.valorAtual??inv.valorInvestido;return inv.valorInvestido?((va-inv.valorInvestido)/inv.valorInvestido)*100:0},
   valorDesejo(d){
-    if(!d.investimentoId)return d.valorGuardado||0;
-    const inv=(ST.data.investimentos||[]).find(i=>i.id===d.investimentoId);
-    if(!inv)return d.valorGuardado||0;
-    return C.valorCalc(inv)??inv.valorAtual??inv.valorInvestido;
+    const ids=djInvIds(d);
+    if(!ids.length)return d.valorGuardado||0;
+    const invs=(ST.data.investimentos||[]).filter(i=>ids.includes(i.id));
+    if(!invs.length)return d.valorGuardado||0;
+    return invs.reduce((s,inv)=>s+(C.valorCalc(inv)??inv.valorAtual??inv.valorInvestido??0),0);
   },
   combustivelMes(mo){return(ST.data.combustivel||[]).filter(d=>d.data?.startsWith(mo)).reduce((a,d)=>a+(d.valorTotal||0),0)},
   kmPorLitro(entry){
@@ -2104,7 +2106,7 @@ const R={
               :`<span style="color:var(--textm)">—</span>`;
             const liqBadge=inv.liquidez?`<span class="badge ${LIQB[inv.liquidez]||'bo'}">${inv.liquidez}</span>`:'<span style="color:var(--textm)">—</span>';
             const autoTag=inv.autoCalc?`<span title="Calculado automaticamente" style="font-size:.65rem;color:var(--textm)"> ⚡</span>`:'';
-            const dvName=(ST.data.desejos||[]).find(d=>d.investimentoId===inv.id)?.nome;
+            const dvName=(ST.data.desejos||[]).find(d=>djInvIds(d).includes(inv.id))?.nome;
             return`<tr>
               <td><div style="font-weight:500">${inv.nome}${autoTag}</div>${inv.instituicao?`<div style="font-size:.72rem;color:var(--textm)">${inv.instituicao}</div>`:''}${dvName?`<div style="font-size:.68rem;color:var(--pink);margin-top:2px">✨ ${dvName}</div>`:''}</td>
               <td><span class="badge ${INVB[inv.tipo]||'bo'}">${inv.tipo}</span></td>
@@ -2359,7 +2361,7 @@ const R={
           const st=STATUS_DESEJO[d.status]||STATUS_DESEJO.sonhando;
           const cat=CATS_DESEJO[d.categoria]||CATS_DESEJO.outros;
           const faltam=Math.max(0,(d.custo||0)-vg);
-          const invVinc=d.investimentoId?(ST.data.investimentos||[]).find(i=>i.id===d.investimentoId):null;
+          const invsVinc=(ST.data.investimentos||[]).filter(i=>djInvIds(d).includes(i.id));
           return`<div class="dc ${d.status==='conquistado'?'conquistado':''}">
             <div class="dc-top">
               <div class="dc-name">${esc(d.nome)}</div>
@@ -2372,7 +2374,7 @@ const R={
               <span class="badge ${st.b}">${st.i} ${st.l}</span>
               <span class="badge ${pr.b}">${pr.l}</span>
               <span class="badge bo">${cat.i} ${cat.l}</span>
-              ${invVinc?`<span class="badge bo" style="color:var(--pink)">💹 ${invVinc.nome}</span>`:''}
+              ${invsVinc.map(i=>`<span class="badge bo" style="color:var(--pink)">💹 ${esc(i.nome)}</span>`).join('')}
             </div>
             <div class="dc-cost">${fmtBRL(d.custo)}</div>
             ${d.custo>0?`
@@ -3026,13 +3028,21 @@ const MODAL={
         <div class="frow"><label>Nome do Desejo</label><input id="dj-nome" placeholder="Ex: Viagem para Paris" value="${v.nome||''}"></div>
         <div class="fg fg2">
           <div class="frow"><label>Custo Estimado (R$)</label><input id="dj-custo" type="number" step="0.01" placeholder="0,00" value="${v.custo||''}"></div>
-          <div class="frow"><label>Já Guardado (R$)</label><input id="dj-guard" type="number" step="0.01" placeholder="0,00" value="${v.valorGuardado||''}" ${v.investimentoId?'disabled':''}></div>
+          <div class="frow"><label>Já Guardado (R$)</label><input id="dj-guard" type="number" step="0.01" placeholder="0,00" value="${v.valorGuardado||''}" ${djInvIds(v).length?'disabled':''}></div>
         </div>
-        <div class="frow"><label>Investimento Vinculado (opcional)</label>
-          <select id="dj-inv" onchange="toggleDJGuard()">
-            <option value="">— Nenhum —</option>
-            ${(ST.data.investimentos||[]).map(inv=>{const va=C.valorCalc(inv)??inv.valorAtual??inv.valorInvestido;return`<option value="${inv.id}"${v.investimentoId===inv.id?' selected':''}>${inv.nome} — ${fmtBRL(va)}</option>`;}).join('')}
-          </select>
+        <div class="fg fg2">
+          <div class="frow"><label>Investimento 1 (opcional)</label>
+            <select id="dj-inv" onchange="toggleDJGuard()">
+              <option value="">— Nenhum —</option>
+              ${(ST.data.investimentos||[]).map(inv=>{const va=C.valorCalc(inv)??inv.valorAtual??inv.valorInvestido;return`<option value="${inv.id}"${djInvIds(v)[0]===inv.id?' selected':''}>${esc(inv.nome)} — ${fmtBRL(va)}</option>`;}).join('')}
+            </select>
+          </div>
+          <div class="frow"><label>Investimento 2 <small style="color:var(--fg3)">(opcional)</small></label>
+            <select id="dj-inv2" onchange="toggleDJGuard()">
+              <option value="">— Nenhum —</option>
+              ${(ST.data.investimentos||[]).map(inv=>{const va=C.valorCalc(inv)??inv.valorAtual??inv.valorInvestido;return`<option value="${inv.id}"${djInvIds(v)[1]===inv.id?' selected':''}>${esc(inv.nome)} — ${fmtBRL(va)}</option>`;}).join('')}
+            </select>
+          </div>
         </div>
         <div class="fg fg2">
           <div class="frow"><label>Prioridade</label><select id="dj-pr">${prOpts}</select></div>
@@ -3229,9 +3239,11 @@ const MODAL={
       const data=document.getElementById('dj-data')?.value;
       const notas=document.getElementById('dj-notas')?.value.trim();
       const invId=document.getElementById('dj-inv')?.value||null;
+      const invId2=document.getElementById('dj-inv2')?.value||null;
+      const investimentoIds=[invId,invId2].filter(Boolean);
       if(!nome){toast('Informe o nome do desejo','err');return}
-      if(id){const i=ST.data.desejos.findIndex(d=>d.id===id);if(i!==-1)Object.assign(ST.data.desejos[i],{nome,custo,valorGuardado:guard,prioridade:pr,categoria:cat,status:st,dataMeta:data,notas,investimentoId:invId})}
-      else ST.data.desejos.push({id:uid(),nome,custo,valorGuardado:guard,prioridade:pr,categoria:cat,status:st,dataMeta:data,notas,investimentoId:invId});
+      if(id){const i=ST.data.desejos.findIndex(d=>d.id===id);if(i!==-1)Object.assign(ST.data.desejos[i],{nome,custo,valorGuardado:guard,prioridade:pr,categoria:cat,status:st,dataMeta:data,notas,investimentoIds})}
+      else ST.data.desejos.push({id:uid(),nome,custo,valorGuardado:guard,prioridade:pr,categoria:cat,status:st,dataMeta:data,notas,investimentoIds});
       STORAGE.save();this.close();R.desejos();toast(id?'Desejo atualizado!':'Desejo adicionado! ✨','ok');
     }
     else if(sec==='cartao'){
@@ -3318,7 +3330,7 @@ function delFixa(id){if(!confirm('Remover esta despesa fixa?'))return;ST.data.de
 function debitarConta(contaId,valor,mo){if(!contaId||!valor)return;const c=(ST.data.contas||[]).find(x=>x.id===contaId);if(!c)return;if(!c.saldos)c.saldos={};c.saldos[mo]=(c.saldos[mo]??c.saldo??0)-valor;}
 function toggleOrcAcc(key){const body=document.getElementById('orc-acc-'+key);const btn=document.getElementById('orc-tog-'+key);if(!body||!btn)return;const open=body.classList.toggle('open');btn.classList.toggle('open',open);btn.querySelector('.chev').textContent=open?'▲':'▼';}
 function delParc(id){if(!confirm('Remover esta parcela?'))return;ST.data.parceladas=ST.data.parceladas.filter(p=>p.id!==id);STORAGE.save();R.parceladas();R.dashboard();toast('Removida','inf')}
-function delInv(id){if(!confirm('Remover este investimento?'))return;(ST.data.desejos||[]).forEach(d=>{if(d.investimentoId===id)d.investimentoId=null;});ST.data.investimentos=ST.data.investimentos.filter(i=>i.id!==id);STORAGE.save();R.investimentos();R.dashboard();toast('Removido','inf')}
+function delInv(id){if(!confirm('Remover este investimento?'))return;(ST.data.desejos||[]).forEach(d=>{if(d.investimentoIds)d.investimentoIds=d.investimentoIds.filter(x=>x!==id);if(d.investimentoId===id)d.investimentoId=null;});ST.data.investimentos=ST.data.investimentos.filter(i=>i.id!==id);STORAGE.save();R.investimentos();R.dashboard();toast('Removido','inf')}
 function delConta(id){if(!confirm('Remover esta conta?'))return;ST.data.contas=(ST.data.contas||[]).filter(c=>c.id!==id);STORAGE.save();R.dashboard();toast('Conta removida','inf')}
 function clearCache(){
   const btn=document.getElementById('cache-clear');
@@ -3440,7 +3452,7 @@ function delExtra(id){
 function delDesejo(id){if(!confirm('Remover este desejo?'))return;ST.data.desejos=(ST.data.desejos||[]).filter(d=>d.id!==id);STORAGE.save();R.desejos();toast('Removido','inf')}
 function delRecorrente(id){if(!confirm('Remover esta receita recorrente?'))return;ST.data.receitasRecorrentes=(ST.data.receitasRecorrentes||[]).filter(r=>r.id!==id);STORAGE.save();R.salario();R.dashboard();toast('Removida','inf')}
 function setDF(f){ST.desejoFilt=f;R.desejos()}
-function toggleDJGuard(){const g=document.getElementById('dj-guard');if(g)g.disabled=!!document.getElementById('dj-inv')?.value;}
+function toggleDJGuard(){const g=document.getElementById('dj-guard');if(g)g.disabled=!!(document.getElementById('dj-inv')?.value||document.getElementById('dj-inv2')?.value);}
 function setF(f){ST.filter=f;R.fixas()}
 function setParcFilter(f){ST.parcFilter=f;R.parceladas()}
 function setInvFilter(f){ST.invFilter=f;R.investimentos()}
