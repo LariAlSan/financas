@@ -970,7 +970,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado','TR+3%'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.76';
+const APP_VER='4.3.77';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -2871,7 +2871,7 @@ const MODAL={
           <div class="frow"><label>Valor Investido (R$)</label><input id="in-inv" type="number" step="0.01" placeholder="0,00" value="${v.valorInvestido||''}"></div>
           <div class="frow" id="in-at-row">
             <label>Valor Atual (R$)</label>
-            <input id="in-at" type="number" step="0.01" placeholder="0,00" value="${v.valorAtual||''}" ${v.autoCalc?'disabled':''}>
+            <input id="in-at" type="number" step="0.01" placeholder="0,00" value="${v.valorAtual||''}">
           </div>
         </div>
         <div class="fg fg2">
@@ -3120,6 +3120,7 @@ const MODAL={
       const obj={nome,tipo,instituicao:inst,indexador:idx,percentual:pct,autoCalc,
                  valorInvestido:inv,valorAtual:at||inv,dataAplicacao:apl,
                  dataVencimento:venc,liquidez:liq,dataAtualizacao:dt};
+      if(id&&autoCalc&&at){const ex=ST.data.investimentos.find(x=>x.id===id);if(ex&&Math.abs(at-(ex.valorInvestido||0))>0.001){obj.valorInvestido=at;obj.dataAplicacao=new Date().toISOString().slice(0,10);}}
       if(id){const i=ST.data.investimentos.findIndex(x=>x.id===id);if(i!==-1)Object.assign(ST.data.investimentos[i],obj)}
       else ST.data.investimentos.push({id:uid(),...obj});
       STORAGE.save();this.close();R.investimentos();R.dashboard();toast(id?'Investimento atualizado!':'Investimento adicionado!','ok');
@@ -3348,7 +3349,6 @@ function toggleAutoCalcField(){
   if(pctRow)pctRow.style.display=idx?'':'none';
   if(autoRow)autoRow.style.display=canAuto?'':'none';
   if(pctLbl)pctLbl.textContent=idx==='Prefixado'?'Taxa a.a. (%)':idx==='TR+3%'?'Distrib. lucros a.a. (%) — opcional':'% do índice';
-  if(atInput)atInput.disabled=canAuto&&auto;
   if(dtRow)dtRow.style.display=canAuto&&auto?'none':'';
 }
 function paToggleModo(modo){
