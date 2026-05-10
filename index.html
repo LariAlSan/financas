@@ -865,6 +865,7 @@
       <div class="cfg-card">
         <div class="cfg-card-title">☁️ Conta</div>
         <div id="cfg-drive-info" class="cfg-drive-info"></div>
+        <div id="cfg-upd" style="font-size:.75rem;color:var(--textm);margin-top:6px"></div>
       </div>
       <div class="cfg-card">
         <div class="cfg-card-title">💾 Arquivo</div>
@@ -892,6 +893,10 @@
               <button class="btn btn-g" onclick="STORAGE.linkFile()">📁 Vincular arquivo</button>
             </div>
             <div id="sb-sync-cfg" style="font-size:.75rem;color:var(--textm);margin-top:6px"></div>
+          </div>
+          <div class="cfg-file-group">
+            <div class="cfg-file-label">App</div>
+            <button class="btn btn-g" onclick="clearCache()">↻ Atualizar app</button>
           </div>
         </div>
       </div>
@@ -973,7 +978,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado','TR+3%'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.84';
+const APP_VER='4.3.85';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -1087,11 +1092,12 @@ const STORAGE={
     GDRIVE.autoSave();
   },
   _updLabel(saved=false){
-    const el=document.getElementById('sb-upd');
-    if(!el)return;
-    if(saved){const d=new Date();el.textContent=`v${APP_VER} · Salvo às ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`}
-    else if(ST.data.meta?.lastUpdated){const d=new Date(ST.data.meta.lastUpdated);el.textContent=`v${APP_VER} · ${d.toLocaleDateString('pt-BR')} ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`}
-    else{el.textContent=`v${APP_VER}`}
+    let txt;
+    if(saved){const d=new Date();txt=`v${APP_VER} · Salvo às ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`}
+    else if(ST.data.meta?.lastUpdated){const d=new Date(ST.data.meta.lastUpdated);txt=`v${APP_VER} · ${d.toLocaleDateString('pt-BR')} ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`}
+    else{txt=`v${APP_VER}`}
+    const el=document.getElementById('sb-upd');if(el)el.textContent=txt;
+    const el2=document.getElementById('cfg-upd');if(el2)el2.textContent=txt;
   },
   async linkFile(){
     if(!window.showOpenFilePicker){toast('Seu browser não suporta File System API. Use Chrome ou Edge.','err');return}
