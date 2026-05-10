@@ -929,7 +929,7 @@
 ═══════════════════════════════════════════════════════════ */
 const MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
              'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-const GDRIVE_CLIENT_ID='644762904112-65kfgliosm28n8j1m9862ejpn7j1lttn.apps.googleusercontent.com';
+const GDRIVE_CLIENT_ID='SEU_CLIENT_ID_AQUI';
 
 const CATS={
   moradia:    {l:'Moradia',    b:'bm',   i:'🏠'},
@@ -982,7 +982,7 @@ const APP_VER='4.3.87';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
-  config:{taxaCDI:13.75,taxaTR:0.17,taxaIPCA:5.53,brandName:'Soldo',brandIcon:'R$',theme:'rosa'},
+  config:{taxaCDI:13.75,taxaTR:0.17,taxaIPCA:5.53,brandName:'LYD',brandIcon:'R$',theme:'rosa'},
   salarios:{},
   despesasFixas:[],
   parceladas:[],
@@ -1055,7 +1055,7 @@ const STORAGE={
   async _db(){
     if(this.DB)return this.DB;
     return new Promise((res,rej)=>{
-      const req=indexedDB.open('lari4db',1);
+      const req=indexedDB.open('lyd4db',1);
       req.onupgradeneeded=e=>{const db=e.target.result;if(!db.objectStoreNames.contains('data'))db.createObjectStore('data');if(!db.objectStoreNames.contains('sync'))db.createObjectStore('sync')};
       req.onsuccess=e=>{this.DB=e.target.result;res(this.DB)};
       req.onerror=()=>rej(req.error);
