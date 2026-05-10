@@ -970,7 +970,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado','TR+3%'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.79';
+const APP_VER='4.3.80';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -1705,6 +1705,7 @@ const C={
 /* ═══════════════════════════════════════════════════════════
    RENDER
 ═══════════════════════════════════════════════════════════ */
+let _relCats=[];
 const R={
   all(){
     const id=document.querySelector('.section.active')?.id?.replace('s-','')||'dashboard';
@@ -2271,11 +2272,20 @@ const R={
 
   relatorio(mode='mensal'){
     const mo=ST.month;
-    document.getElementById('rel-lbl').textContent=mode==='anual'?`Anual ${mo.split('-')[0]}`:mlabel(mo);
-    const toggle=`<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap"><button class="btn ${mode==='mensal'?'btn-p':'btn-g'}" style="font-size:.78rem;padding:6px 16px" onclick="R.relatorio('mensal')">📊 Mensal</button><button class="btn ${mode==='anual'?'btn-p':'btn-g'}" style="font-size:.78rem;padding:6px 16px" onclick="R.relatorio('anual')">📅 Anual</button><button class="btn btn-g" style="font-size:.78rem;padding:6px 16px;margin-left:auto" onclick="R.exportPDF()">🖨️ Exportar PDF</button></div>`;
+    document.getElementById('rel-lbl').textContent=mode==='anual'?`Anual ${mo.split('-')[0]}`:mode==='categoria'?'Por Categoria':mlabel(mo);
+    const toggle=`<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap"><button class="btn ${mode==='mensal'?'btn-p':'btn-g'}" style="font-size:.78rem;padding:6px 16px" onclick="R.relatorio('mensal')">📊 Mensal</button><button class="btn ${mode==='anual'?'btn-p':'btn-g'}" style="font-size:.78rem;padding:6px 16px" onclick="R.relatorio('anual')">📅 Anual</button><button class="btn ${mode==='categoria'?'btn-p':'btn-g'}" style="font-size:.78rem;padding:6px 16px" onclick="R.relatorio('categoria')">🏷️ Categorias</button><button class="btn btn-g" style="font-size:.78rem;padding:6px 16px;margin-left:auto" onclick="R.exportPDF()">🖨️ Exportar PDF</button></div>`;
     if(mode==='anual'){
       document.getElementById('rel-content').innerHTML=toggle+`<div id="rel-anual-content"></div>`;
       requestAnimationFrame(()=>CHART.renderAnual());
+    }else if(mode==='categoria'){
+      const hasResult=_relCats.length>0;
+      document.getElementById('rel-content').innerHTML=toggle+`
+        <div style="margin-bottom:12px">
+          ${catChips('rel-cats',_relCats)}
+          <button class="btn btn-p" style="margin-top:10px;font-size:.78rem;padding:6px 18px" onclick="gerarRelCat()">Gerar relatório →</button>
+        </div>
+        ${hasResult?'<div id="rel-cat-content"></div>':''}`;
+      if(hasResult)requestAnimationFrame(()=>CHART.renderCat(_relCats));
     }else{
       document.getElementById('rel-content').innerHTML=toggle+`
         <div class="charts-grid g3">
@@ -2731,6 +2741,48 @@ const CHART={
       {label:'Saldo',data:totSaldo,borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.08)',tension:0.3,fill:true,pointRadius:4}
     ]},options:{responsive:true,plugins:{legend:legOpts,tooltip:{callbacks:{label:c=>` ${fmtBRL(c.raw)}`}}},
       scales:{x:{ticks:{color:'#64748b'},grid:{color:'#f1f5f9'}},y:{ticks:{color:'#64748b',callback:v=>'R$'+v.toLocaleString('pt-BR')},grid:{color:'#f1f5f9'}}}}});
+  },
+  renderCat(cats){
+    const mo=ST.month;
+    const year=mo.split('-')[0];
+    const months=[];for(let m=1;m<=12;m++)months.push(`${year}-${String(m).padStart(2,'0')}`);
+    const MS=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const COLORS=['#3b82f6','#f97316','#22c55e','#a855f7','#ef4444','#eab308','#06b6d4','#f43f5e'];
+    const el=document.getElementById('rel-cat-content');
+    if(!el)return;
+    const legOpts={labels:{color:'#1e293b',font:{size:11}}};
+    const datasets=cats.map((cat,i)=>({
+      label:(CATS[cat]?.i||'')+' '+(CATS[cat]?.l||cat),
+      data:months.map(m=>C.gastoCategoria(cat,m)),
+      backgroundColor:COLORS[i%COLORS.length]+'99',
+      borderColor:COLORS[i%COLORS.length],
+      borderWidth:1.5
+    }));
+    const totAnual=cats.map(cat=>months.reduce((s,m)=>s+C.gastoCategoria(cat,m),0));
+    const grandTotal=totAnual.reduce((a,b)=>a+b,0);
+    const rows=months.map((m,mi)=>{
+      const vals=cats.map(cat=>C.gastoCategoria(cat,m));
+      const total=vals.reduce((a,b)=>a+b,0);
+      return`<tr><td>${MS[mi]}</td>${vals.map(v=>`<td>${fmtBRL(v)}</td>`).join('')}<td style="font-weight:600">${fmtBRL(total)}</td></tr>`;
+    });
+    el.innerHTML=`
+      <div class="cc full" style="margin-bottom:16px">
+        <div class="cc-title">Gastos por Categoria — ${year}</div>
+        <canvas id="ch-cat-bar" style="max-height:300px"></canvas>
+      </div>
+      <div class="cc full">
+        <div class="cc-title">Tabela Mensal</div>
+        <div style="overflow-x:auto"><table class="tbl">
+          <thead><tr><th>Mês</th>${cats.map(cat=>`<th>${CATS[cat]?.i||''} ${CATS[cat]?.l||cat}</th>`).join('')}<th>Total</th></tr></thead>
+          <tbody>${rows.join('')}</tbody>
+          <tfoot><tr style="font-weight:600"><td>Total ${year}</td>${totAnual.map(v=>`<td>${fmtBRL(v)}</td>`).join('')}<td>${fmtBRL(grandTotal)}</td></tr></tfoot>
+        </table></div>
+      </div>`;
+    this.mk('ch-cat-bar',{type:'bar',data:{labels:MS,datasets},
+      options:{responsive:true,maintainAspectRatio:true,
+        plugins:{legend:legOpts,tooltip:{callbacks:{label:c=>` ${fmtBRL(c.raw)}`}}},
+        scales:{x:{ticks:{color:'#64748b'},grid:{color:'#f1f5f9'}},
+                y:{ticks:{color:'#64748b',callback:v=>fmtBRL(v)},grid:{color:'#f1f5f9'}}}}});
   }
 };
 
@@ -3328,6 +3380,7 @@ function delFixa(id){if(!confirm('Remover esta despesa fixa?'))return;ST.data.de
 function debitarConta(contaId,valor,mo){if(!contaId||!valor)return;const c=(ST.data.contas||[]).find(x=>x.id===contaId);if(!c)return;if(!c.saldos)c.saldos={};c.saldos[mo]=(c.saldos[mo]??c.saldo??0)-valor;}
 function toggleOrcAcc(key){const body=document.getElementById('orc-acc-'+key);const btn=document.getElementById('orc-tog-'+key);if(!body||!btn)return;const open=body.classList.toggle('open');btn.classList.toggle('open',open);btn.querySelector('.chev').textContent=open?'▲':'▼';}
 function delParc(id){if(!confirm('Remover esta parcela?'))return;ST.data.parceladas=ST.data.parceladas.filter(p=>p.id!==id);STORAGE.save();R.parceladas();R.dashboard();toast('Removida','inf')}
+function gerarRelCat(){_relCats=getCatVals('rel-cats');if(!_relCats.length){toast('Selecione ao menos uma categoria','err');return}R.relatorio('categoria');}
 function delInv(id){if(!confirm('Remover este investimento?'))return;(ST.data.desejos||[]).forEach(d=>{if(d.investimentoIds)d.investimentoIds=d.investimentoIds.filter(x=>x!==id);if(d.investimentoId===id)d.investimentoId=null;});ST.data.investimentos=ST.data.investimentos.filter(i=>i.id!==id);STORAGE.save();R.investimentos();R.dashboard();toast('Removido','inf')}
 function delConta(id){if(!confirm('Remover esta conta?'))return;ST.data.contas=(ST.data.contas||[]).filter(c=>c.id!==id);STORAGE.save();R.dashboard();toast('Conta removida','inf')}
 function clearCache(){
