@@ -970,7 +970,7 @@ const AUTO_CALC_IDX=['CDI','SELIC','Prefixado','TR+3%'];
 const FORMAS_PAG=['Pix','Crédito','Débito','Débito em conta','Vale Refeição'];
 const PAGBADGE={Pix:'bs',Crédito:'bac',Débito:'bm','Débito em conta':'bpo','Vale Refeição':'bvr'};
 
-const APP_VER='4.3.78';
+const APP_VER='4.3.79';
 
 const DEF={
   meta:{version:'4.0',lastUpdated:''},
@@ -3030,19 +3030,17 @@ const MODAL={
           <div class="frow"><label>Custo Estimado (R$)</label><input id="dj-custo" type="number" step="0.01" placeholder="0,00" value="${v.custo||''}"></div>
           <div class="frow"><label>Já Guardado (R$)</label><input id="dj-guard" type="number" step="0.01" placeholder="0,00" value="${v.valorGuardado||''}" ${djInvIds(v).length?'disabled':''}></div>
         </div>
-        <div class="fg fg2">
-          <div class="frow"><label>Investimento 1 (opcional)</label>
-            <select id="dj-inv" onchange="toggleDJGuard()">
-              <option value="">— Nenhum —</option>
-              ${(ST.data.investimentos||[]).map(inv=>{const va=C.valorCalc(inv)??inv.valorAtual??inv.valorInvestido;return`<option value="${inv.id}"${djInvIds(v)[0]===inv.id?' selected':''}>${esc(inv.nome)} — ${fmtBRL(va)}</option>`;}).join('')}
-            </select>
-          </div>
-          <div class="frow"><label>Investimento 2 <small style="color:var(--fg3)">(opcional)</small></label>
-            <select id="dj-inv2" onchange="toggleDJGuard()">
-              <option value="">— Nenhum —</option>
-              ${(ST.data.investimentos||[]).map(inv=>{const va=C.valorCalc(inv)??inv.valorAtual??inv.valorInvestido;return`<option value="${inv.id}"${djInvIds(v)[1]===inv.id?' selected':''}>${esc(inv.nome)} — ${fmtBRL(va)}</option>`;}).join('')}
-            </select>
-          </div>
+        <div class="frow"><label>Investimento 1 (opcional)</label>
+          <select id="dj-inv" onchange="toggleDJGuard()">
+            <option value="">— Nenhum —</option>
+            ${(ST.data.investimentos||[]).map(inv=>{const va=C.valorCalc(inv)??inv.valorAtual??inv.valorInvestido;return`<option value="${inv.id}"${djInvIds(v)[0]===inv.id?' selected':''}>${esc(inv.nome)} — ${fmtBRL(va)}</option>`;}).join('')}
+          </select>
+        </div>
+        <div class="frow"><label>Investimento 2 (opcional)</label>
+          <select id="dj-inv2" onchange="toggleDJGuard()">
+            <option value="">— Nenhum —</option>
+            ${(ST.data.investimentos||[]).map(inv=>{const va=C.valorCalc(inv)??inv.valorAtual??inv.valorInvestido;return`<option value="${inv.id}"${djInvIds(v)[1]===inv.id?' selected':''}>${esc(inv.nome)} — ${fmtBRL(va)}</option>`;}).join('')}
+          </select>
         </div>
         <div class="fg fg2">
           <div class="frow"><label>Prioridade</label><select id="dj-pr">${prOpts}</select></div>
