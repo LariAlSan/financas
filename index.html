@@ -4290,7 +4290,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   if(!localStorage.getItem('soldo-onboarding')&&!Object.keys(ST.data.salarios||{}).length)showOnboarding();
   else if(localStorage.getItem('soldo-onboarding')&&!Object.keys(ST.data.salarios||{}).length&&!(ST.data.despesasFixas||[]).length)
     setTimeout(()=>toast('⚠️ Dados não encontrados localmente — reconecte o Google Drive em Configuração para restaurar seu backup','err'),1500);
-  try{await GDRIVE.init();NOTIF.init();}catch(e){console.error('[Soldo] init integrações:',e);}
+  try{GDRIVE.init();NOTIF.init();}catch(e){console.error('[Soldo] init integrações:',e);}
   // Offline indicator
   const ob=document.getElementById('offline-bar');
   if(ob){
