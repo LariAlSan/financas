@@ -3609,8 +3609,8 @@ function clearCache(){
     STORAGE._idbSet('sync','gdrive',{email:GDRIVE._email,fileId:GDRIVE._fileId||null,token:GDRIVE._tok,tokenExp:GDRIVE._tokExp}).catch(()=>{});
   caches.keys().then(keys=>Promise.all(keys.map(k=>caches.delete(k)))).then(()=>{
     if('serviceWorker' in navigator)navigator.serviceWorker.getRegistration().then(r=>r?.update());
-    setTimeout(()=>location.reload(true),400);
-  }).catch(()=>location.reload(true));
+    setTimeout(()=>location.reload(),400);
+  }).catch(()=>location.reload());
 }
 function addAporte(invId){MODAL.open('aporte',invId)}
 function delAporte(invId,apId){
