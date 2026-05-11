@@ -309,6 +309,10 @@
     @media(max-width:1100px){
       html{font-size:16px}
       .sidebar{display:none}
+      .ham-btn{display:flex}
+      #app.sb-open .sidebar{display:flex}
+      #app.sb-open #sb-overlay{display:block}
+      #app.sb-open .sb-close-btn{display:flex}
       .bottom-nav{display:flex}
       .bottom-nav-item{font-size:.72rem}
       #content{margin-left:0;margin-top:0;margin-bottom:68px}
@@ -3601,6 +3605,8 @@ function delConta(id){if(!confirm('Remover esta conta?'))return;ST.data.contas=(
 function clearCache(){
   const btn=document.getElementById('cache-clear');
   if(btn){btn.style.animation='spin .6s linear infinite';btn.style.display='inline-block';}
+  if(typeof GDRIVE!=='undefined'&&GDRIVE._email)
+    STORAGE._idbSet('sync','gdrive',{email:GDRIVE._email,fileId:GDRIVE._fileId||null,token:GDRIVE._tok,tokenExp:GDRIVE._tokExp}).catch(()=>{});
   caches.keys().then(keys=>Promise.all(keys.map(k=>caches.delete(k)))).then(()=>{
     if('serviceWorker' in navigator)navigator.serviceWorker.getRegistration().then(r=>r?.update());
     setTimeout(()=>location.reload(),400);
@@ -4248,7 +4254,10 @@ const AUTH=(function(){
           if(!user){user={email:p.email.toLowerCase(),nome:p.name||p.email,nick:sn(p.name||p.email),avatar:'😊',googleId:p.sub,salt:'',hash:'',createdAt:new Date().toISOString()};users.push(user);su(users)}
           if(typeof GDRIVE!=='undefined'){
             GDRIVE._tok=resp.access_token;GDRIVE._tokExp=Date.now()+(resp.expires_in*1000);GDRIVE._email=p.email.toLowerCase();
-            try{await STORAGE._idbSet('sync','gdrive',{email:GDRIVE._email,fileId:GDRIVE._fileId||null,token:GDRIVE._tok,tokenExp:GDRIVE._tokExp});GDRIVE._updStatus();if(GDRIVE._syncSilent)GDRIVE._syncSilent();}catch(e){}
+            STORAGE._idbSet('sync','gdrive',{email:GDRIVE._email,fileId:GDRIVE._fileId||null,token:GDRIVE._tok,tokenExp:GDRIVE._tokExp}).catch(()=>{});
+            if(window.google?.accounts?.oauth2)GDRIVE._initTC();
+            GDRIVE._updStatus();
+            if(GDRIVE._syncSilent)GDRIVE._syncSilent();
           }
           ss(user,true);this.hide();this._after(user);
         }catch{se('auth-login-error','Não foi possível obter os dados do Google.')}
