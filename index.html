@@ -4265,16 +4265,20 @@ const AUTH=(function(){
 document.addEventListener('DOMContentLoaded',async()=>{
   AUTH.init();
   DARKMODE.init();
-  await STORAGE.load();
-  applyTheme(ST.data.config?.theme||'rosa');
-  applyBrand();
+  try{
+    await STORAGE.load();
+    applyTheme(ST.data.config?.theme||'rosa');
+    applyBrand();
+  }catch(e){
+    console.error('[Soldo] init storage:',e);
+    applyTheme('rosa');
+  }
   initPicker();
   goTo(location.hash.slice(1)||'dashboard');
   if(!localStorage.getItem('soldo-onboarding')&&!Object.keys(ST.data.salarios||{}).length)showOnboarding();
   else if(localStorage.getItem('soldo-onboarding')&&!Object.keys(ST.data.salarios||{}).length&&!(ST.data.despesasFixas||[]).length)
     setTimeout(()=>toast('⚠️ Dados não encontrados localmente — reconecte o Google Drive em Configuração para restaurar seu backup','err'),1500);
-  GDRIVE.init();
-  NOTIF.init();
+  try{GDRIVE.init();NOTIF.init();}catch(e){console.error('[Soldo] init integrações:',e);}
   // Offline indicator
   const ob=document.getElementById('offline-bar');
   if(ob){
