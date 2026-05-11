@@ -4268,7 +4268,7 @@ const AUTH=(function(){
     getCurrentUser(){return gs()},
     logout(){cs();this.show();this.showTab('login')},
     _after(user){
-      if(typeof ST!=='undefined'&&ST.data&&!ST.data.config?.nome&&user.nome){ST.data.config.nome=user.nome}
+      if(typeof ST!=='undefined'&&ST.data?.config&&!ST.data.config.nome&&user.nome){ST.data.config.nome=user.nome}
       document.querySelectorAll('[data-auth-name]').forEach(el=>el.textContent=user.nome||user.nick);
     }
   };
