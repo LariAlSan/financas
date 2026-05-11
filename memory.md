@@ -76,9 +76,13 @@ Adicionado em 2026-05-10. Overlay fixo (`#auth-screen`, z-index 99999) com dois 
 
 ## Histórico de Atualizações
 
+### 2026-05-11 — Fix sidebar: marca preservada + nome dinâmico
+- `sb-footer-name` ("Soldo") voltou a ser estático — `data-auth-name` movido para `sb-footer-phrase`
+- Resultado: "Soldo" fixo no topo; nome do usuário logado aparece onde estava o slogan "financeiro mas poético"
+
 ### 2026-05-10 — Botão de logout na sidebar
 - Botão `⏻` adicionado em `sb-icon-area` no rodapé da sidebar, cor `#c9607e` → chama `AUTH.logout()`
-- `sb-footer-name` recebe `data-auth-name` → exibe nome do usuário logado após login (substitui "Soldo")
+- Três botões independentes: 🌙 tema / ↻ atualizar app / ⏻ sair da conta
 - GDRIVE tokens (IndexedDB store `sync`) preservados no logout; reconexão automática garantida
 
 ### 2026-05-10 — Favicon + meta tags iOS PWA
