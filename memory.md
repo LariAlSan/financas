@@ -76,6 +76,15 @@ Adicionado em 2026-05-10. Overlay fixo (`#auth-screen`, z-index 99999) com dois 
 
 ## Histórico de Atualizações
 
+### 2026-05-10 — Botão de logout na sidebar
+- Botão `⏻` adicionado em `sb-icon-area` no rodapé da sidebar, cor `#c9607e` → chama `AUTH.logout()`
+- `sb-footer-name` recebe `data-auth-name` → exibe nome do usuário logado após login (substitui "Soldo")
+- GDRIVE tokens (IndexedDB store `sync`) preservados no logout; reconexão automática garantida
+
+### 2026-05-10 — Favicon + meta tags iOS PWA
+- `href="/financas/icon-192.png"` → `href="icon-192.png"` (path relativo — funciona local e no GitHub Pages)
+- Adicionadas: `apple-touch-icon`, `apple-mobile-web-app-capable`, `apple-mobile-web-app-title` ("Soldo"), `apple-mobile-web-app-status-bar-style`
+
 ### 2026-05-10 — Tela de Auth (login/cadastro)
 - Módulo `AUTH` (IIFE) adicionado — overlay `#auth-screen` cobre o app até autenticação
 - Dois fluxos: **Entrar** (email/senha) e **Criar conta** (nome, apelido, email, senha, avatar, termos)
