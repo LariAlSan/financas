@@ -846,7 +846,7 @@
   </nav>
   <div class="sidebar-footer">
     <div class="sb-footer-info">
-      <div class="sb-footer-name">Soldo</div>
+      <div class="sb-footer-name" data-auth-name>Soldo</div>
       <div class="sb-footer-phrase">financeiro mas poético</div>
       <div id="sb-gdrive" class="sb-status"></div>
       <div id="sb-upd" class="sb-status"></div>
@@ -854,6 +854,7 @@
     <div class="sb-icon-area">
       <button id="dark-toggle" class="sb-icon-btn" onclick="DARKMODE.toggle()" title="Alternar tema">🌙</button>
       <button id="cache-clear" class="sb-icon-btn" onclick="clearCache()" title="Atualizar app">↻</button>
+      <button class="sb-icon-btn" onclick="AUTH.logout()" title="Sair da conta" style="color:#c9607e;">⏻</button>
     </div>
   </div>
 </aside>
