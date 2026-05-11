@@ -76,6 +76,18 @@ Adicionado em 2026-05-10. Overlay fixo (`#auth-screen`, z-index 99999) com dois 
 
 ## Histórico de Atualizações
 
+### 2026-05-11 — Fix: misclick logout + sessionStorage Safari
+- `.sb-icon-area` alterado de `flex-direction:column` para `flex-direction:row` — botões 🌙 ↻ ⏻ ficam lado a lado (elimina misclick entre ↻ e ⏻)
+- `location.reload(true)` → `location.reload()` em `clearCache()` — `true` limpava `sessionStorage` no Safari/iOS, derrubando sessão de quem logou sem "lembrar de mim"
+
+### 2026-05-11 — Fix: initPicker() sempre executa (try/catch no DOMContentLoaded)
+- `await STORAGE.load()` + `applyTheme/applyBrand` envolvidos em `try/catch` — se IDB vazio (ex: após "Clear site data"), `initPicker()` executa mesmo assim
+- `GDRIVE.init()` e `NOTIF.init()` movidos para `try/catch` separado — erros de integração não bloqueiam o restante do boot
+- Corrige seletor "Mês e Ano de Referência" que sumia após "Clear site data"
+
+### 2026-05-11 — Fix: merge master → main (deploy correto)
+- Todos os commits anteriores estavam no branch `master`; GitHub Pages serve do `main` — feito merge e sincronização
+
 ### 2026-05-11 — Fix: bump SW cache soldo-v4 → soldo-v5
 - Service Worker bumped para forçar invalidação de cache e entrega da versão atualizada aos clientes
 
