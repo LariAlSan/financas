@@ -4246,7 +4246,10 @@ const AUTH=(function(){
           const p=await r.json();
           const users=gu();let user=users.find(u=>u.email===p.email.toLowerCase());
           if(!user){user={email:p.email.toLowerCase(),nome:p.name||p.email,nick:sn(p.name||p.email),avatar:'😊',googleId:p.sub,salt:'',hash:'',createdAt:new Date().toISOString()};users.push(user);su(users)}
-          if(typeof GDRIVE!=='undefined'){GDRIVE._tok=resp.access_token;GDRIVE._tokExp=Date.now()+(resp.expires_in*1000)}
+          if(typeof GDRIVE!=='undefined'){
+            GDRIVE._tok=resp.access_token;GDRIVE._tokExp=Date.now()+(resp.expires_in*1000);GDRIVE._email=p.email.toLowerCase();
+            try{await STORAGE._idbSet('sync','gdrive',{email:GDRIVE._email,fileId:GDRIVE._fileId||null,token:GDRIVE._tok,tokenExp:GDRIVE._tokExp});GDRIVE._updStatus();if(GDRIVE._syncSilent)GDRIVE._syncSilent();}catch(e){}
+          }
           ss(user,true);this.hide();this._after(user);
         }catch{se('auth-login-error','Não foi possível obter os dados do Google.')}
       }});
@@ -4278,7 +4281,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   if(!localStorage.getItem('soldo-onboarding')&&!Object.keys(ST.data.salarios||{}).length)showOnboarding();
   else if(localStorage.getItem('soldo-onboarding')&&!Object.keys(ST.data.salarios||{}).length&&!(ST.data.despesasFixas||[]).length)
     setTimeout(()=>toast('⚠️ Dados não encontrados localmente — reconecte o Google Drive em Configuração para restaurar seu backup','err'),1500);
-  try{GDRIVE.init();NOTIF.init();}catch(e){console.error('[Soldo] init integrações:',e);}
+  try{await GDRIVE.init();NOTIF.init();}catch(e){console.error('[Soldo] init integrações:',e);}
   // Offline indicator
   const ob=document.getElementById('offline-bar');
   if(ob){
