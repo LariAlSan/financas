@@ -76,6 +76,9 @@ Adicionado em 2026-05-10. Overlay fixo (`#auth-screen`, z-index 99999) com dois 
 
 ## Histórico de Atualizações
 
+### 2026-05-11 — Fix: bump SW cache soldo-v4 → soldo-v5
+- Service Worker bumped para forçar invalidação de cache e entrega da versão atualizada aos clientes
+
 ### 2026-05-11 — Fix sidebar: marca preservada + nome dinâmico
 - `sb-footer-name` ("Soldo") voltou a ser estático — `data-auth-name` movido para `sb-footer-phrase`
 - Resultado: "Soldo" fixo no topo; nome do usuário logado aparece onde estava o slogan "financeiro mas poético"
