@@ -569,9 +569,208 @@
       body{background:#fff!important;color:#000!important}
       .cc,.card,.sum-card{box-shadow:none!important;border:1px solid #ddd!important}
     }
+
+  /* =========================================
+     AUTH SCREEN — Soldo
+     ========================================= */
+  #auth-screen{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;opacity:0;transition:opacity .4s ease}
+  #auth-screen.auth-visible{opacity:1}
+  .auth-bg{position:absolute;inset:0;background:linear-gradient(135deg,#1a0d16 0%,#3d1f2e 100%);overflow:hidden}
+  .auth-bg svg{position:absolute;width:100%;height:100%}
+  .auth-card{position:relative;width:100%;max-width:420px;margin:0 16px;background:#fff;border-radius:24px;box-shadow:0 32px 80px rgba(0,0,0,.45);padding:36px 32px 28px;max-height:92vh;overflow-y:auto;animation:authCardIn .5s cubic-bezier(.22,1,.36,1) both}
+  .auth-card::-webkit-scrollbar{display:none}
+  @keyframes authCardIn{from{transform:translateY(28px) scale(.96);opacity:0}to{transform:none;opacity:1}}
+  @keyframes authShake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+  .auth-shake{animation:authShake .42s ease!important}
+  @keyframes authSpin{to{transform:rotate(360deg)}}
+  .auth-logo{text-align:center;margin-bottom:22px}
+  .auth-logo-icon{width:60px;height:60px;border-radius:18px;background:linear-gradient(135deg,#2d1520,#c9607e);display:inline-flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:10px;box-shadow:0 8px 24px rgba(201,96,126,.35)}
+  .auth-logo-name{font-family:'Nunito',sans-serif;font-weight:800;font-size:1.6rem;color:#2d1a24;letter-spacing:-.5px;display:block}
+  .auth-tagline{font-size:.78rem;color:#9e6e80;margin-top:2px}
+  .auth-tabs{display:flex;background:#fdf5f8;border-radius:12px;padding:4px;margin-bottom:22px;gap:4px}
+  .auth-tab{flex:1;padding:9px;border:none;background:transparent;border-radius:9px;font-family:'Nunito',sans-serif;font-size:.85rem;font-weight:600;color:#b896aa;cursor:pointer;transition:all .2s}
+  .auth-tab.active{background:#fff;color:#c9607e;box-shadow:0 1px 8px rgba(0,0,0,.08)}
+  .auth-field{margin-bottom:13px}
+  .auth-label{display:block;font-size:.72rem;font-weight:700;color:#9e6e80;margin-bottom:5px;letter-spacing:.4px;text-transform:uppercase}
+  .auth-input{width:100%;padding:12px 14px;border:1.5px solid #e8d0d8;border-radius:12px;background:#fdf5f8;font-family:'Nunito',sans-serif;font-size:.95rem;color:#2d1a24;outline:none;transition:border-color .2s,box-shadow .2s,background .2s;box-sizing:border-box}
+  .auth-input:focus{border-color:#c9607e;box-shadow:0 0 0 3px rgba(201,96,126,.12);background:#fff}
+  .auth-input-wrap{position:relative}
+  .auth-input-wrap .auth-input{padding-right:42px}
+  .auth-eye-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1rem;color:#b896aa;padding:4px;line-height:1}
+  .auth-hint{font-size:.73rem;color:#b896aa;margin-top:3px}
+  .auth-strength{display:flex;gap:4px;margin-top:6px;align-items:center}
+  .auth-str-bar{flex:1;height:3px;border-radius:2px;background:#e8d0d8;transition:background .3s}
+  .auth-str-label{font-size:.7rem;font-weight:700;min-width:72px;text-align:right;transition:color .3s}
+  .auth-match-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:1rem}
+  .auth-check-row{display:flex;align-items:center;gap:8px;margin-bottom:13px}
+  .auth-check-row input[type=checkbox]{width:16px;height:16px;accent-color:#c9607e;cursor:pointer;flex-shrink:0}
+  .auth-check-row label{font-size:.83rem;color:#2d1a24;cursor:pointer}
+  .auth-row-space{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px}
+  .auth-forgot{font-size:.82rem;color:#c9607e;background:none;border:none;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px}
+  .auth-error-box{display:none;align-items:center;gap:7px;background:#fff0f2;border:1px solid #f4a0b0;border-radius:10px;padding:10px 12px;font-size:.82rem;color:#b85462;margin-bottom:13px}
+  .auth-error-box.show{display:flex}
+  .auth-btn-main{width:100%;padding:14px;border:none;border-radius:14px;background:#c9607e;color:#fff;font-family:'Nunito',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:15px}
+  .auth-btn-main:hover:not(:disabled){background:#a8485f;transform:translateY(-1px);box-shadow:0 7px 22px rgba(201,96,126,.35)}
+  .auth-btn-main:active:not(:disabled){transform:none}
+  .auth-btn-main:disabled{opacity:.65;cursor:not-allowed}
+  .auth-spinner{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:authSpin .7s linear infinite;display:none}
+  .auth-divider{display:flex;align-items:center;gap:10px;margin-bottom:14px;font-size:.75rem;color:#b896aa}
+  .auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:#e8d0d8}
+  .auth-btn-google{width:100%;padding:12px;border:1.5px solid #e8d0d8;border-radius:14px;background:#fff;color:#2d1a24;font-family:'Nunito',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .2s;margin-bottom:18px}
+  .auth-btn-google:hover{background:#fdf5f8;border-color:#d0a8b8}
+  .auth-avatar-wrap{text-align:center;margin-bottom:14px}
+  .auth-avatar-circle{width:64px;height:64px;border-radius:50%;background:#fce8ef;border:2px dashed #c9607e;display:inline-flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;transition:all .2s}
+  .auth-avatar-circle:hover{transform:scale(1.06);border-style:solid}
+  .auth-avatar-hint{font-size:.72rem;color:#b896aa;margin-top:4px}
+  .auth-emoji-picker{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:8px;max-height:0;overflow:hidden;transition:max-height .3s ease}
+  .auth-emoji-picker.open{max-height:160px}
+  .auth-emoji-opt{font-size:1.5rem;cursor:pointer;padding:4px 6px;border-radius:8px;border:2px solid transparent;transition:all .15s}
+  .auth-emoji-opt:hover,.auth-emoji-opt.sel{background:#fce8ef;border-color:#c9607e}
+  .auth-section-title{font-size:.72rem;font-weight:800;color:#b896aa;text-transform:uppercase;letter-spacing:.5px;margin:14px 0 9px}
+  .auth-terms-text{font-size:.75rem;color:#b896aa;text-align:center;margin-top:14px;line-height:1.5}
+  .auth-terms-text a{color:#c9607e;text-decoration:none}
+  .auth-footer-links{text-align:center;font-size:.72rem;color:#b896aa;margin-top:8px}
+  .auth-nick-suggest{display:inline-block;background:#fce8ef;color:#c9607e;border-radius:6px;padding:1px 7px;font-size:.72rem;font-weight:700;margin-left:4px;cursor:pointer;vertical-align:middle}
+  @media(max-width:480px){
+    .auth-card{border-radius:22px 22px 0 0;margin:auto 0 0;max-height:96vh;padding:24px 18px 36px}
+    #auth-screen{align-items:flex-end}
+  }
+  [data-theme=dark] #auth-screen .auth-card{background:#241018}
+  [data-theme=dark] #auth-screen .auth-logo-name{color:#f0d8e0}
+  [data-theme=dark] #auth-screen .auth-input{background:#1a0d16;border-color:#5a3048;color:#f0d8e0}
+  [data-theme=dark] #auth-screen .auth-input:focus{background:#2a1520}
+  [data-theme=dark] #auth-screen .auth-tabs{background:#1a0d16}
+  [data-theme=dark] #auth-screen .auth-tab.active{background:#3d1f2e}
+  [data-theme=dark] #auth-screen .auth-btn-google{background:#241018;color:#f0d8e0;border-color:#5a3048}
+  [data-theme=dark] #auth-screen .auth-check-row label{color:#f0d8e0}
   </style>
 </head>
 <body>
+
+<!-- ═══════════════ AUTH SCREEN — SOLDO ═══════════════ -->
+<div id="auth-screen">
+  <div class="auth-bg">
+    <svg viewBox="0 0 900 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <line x1="0" y1="150" x2="900" y2="150" stroke="#fff" stroke-width=".5" opacity=".06"/>
+      <line x1="0" y1="300" x2="900" y2="300" stroke="#fff" stroke-width=".5" opacity=".06"/>
+      <line x1="0" y1="450" x2="900" y2="450" stroke="#fff" stroke-width=".5" opacity=".06"/>
+      <line x1="225" y1="0" x2="225" y2="600" stroke="#fff" stroke-width=".5" opacity=".06"/>
+      <line x1="450" y1="0" x2="450" y2="600" stroke="#fff" stroke-width=".5" opacity=".06"/>
+      <line x1="675" y1="0" x2="675" y2="600" stroke="#fff" stroke-width=".5" opacity=".06"/>
+      <path d="M0 460 Q150 420 280 370 Q420 318 530 260 Q650 200 780 150 L900 110 L900 600 L0 600Z" fill="#c9607e" opacity=".07"/>
+      <path d="M0 500 Q180 465 320 420 Q470 370 580 320 Q700 268 820 230 L900 210" stroke="#c9607e" stroke-width="2" fill="none" opacity=".5"/>
+      <path d="M0 530 Q200 505 360 470 Q510 435 640 395 Q760 355 900 320" stroke="#c9607e" stroke-width="1" fill="none" opacity=".25"/>
+      <circle cx="280" cy="370" r="5" fill="#c9607e" opacity=".6"/>
+      <circle cx="530" cy="260" r="4" fill="#c9607e" opacity=".5"/>
+      <circle cx="780" cy="150" r="6" fill="#c9607e" opacity=".65"/>
+      <circle cx="120" cy="440" r="3" fill="#c9607e" opacity=".4"/>
+      <circle cx="650" cy="210" r="4" fill="#c9607e" opacity=".45"/>
+      <circle cx="820" cy="480" r="90" stroke="#c9607e" stroke-width="1.5" fill="none" opacity=".08"/>
+      <circle cx="820" cy="480" r="60" stroke="#c9607e" stroke-width="1" fill="none" opacity=".05"/>
+      <circle cx="70" cy="70" r="65" stroke="#c9607e" stroke-width="1.5" fill="none" opacity=".07"/>
+      <circle cx="70" cy="70" r="40" stroke="#c9607e" stroke-width="1" fill="none" opacity=".05"/>
+    </svg>
+  </div>
+  <div class="auth-card" id="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">💰</div>
+      <span class="auth-logo-name">Soldo</span>
+      <div class="auth-tagline">Controle financeiro inteligente</div>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" data-tab="login" onclick="AUTH.showTab('login')">Entrar</button>
+      <button class="auth-tab" data-tab="register" onclick="AUTH.showTab('register')">Criar conta</button>
+    </div>
+    <!-- LOGIN -->
+    <div id="auth-form-login">
+      <div id="auth-login-error" class="auth-error-box">⚠️ <span></span></div>
+      <div class="auth-field">
+        <label class="auth-label" for="auth-login-email">E-mail</label>
+        <input class="auth-input" type="email" id="auth-login-email" placeholder="seu@email.com" autocomplete="email" oninput="AUTH.clearError('auth-login-error')">
+      </div>
+      <div class="auth-field">
+        <label class="auth-label" for="auth-login-pwd">Senha</label>
+        <div class="auth-input-wrap">
+          <input class="auth-input" type="password" id="auth-login-pwd" placeholder="••••••••" autocomplete="current-password" oninput="AUTH.clearError('auth-login-error')" onkeydown="if(event.key==='Enter')AUTH.login()">
+          <button class="auth-eye-btn" onclick="AUTH.togglePwd('auth-login-pwd',this)" tabindex="-1">👁</button>
+        </div>
+      </div>
+      <div class="auth-row-space">
+        <div class="auth-check-row" style="margin-bottom:0">
+          <input type="checkbox" id="auth-remember" checked>
+          <label for="auth-remember">Lembrar de mim</label>
+        </div>
+        <button class="auth-forgot" onclick="AUTH.forgotPassword()">Esqueci minha senha</button>
+      </div>
+      <button class="auth-btn-main" id="auth-btn-login" onclick="AUTH.login()">
+        <span class="auth-btn-text">Entrar</span>
+        <div class="auth-spinner" id="auth-login-spinner"></div>
+      </button>
+      <div class="auth-divider">ou continue com</div>
+      <button class="auth-btn-google" onclick="AUTH.loginWithGoogle()">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+        Entrar com Google
+      </button>
+    </div>
+    <!-- REGISTER -->
+    <div id="auth-form-register" style="display:none">
+      <div id="auth-reg-error" class="auth-error-box">⚠️ <span></span></div>
+      <div class="auth-avatar-wrap">
+        <div class="auth-avatar-circle" onclick="AUTH.toggleEmojiPicker()" id="auth-avatar-preview">😊</div>
+        <div class="auth-avatar-hint">Toque para escolher seu avatar</div>
+        <input type="hidden" id="auth-reg-avatar-val" value="😊">
+        <div class="auth-emoji-picker" id="auth-emoji-picker"></div>
+      </div>
+      <div class="auth-field">
+        <label class="auth-label" for="auth-reg-nome">Nome completo</label>
+        <input class="auth-input" type="text" id="auth-reg-nome" placeholder="Seu nome completo" autocomplete="name" oninput="AUTH.onNomeInput(this.value)">
+      </div>
+      <div class="auth-field">
+        <label class="auth-label" for="auth-reg-nick">Apelido <span id="auth-nick-suggest-btn" class="auth-nick-suggest" style="display:none" onclick="AUTH.acceptNickSuggest()"></span></label>
+        <input class="auth-input" type="text" id="auth-reg-nick" placeholder="Como quer ser chamado?" oninput="AUTH.clearError('auth-reg-error')">
+        <div class="auth-hint">Aparece nas saudações e no seu perfil</div>
+      </div>
+      <div class="auth-field">
+        <label class="auth-label" for="auth-reg-email">E-mail</label>
+        <input class="auth-input" type="email" id="auth-reg-email" placeholder="seu@email.com" autocomplete="email" oninput="AUTH.clearError('auth-reg-error')">
+      </div>
+      <div class="auth-section-title">Segurança</div>
+      <div class="auth-field">
+        <label class="auth-label" for="auth-reg-pwd">Senha</label>
+        <div class="auth-input-wrap">
+          <input class="auth-input" type="password" id="auth-reg-pwd" placeholder="Mínimo 8 caracteres" autocomplete="new-password" oninput="AUTH.onPwdInput(this.value)">
+          <button class="auth-eye-btn" onclick="AUTH.togglePwd('auth-reg-pwd',this)" tabindex="-1">👁</button>
+        </div>
+        <div class="auth-strength">
+          <div class="auth-str-bar"></div><div class="auth-str-bar"></div><div class="auth-str-bar"></div><div class="auth-str-bar"></div>
+          <span class="auth-str-label" id="auth-str-label"></span>
+        </div>
+      </div>
+      <div class="auth-field">
+        <label class="auth-label" for="auth-reg-pwd2">Confirmar senha</label>
+        <div class="auth-input-wrap">
+          <input class="auth-input" type="password" id="auth-reg-pwd2" placeholder="Repita a senha" autocomplete="new-password" oninput="AUTH.onPwd2Input(this.value)" onkeydown="if(event.key==='Enter')AUTH.register()">
+          <span class="auth-match-icon" id="auth-pwd-match-icon" style="display:none"></span>
+        </div>
+      </div>
+      <div class="auth-check-row">
+        <input type="checkbox" id="auth-reg-terms">
+        <label for="auth-reg-terms">Li e aceito os <a href="#" onclick="return false" style="color:#c9607e">Termos de Uso</a> e a <a href="#" onclick="return false" style="color:#c9607e">Política de Privacidade</a></label>
+      </div>
+      <button class="auth-btn-main" id="auth-btn-register" onclick="AUTH.register()">
+        <span class="auth-btn-text">Criar minha conta</span>
+        <div class="auth-spinner" id="auth-reg-spinner"></div>
+      </button>
+      <div class="auth-divider">ou continue com</div>
+      <button class="auth-btn-google" onclick="AUTH.loginWithGoogle()">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+        Cadastrar com Google
+      </button>
+    </div>
+    <div class="auth-footer-links">Soldo v4.3 · Dados privados e locais 🔒</div>
+  </div>
+</div>
+
 <div id="app">
 <div id="offline-bar" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#ef4444;color:#fff;text-align:center;padding:7px 16px;font-size:.82rem;font-weight:700;letter-spacing:.2px">📵 Sem conexão — dados salvos localmente</div>
 <!-- ── ONBOARDING ── -->
@@ -3961,7 +4160,105 @@ function showOnboarding(){
 ═══════════════════════════════════════════════════════════ */
 document.querySelectorAll('.nav-item').forEach(el=>el.addEventListener('click',()=>goTo(el.dataset.s)));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){MODAL.close();IMPORT.close();closeOnboarding()}});
+
+/* ═══════════════════════════════════════════════════════
+   AUTH MODULE — Soldo
+   ══════════════════════════════════════════════════════ */
+const AUTH=(function(){
+  const APP_KEY='soldo-auth',SES_KEY='soldo-session';
+  const G_CID='644762904112-65kfgliosm28n8j1m9862ejpn7j1lttn.apps.googleusercontent.com';
+  const AVTS=['😊','😎','💰','🌟','💎','🚀','🦁','🌈','🎯','💫','🦊','⚡','🎨','🍀','🔥','🧠','💡','🏆','🌙','✨'];
+  const $$=id=>document.getElementById(id);
+  async function hp(p,s){const d=new TextEncoder().encode(s+'::'+p);const b=await crypto.subtle.digest('SHA-256',d);return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+  function rs(){return[...crypto.getRandomValues(new Uint8Array(16))].map(b=>b.toString(16).padStart(2,'0')).join('')}
+  function gu(){try{return JSON.parse(localStorage.getItem(APP_KEY)||'[]')}catch{return[]}}
+  function su(u){localStorage.setItem(APP_KEY,JSON.stringify(u))}
+  function gs(){const s=localStorage.getItem(SES_KEY)||sessionStorage.getItem(SES_KEY);if(!s)return null;try{return JSON.parse(s)}catch{return null}}
+  function ss(u,r){const s=JSON.stringify({email:u.email,nick:u.nick,nome:u.nome,avatar:u.avatar});if(r)localStorage.setItem(SES_KEY,s);else sessionStorage.setItem(SES_KEY,s)}
+  function cs(){localStorage.removeItem(SES_KEY);sessionStorage.removeItem(SES_KEY)}
+  function ve(e){return/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)}
+  function str(p){if(!p)return 0;let s=0;if(p.length>=8)s++;if(p.length>=12)s++;if(/[A-Z]/.test(p)&&/[a-z]/.test(p))s++;if(/\d/.test(p))s++;if(/[^A-Za-z0-9]/.test(p))s++;return Math.min(4,s)}
+  function sn(n){return n.trim().split(/\s+/)[0].toLowerCase().replace(/[^a-záàâãéêíóôõúç]/gi,'')||n[0]||'vc'}
+  function se(id,msg){const el=$$(id);if(!el)return;const sp=el.querySelector('span');if(sp)sp.textContent=msg;el.classList.toggle('show',!!msg);if(msg){const c=$$('auth-card');c&&c.classList.add('auth-shake');setTimeout(()=>c&&c.classList.remove('auth-shake'),450)}}
+  function bl(b,s,on){const btn=$$(b),sp=$$(s);if(btn)btn.disabled=on;if(sp)sp.style.display=on?'block':'none';if(btn){const t=btn.querySelector('.auth-btn-text');if(t)t.style.opacity=on?'.5':'1'}}
+  return{
+    init(){
+      const ses=gs();
+      if(ses){this._after(ses);return}
+      const ep=$$('auth-emoji-picker');
+      if(ep)ep.innerHTML=AVTS.map(e=>`<span class="auth-emoji-opt" onclick="AUTH.selEmoji('${e}')">${e}</span>`).join('');
+      this.show();
+      this.showTab(gu().length===0?'register':'login');
+    },
+    show(){const s=$$('auth-screen');if(s){s.style.display='flex';requestAnimationFrame(()=>requestAnimationFrame(()=>s.classList.add('auth-visible')))}},
+    hide(){const s=$$('auth-screen');if(s){s.classList.remove('auth-visible');setTimeout(()=>s.style.display='none',420)}},
+    showTab(t){document.querySelectorAll('.auth-tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));$$('auth-form-login').style.display=t==='login'?'block':'none';$$('auth-form-register').style.display=t==='register'?'block':'none'},
+    clearError(id){const el=$$(id);if(el)el.classList.remove('show')},
+    togglePwd(id,btn){const i=$$(id);if(!i)return;const v=i.type==='password';i.type=v?'text':'password';btn.textContent=v?'🙈':'👁'},
+    toggleEmojiPicker(){const ep=$$('auth-emoji-picker');if(ep)ep.classList.toggle('open')},
+    selEmoji(e){const av=$$('auth-avatar-preview'),vl=$$('auth-reg-avatar-val');if(av)av.textContent=e;if(vl)vl.value=e;const ep=$$('auth-emoji-picker');if(ep){ep.querySelectorAll('.auth-emoji-opt').forEach(o=>o.classList.toggle('sel',o.textContent===e));ep.classList.remove('open')}},
+    onNomeInput(v){this.clearError('auth-reg-error');const sg=v.trim()?sn(v):'';const b=$$('auth-nick-suggest-btn');if(b){b.textContent=sg||'';b.style.display=sg?'inline-block':'none'}const n=$$('auth-reg-nick');if(n&&!n.value&&sg)n.placeholder=sg},
+    acceptNickSuggest(){const b=$$('auth-nick-suggest-btn'),n=$$('auth-reg-nick');if(n&&b)n.value=b.textContent},
+    onPwdInput(v){this.clearError('auth-reg-error');const sc=str(v);const bars=document.querySelectorAll('.auth-str-bar');const L=['','Fraca','Média','Forte','Muito forte'],C=['','#ef4444','#f59e0b','#22c55e','#10b981'];bars.forEach((b,i)=>b.style.background=i<sc?C[sc]:'#e8d0d8');const l=$$('auth-str-label');if(l){l.textContent=L[sc]||'';l.style.color=C[sc]||''}const p2=$$('auth-reg-pwd2');if(p2&&p2.value)this.onPwd2Input(p2.value)},
+    onPwd2Input(v){this.clearError('auth-reg-error');const p1=$$('auth-reg-pwd'),ic=$$('auth-pwd-match-icon');if(!p1||!ic)return;if(!v){ic.style.display='none';return}ic.style.display='block';ic.textContent=v===p1.value?'✅':'❌'},
+    async login(){
+      const email=$$('auth-login-email')?.value?.trim(),pwd=$$('auth-login-pwd')?.value,rem=$$('auth-remember')?.checked;
+      this.clearError('auth-login-error');
+      if(!email||!ve(email)){se('auth-login-error','Digite um e-mail válido.');return}
+      if(!pwd){se('auth-login-error','Digite sua senha.');return}
+      bl('auth-btn-login','auth-login-spinner',true);
+      await new Promise(r=>setTimeout(r,420));
+      const users=gu(),user=users.find(u=>u.email===email.toLowerCase());
+      if(!user){bl('auth-btn-login','auth-login-spinner',false);se('auth-login-error','E-mail não encontrado. Crie uma conta primeiro.');return}
+      if(!user.salt&&user.googleId){bl('auth-btn-login','auth-login-spinner',false);se('auth-login-error','Esta conta usa login com Google.');return}
+      const hash=await hp(pwd,user.salt);
+      if(hash!==user.hash){bl('auth-btn-login','auth-login-spinner',false);se('auth-login-error','Senha incorreta. Tente novamente.');return}
+      bl('auth-btn-login','auth-login-spinner',false);ss(user,rem);this.hide();this._after(user);
+    },
+    async register(){
+      const nome=$$('auth-reg-nome')?.value?.trim(),email=$$('auth-reg-email')?.value?.trim(),pwd=$$('auth-reg-pwd')?.value,pwd2=$$('auth-reg-pwd2')?.value,terms=$$('auth-reg-terms')?.checked,avatar=$$('auth-reg-avatar-val')?.value||'💰';
+      let nick=$$('auth-reg-nick')?.value?.trim()||sn(nome||'usuario');
+      this.clearError('auth-reg-error');
+      if(!nome||nome.length<2){se('auth-reg-error','Digite seu nome completo.');return}
+      if(!email||!ve(email)){se('auth-reg-error','Digite um e-mail válido.');return}
+      if(str(pwd)<2){se('auth-reg-error','Senha muito fraca — use ao menos 8 caracteres.');return}
+      if(pwd!==pwd2){se('auth-reg-error','As senhas não coincidem.');return}
+      if(!terms){se('auth-reg-error','Aceite os Termos de Uso para continuar.');return}
+      const users=gu();
+      if(users.find(u=>u.email===email.toLowerCase())){se('auth-reg-error','Este e-mail já está cadastrado. Faça login.');return}
+      bl('auth-btn-register','auth-reg-spinner',true);
+      const salt=rs(),hash=await hp(pwd,salt);
+      const user={email:email.toLowerCase(),nome,nick,avatar,salt,hash,createdAt:new Date().toISOString()};
+      users.push(user);su(users);ss(user,true);
+      bl('auth-btn-register','auth-reg-spinner',false);this.hide();this._after(user);
+    },
+    loginWithGoogle(){
+      if(typeof google==='undefined'){se('auth-login-error','Google Sign-In não disponível. Verifique sua conexão.');return}
+      const c=google.accounts.oauth2.initTokenClient({client_id:G_CID,scope:'email profile openid https://www.googleapis.com/auth/drive.file',callback:async resp=>{
+        if(resp.error){se('auth-login-error','Erro ao conectar com Google.');return}
+        try{
+          const r=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:'Bearer '+resp.access_token}});
+          const p=await r.json();
+          const users=gu();let user=users.find(u=>u.email===p.email.toLowerCase());
+          if(!user){user={email:p.email.toLowerCase(),nome:p.name||p.email,nick:sn(p.name||p.email),avatar:'😊',googleId:p.sub,salt:'',hash:'',createdAt:new Date().toISOString()};users.push(user);su(users)}
+          if(typeof GDRIVE!=='undefined'){GDRIVE._tok=resp.access_token;GDRIVE._tokExp=Date.now()+(resp.expires_in*1000)}
+          ss(user,true);this.hide();this._after(user);
+        }catch{se('auth-login-error','Não foi possível obter os dados do Google.')}
+      }});
+      c.requestAccessToken({prompt:''});
+    },
+    forgotPassword(){const email=$$('auth-login-email')?.value?.trim();alert(email?`Como o Soldo armazena dados localmente, crie uma nova conta e restaure seu backup do Google Drive. E-mail: ${email}`:'Crie uma nova conta e restaure seus dados pelo Google Drive em Configuração.');},
+    getCurrentUser(){return gs()},
+    logout(){cs();this.show();this.showTab('login')},
+    _after(user){
+      if(typeof ST!=='undefined'&&ST.data&&!ST.data.config?.nome&&user.nome){ST.data.config.nome=user.nome}
+      document.querySelectorAll('[data-auth-name]').forEach(el=>el.textContent=user.nome||user.nick);
+    }
+  };
+})();
+
 document.addEventListener('DOMContentLoaded',async()=>{
+  AUTH.init();
   DARKMODE.init();
   await STORAGE.load();
   applyTheme(ST.data.config?.theme||'rosa');

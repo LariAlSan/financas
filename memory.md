@@ -54,7 +54,37 @@ Dashboard · Salário · Despesas Fixas · Parceladas · Investimentos · Variá
 
 ---
 
+## Auth — Módulo de Autenticação
+
+Adicionado em 2026-05-10. Overlay fixo (`#auth-screen`, z-index 99999) com dois fluxos.
+
+| Item | Detalhe |
+|------|---------|
+| Módulo JS | `AUTH` (IIFE) inserido antes do `DOMContentLoaded` |
+| Storage usuários | `soldo-auth` (localStorage) — array de contas |
+| Storage sessão | `soldo-session` (localStorage se "lembrar de mim", sessionStorage se não) |
+| Segurança de senha | SHA-256 + salt aleatório via Web Crypto API (SubtleCrypto) |
+| Google OAuth | Reutiliza `GDRIVE_CLIENT_ID`; em sucesso popula `GDRIVE._tok` e `GDRIVE._tokExp` |
+| Fluxo Login | Email + senha + lembrar-me + esqueci senha |
+| Fluxo Cadastro | Nome → apelido (auto-sugerido) → email → senha (barra de força 4 níveis) → confirmar → avatar emoji → termos |
+| Identidade visual | Gradiente dark rose `#1a0d16→#3d1f2e`, card branco, primário `#c9607e`, Nunito 800 |
+| SVG background | Curvas de gráfico financeiro + pontos de dados + grid |
+| Mobile | Bottom sheet (border-radius top-only) em < 480px |
+| Dark mode | `[data-theme=dark] #auth-screen` CSS integrado |
+
+---
+
 ## Histórico de Atualizações
+
+### 2026-05-10 — Tela de Auth (login/cadastro)
+- Módulo `AUTH` (IIFE) adicionado — overlay `#auth-screen` cobre o app até autenticação
+- Dois fluxos: **Entrar** (email/senha) e **Criar conta** (nome, apelido, email, senha, avatar, termos)
+- Senhas: SHA-256 + salt via Web Crypto API sem dependências externas
+- Sessão em `localStorage` (lembrar de mim ON) ou `sessionStorage` (lembrar de mim OFF)
+- Google OAuth reusa `GDRIVE_CLIENT_ID` existente; cria perfil local automaticamente
+- Apelido auto-sugerido (primeiro token do nome, lowercase); avatar emoji selecionável (20 opções)
+- Barra de força de senha em tempo real (4 níveis), validação de match, shake animation em erro
+- Dark mode e mobile bottom sheet integrados
 
 ### 2026-04-26 — v4.3.6 (fix: espelhamento do ícone PWA)
 - **Ícone corrigido**: `icon-192.png` e `icon-512.png` estavam espelhados horizontalmente após o resize com Pillow. Aplicado `FLIP_LEFT_RIGHT` para restaurar orientação original (ponto no canto superior esquerdo).
